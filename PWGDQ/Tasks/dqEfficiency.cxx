@@ -33,7 +33,6 @@
 #include <iostream>
 #include <vector>
 
-
 // added by lupz begin
 #ifndef HomogeneousField
 
@@ -74,7 +73,7 @@ using namespace o2;
 using namespace o2::framework;
 using namespace o2::framework::expressions;
 using namespace o2::aod;
-using namespace o2::track; // added by lupz 
+using namespace o2::track; // added by lupz
 
 // Some definitions
 namespace o2::aod
@@ -524,22 +523,22 @@ struct AnalysisSameEventPairing {
   Configurable<std::string> fConfigMCGenSignals{"cfgBarrelMCGenSignals", "", "Comma separated list of MC signals (generated)"};
   Configurable<bool> fConfigFlatTables{"cfgFlatTables", false, "Produce a single flat tables with all relevant information of the pairs and single tracks"};
 
-	// added by lupz begin 
-	Configurable<std::string> url{"ccdb-url", "http://alice-ccdb.cern.ch", "url of the ccdb repository"};
-	Configurable<long> nolaterthan{"ccdb-no-later-than", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(), "latest acceptable timestamp of creation for the object"};
-	Configurable<float> magneticField{"d_bz", -999, "magnetic field"};// added by lupz
-	Configurable<std::string> grpPath{"grpPath", "GLO/GRP/GRP", "Path of the grp file"}; // added by lupz
-	Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"}; //added by lupz
-	Configurable<std::string> lutPath{"lutPath", "GLO/Param/MatLUT", "Path of the Lut parametrization"};
-	Configurable<std::string> geoPath{"geoPath", "GLO/Config/GeometryAligned", "Path of the geometry file"};
-	float d_bz; // added by lupz
-	o2::base::MatLayerCylSet* lut = nullptr;
-	int mRunNumber; // added by lupz
-	Service<o2::ccdb::BasicCCDBManager> ccdb; // added by lupz
-	bool flagKF = false;
-	Configurable<bool> ouputTableForMCSignalOnly{"ouputTableForMCSignalOnly", false, "Have output tables for MC true siganl or for reconstructed signal"}; //added by lupz
-    KFParticle KFPV;
-	// added by lupz end 
+  // added by lupz begin
+  Configurable<std::string> url{"ccdb-url", "http://alice-ccdb.cern.ch", "url of the ccdb repository"};
+  Configurable<long> nolaterthan{"ccdb-no-later-than", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(), "latest acceptable timestamp of creation for the object"};
+  Configurable<float> magneticField{"d_bz", -999, "magnetic field"};                                                   // added by lupz
+  Configurable<std::string> grpPath{"grpPath", "GLO/GRP/GRP", "Path of the grp file"};                                 // added by lupz
+  Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"}; // added by lupz
+  Configurable<std::string> lutPath{"lutPath", "GLO/Param/MatLUT", "Path of the Lut parametrization"};
+  Configurable<std::string> geoPath{"geoPath", "GLO/Config/GeometryAligned", "Path of the geometry file"};
+  float d_bz; // added by lupz
+  o2::base::MatLayerCylSet* lut = nullptr;
+  int mRunNumber;                           // added by lupz
+  Service<o2::ccdb::BasicCCDBManager> ccdb; // added by lupz
+  bool flagKF = false;
+  Configurable<bool> ouputTableForMCSignalOnly{"ouputTableForMCSignalOnly", false, "Have output tables for MC true siganl or for reconstructed signal"}; // added by lupz
+  KFParticle KFPV;
+  // added by lupz end
 
   // TODO: here we specify signals, however signal decisions are precomputed and stored in mcReducedFlags
   // TODO: The tasks based on skimmed MC could/should rely ideally just on these flags
@@ -558,15 +557,15 @@ struct AnalysisSameEventPairing {
 
   void init(o2::framework::InitContext& context)
   {
-    		// added by lupz begin
-		if (context.mOptions.get<bool>("processJpsiToEESkimmedKFParticle")) // added by lupz
-		{
-			LOGF(info, "It is running Jpsi->ee with KF Particle"); // added by lupz
-			mRunNumber = 0;// added by lupz
-			d_bz = 0;// added by lupz
-			flagKF = true;
-		}
-		// added by lupz end
+    // added by lupz begin
+    if (context.mOptions.get<bool>("processJpsiToEESkimmedKFParticle")) // added by lupz
+    {
+      LOGF(info, "It is running Jpsi->ee with KF Particle"); // added by lupz
+      mRunNumber = 0;                                        // added by lupz
+      d_bz = 0;                                              // added by lupz
+      flagKF = true;
+    }
+    // added by lupz end
 
     bool enableBarrelHistos = context.mOptions.get<bool>("processJpsiToEESkimmed") || context.mOptions.get<bool>("processJpsiToEEVertexingSkimmed") || context.mOptions.get<bool>("processJpsiToEESkimmedKFParticle");
     bool enableMuonHistos = context.mOptions.get<bool>("processJpsiToMuMuSkimmed") || context.mOptions.get<bool>("processJpsiToMuMuVertexingSkimmed");
@@ -709,61 +708,50 @@ struct AnalysisSameEventPairing {
     VarManager::SetupTwoProngDCAFitter(5.0f, true, 200.0f, 4.0f, 1.0e-3f, 0.9f, true); // TODO: get these parameters from Configurables
     VarManager::SetupTwoProngFwdDCAFitter(5.0f, true, 200.0f, 1.0e-3f, 0.9f, true);
 
-		// added by lupz begin
-		// Usage example of ccdb
-		ccdb->setURL(url);
-		ccdb->setCaching(true);
-		ccdb->setLocalObjectValidityChecking();
-		//ccdb->setCreatedNotAfter(nolaterthan.value);
-		ccdb->setFatalWhenNull(false); // added by lupz
-		if (!o2::base::GeometryManager::isGeometryLoaded()) {
-			ccdb->get<TGeoManager>(geoPath);
-		}
-		// added by lupz end
+    // added by lupz begin
+    // Usage example of ccdb
+    ccdb->setURL(url);
+    ccdb->setCaching(true);
+    ccdb->setLocalObjectValidityChecking();
+    // ccdb->setCreatedNotAfter(nolaterthan.value);
+    ccdb->setFatalWhenNull(false); // added by lupz
+    if (!o2::base::GeometryManager::isGeometryLoaded()) {
+      ccdb->get<TGeoManager>(geoPath);
+    }
+    // added by lupz end
   }
 
-	// added by lupz begin
-	float getMagneticField(uint64_t timestamp)
-	{
-		o2::base::MatLayerCylSet* lut = o2::base::MatLayerCylSet::rectifyPtrFromFile(ccdb->get<o2::base::MatLayerCylSet>(lutPath));
-		static o2::parameters::GRPMagField* grpo = ccdb->getForTimeStamp<o2::parameters::GRPMagField>(grpmagPath, timestamp);
-		if (grpo != nullptr) {
-			o2::base::Propagator::initFieldFromGRP(grpo);
-			o2::base::Propagator::Instance()->setMatLUT(lut);
-		} else {
-			LOGF(fatal, "GRP object not found for timestamp %llu", timestamp);
-			return 0;
-		}
-		LOGF(info, "Retrieved GRP for timestamp %llu with L3 ", timestamp, grpo->getL3Current());
-		float bz = std::lround(5.f * grpo->getL3Current() / 30000.f); // in kG
-		LOGF(info, "magnetig field = %f kG", bz);
-		return bz;
-	}
+  // added by lupz begin
+  float getMagneticField(uint64_t timestamp)
+  {
+    o2::base::MatLayerCylSet* lut = o2::base::MatLayerCylSet::rectifyPtrFromFile(ccdb->get<o2::base::MatLayerCylSet>(lutPath));
+    static o2::parameters::GRPMagField* grpo = ccdb->getForTimeStamp<o2::parameters::GRPMagField>(grpmagPath, timestamp);
+    if (grpo != nullptr) {
+      o2::base::Propagator::initFieldFromGRP(grpo);
+      o2::base::Propagator::Instance()->setMatLUT(lut);
+    } else {
+      LOGF(fatal, "GRP object not found for timestamp %llu", timestamp);
+      return 0;
+    }
+    LOGF(info, "Retrieved GRP for timestamp %llu with L3 ", timestamp, grpo->getL3Current());
+    float bz = std::lround(5.f * grpo->getL3Current() / 30000.f); // in kG
+    LOGF(info, "magnetig field = %f kG", bz);
+    return bz;
+  }
 
-	void CheckAndUpdate(Int_t lRunNumber, uint64_t lTimeStamp)
-	{
-		if (lRunNumber != mRunNumber) {
-			if (abs(magneticField) > 99) {
-				// Fetch magnetic field from ccdb for current collision
-				d_bz = getMagneticField(lTimeStamp);
-			} else {
-				d_bz = magneticField;
-			}
-			mRunNumber = lRunNumber;
-		}
-	}
-	float GetTrackSignDCA( const float vtx[] ) const
-	{
-		float mP[8], mC[36]; 
-		float dsdr[6] = {0.f}
-		const float dS = GetDStoPoint(vtx, dsdr)
-		Transport( dS, dsdr, mP, mC )
-		float d[3]={ vtx[0]-mP[0], vtx[1]-mP[1], vtx[2]-mP[2]}
-		return sqrt( d[0]*d[0]+d[1]*d[1]+d[2]*d[2] );
-	}
-	// added by lupz end 
-
-
+  void CheckAndUpdate(Int_t lRunNumber, uint64_t lTimeStamp)
+  {
+    if (lRunNumber != mRunNumber) {
+      if (abs(magneticField) > 99) {
+        // Fetch magnetic field from ccdb for current collision
+        d_bz = getMagneticField(lTimeStamp);
+      } else {
+        d_bz = magneticField;
+      }
+      mRunNumber = lRunNumber;
+    }
+  }
+  // added by lupz end
 
   template <int TPairType, uint32_t TEventFillMap, uint32_t TEventMCFillMap, uint32_t TTrackFillMap, typename TEvent, typename TTracks1, typename TTracks2, typename TEventsMC, typename TTracksMC>
   void runPairing(TEvent const& event, TTracks1 const& tracks1, TTracks2 const& tracks2, TEventsMC const& eventsMC, TTracksMC const& tracksMC)
@@ -794,306 +782,298 @@ struct AnalysisSameEventPairing {
     }
 
     // added by lupz begin
-		// PV information
-		float PVNContributors = -999.;
-		int   PVNDF = -999;
-		float PVParameters[8] = {0.};
-		float PVCovariance[36] = {0.};
-		// tracks information
-		float trk0Parameters[8] = {0.};
-		float trk0Covariance[36] = {0.};
-		float trk1Parameters[8] = {0.};
-		float trk1Covariance[36] = {0.};
-		// only Geometrical fitting
-		float pairMassKFGeo = -999.; // added by lupz
-		float pairMassErrKFGeo = -999.; // added by lupz
-		float pairChi2OverNDFKFGeo = -999.; // added by lupz
-		int   pairNDFKFGeo = -999;
-		float pairDecayLengthKFGeo = -999.;
-		float pairDecayLengthOverErrKFGeo = -999.;
-		float pairPseudoProperDecayTimeKFGeo = -999.;
-		float pairPseudoProperDecayLengthManuallyGeo = -999.;
-		float dcaTrk0KFGeo = -999.;
-		float dcaTrk1KFGeo = -999.;
-		float dcaTrksMaxKFGeo = -999.;
-		float dcaBetweenTrksKFGeo = -999.;
-		float pairParametersGeo[8] = {0.};
-		float pairCovarianceGeo[36] = {0.};
-		// Geometrical fitting and topological constraint
-		float pairMassKFGeoTop = -999.; // added by lupz
-		float pairMassErrKFGeoTop = -999.; // added by lupz
-		float pairChi2OverNDFKFGeoTop = -999.; // added by lupz
-		int   pairNDFKFGeoTop = -999;
-		float pairDecayLengthKFGeoTop = -999.;
-		float pairDecayLengthOverErrKFGeoTop = -999.;
-		float pairPseudoProperDecayTimeKFGeoTop = -999.;
-		float pairPseudoProperDecayLengthManuallyGeoTop = -999.;
-		float dcaTrk0KFGeoTop = -999.;
-		float dcaTrk1KFGeoTop = -999.;
-		float dcaBetweenTrksKFGeoTop = -999.;
-		float dcaTrksMaxKFGeoTop = -999.;
-		float pairParametersGeoTop[8] = {0.};
-		float pairCovarianceGeoTop[36] = {0.};
-		// Geometrical fitting and mass constraint
-		float pairMassKFGeoMass = -999.; // added by lupz
-		float pairMassErrKFGeoMass = -999.; // added by lupz
-		float pairChi2OverNDFKFGeoMass = -999.; // added by lupz
-		int   pairNDFKFGeoMass = -999;
-		float pairDecayLengthKFGeoMass = -999.;
-		float pairDecayLengthOverErrKFGeoMass = -999.;
-		float pairPseudoProperDecayTimeKFGeoMass = -999.;
-		float pairPseudoProperDecayLengthManuallyGeoMass = -999.;
-		float dcaTrk0KFGeoMass = -999.;
-		float dcaTrk1KFGeoMass = -999.;
-		float dcaTrksMaxKFGeoMass = -999.;
-		float dcaBetweenTrksKFGeoMass = -999.;
-		float pairParametersGeoMass[8] = {0.};
-		float pairCovarianceGeoMass[36] = {0.};
-		// Geometrical fitting + mass and topological constraints
-		float pairMassKFGeoMassTop = -999.; // added by lupz
-		float pairMassErrKFGeoMassTop = -999.; // added by lupz
-		float pairChi2OverNDFKFGeoMassTop = -999.; // added by lupz
-		int   pairNDFKFGeoMassTop = -999;
-		float pairDecayLengthKFGeoMassTop = -999.;
-		float pairDecayLengthOverErrKFGeoMassTop = -999.;
-		float pairPseudoProperDecayTimeKFGeoMassTop = -999.;
-		float pairPseudoProperDecayLengthManuallyGeoMassTop = -999.;
-		float dcaTrk0KFGeoMassTop = -999.;
-		float dcaTrk1KFGeoMassTop = -999.;
-		float dcaTrksMaxKFGeoMassTop = -999.;
-		float dcaBetweenTrksKFGeoMassTop = -999.;
-		float pairParametersGeoMassTop[8] = {0.};
-		float pairCovarianceGeoMassTop[36] = {0.};
-		
-		if (flagKF)
-		{
-			CheckAndUpdate(event.runNumber(),event.timestamp());
-			LOG(info) << "~~~~~~~~~~~~~~~~Run: " << event.runNumber() << " with magnetic field of " << d_bz << " kZG";
-			KFParticle::SetField(d_bz);
-			if constexpr ((TPairType == VarManager::kJpsiToEE) && ((TEventFillMap & VarManager::ObjTypes::ReducedEventVtxCov) > 0))
-			{
-			    KFPVertex kfpVertex;
-				kfpVertex.SetXYZ(event.posX(), event.posY(), event.posZ());
-				kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ());
-				kfpVertex.SetChi2(event.chi2());
-				//kfpVertex.SetNDF();
-				kfpVertex.SetNContributors(event.numContrib());
-				PVNContributors = kfpVertex.GetNContributors();
-				PVNDF = kfpVertex.GetNDF();
-			    KFPV = KFParticle(kfpVertex);
-			}
-		}
-		// added by lupz end
+    // PV information
+    float PVNContributors = -999.;
+    int PVNDF = -999;
+    float PVParameters[8] = {-999.};
+    float PVCovariance[36] = {-999.};
+    // tracks information
+    char trk0Charge;
+    char trk1Charge;
+    float trk0Parameters[8] = {-999.};
+    float trk1Parameters[8] = {-999.};
+    // only Geometrical fitting
+    float pairMassKFGeo = -999.;        // added by lupz
+    float pairMassErrKFGeo = -999.;     // added by lupz
+    float pairChi2OverNDFKFGeo = -999.; // added by lupz
+    int pairNDFKFGeo = -999;
+    float pairDecayLengthKFGeo = -999.;
+    float pairDecayLengthOverErrKFGeo = -999.;
+    float pairPseudoProperDecayTimeKFGeo = -999.;
+    float pairPseudoProperDecayLengthManuallyGeo = -999.;
+    float dcaTrk0KFGeo = -999.;
+    float dcaTrk1KFGeo = -999.;
+    float dcaTrksMaxKFGeo = -999.;
+    float dcaBetweenTrksKFGeo = -999.;
+    float pairParametersGeo[8] = {-999.};
+    float pairCovarianceGeo[36] = {-999.};
+    // Geometrical fitting and topological constraint
+    float pairMassKFGeoTop = -999.;        // added by lupz
+    float pairMassErrKFGeoTop = -999.;     // added by lupz
+    float pairChi2OverNDFKFGeoTop = -999.; // added by lupz
+    int pairNDFKFGeoTop = -999;
+    float pairDecayLengthKFGeoTop = -999.;
+    float pairDecayLengthOverErrKFGeoTop = -999.;
+    float pairPseudoProperDecayTimeKFGeoTop = -999.;
+    float pairPseudoProperDecayLengthManuallyGeoTop = -999.;
+    float dcaTrk0KFGeoTop = -999.;
+    float dcaTrk1KFGeoTop = -999.;
+    float dcaBetweenTrksKFGeoTop = -999.;
+    float dcaTrksMaxKFGeoTop = -999.;
+    float pairParametersGeoTop[8] = {-999.};
+    float pairCovarianceGeoTop[36] = {-999.};
+    // Geometrical fitting and mass constraint
+    float pairMassKFGeoMass = -999.;        // added by lupz
+    float pairMassErrKFGeoMass = -999.;     // added by lupz
+    float pairChi2OverNDFKFGeoMass = -999.; // added by lupz
+    int pairNDFKFGeoMass = -999;
+    float pairDecayLengthKFGeoMass = -999.;
+    float pairDecayLengthOverErrKFGeoMass = -999.;
+    float pairPseudoProperDecayTimeKFGeoMass = -999.;
+    float pairPseudoProperDecayLengthManuallyGeoMass = -999.;
+    float dcaTrk0KFGeoMass = -999.;
+    float dcaTrk1KFGeoMass = -999.;
+    float dcaTrksMaxKFGeoMass = -999.;
+    float dcaBetweenTrksKFGeoMass = -999.;
+    float pairParametersGeoMass[8] = {-999.};
+    float pairCovarianceGeoMass[36] = {-999.};
+    // Geometrical fitting + mass and topological constraints
+    float pairMassKFGeoMassTop = -999.;        // added by lupz
+    float pairMassErrKFGeoMassTop = -999.;     // added by lupz
+    float pairChi2OverNDFKFGeoMassTop = -999.; // added by lupz
+    int pairNDFKFGeoMassTop = -999;
+    float pairDecayLengthKFGeoMassTop = -999.;
+    float pairDecayLengthOverErrKFGeoMassTop = -999.;
+    float pairPseudoProperDecayTimeKFGeoMassTop = -999.;
+    float pairPseudoProperDecayLengthManuallyGeoMassTop = -999.;
+    float dcaTrk0KFGeoMassTop = -999.;
+    float dcaTrk1KFGeoMassTop = -999.;
+    float dcaTrksMaxKFGeoMassTop = -999.;
+    float dcaBetweenTrksKFGeoMassTop = -999.;
+    float pairParametersGeoMassTop[8] = {-999.};
+    float pairCovarianceGeoMassTop[36] = {-999.};
+
+    if (flagKF) {
+      CheckAndUpdate(event.runNumber(), event.timestamp());
+      LOG(info) << "~~~~~~~~~~~~~~~~Run: " << event.runNumber() << " with magnetic field of " << d_bz << " kZG";
+      KFParticle::SetField(d_bz);
+      if constexpr ((TPairType == VarManager::kJpsiToEE) && ((TEventFillMap & VarManager::ObjTypes::ReducedEventVtxCov) > 0)) {
+        KFPVertex kfpVertex;
+        kfpVertex.SetXYZ(event.posX(), event.posY(), event.posZ());
+        kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ());
+        kfpVertex.SetChi2(event.chi2());
+        // kfpVertex.SetNDF();
+        kfpVertex.SetNContributors(event.numContrib());
+        PVNContributors = kfpVertex.GetNContributors();
+        PVNDF = kfpVertex.GetNDF();
+        KFPV = KFParticle(kfpVertex);
+      }
+    }
+    // added by lupz end
 
     for (auto& [t1, t2] : combinations(tracks1, tracks2)) {
       // added by lupz begin
-				if (flagKF)
-				{
-					if constexpr ((TPairType == VarManager::kJpsiToEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelCov) > 0)
-					{
-						//dauther0;
-						std::array<float, 3> trk0ParPos;
-						std::array<float, 3> trk0ParMom;
-						std::array<float, 21> trk0Cov;
+      if (flagKF) {
+        if constexpr ((TPairType == VarManager::kJpsiToEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelCov) > 0) {
+          // dauther0;
+          std::array<float, 3> trk0ParPos;
+          std::array<float, 3> trk0ParMom;
+          std::array<float, 21> trk0Cov;
 
-						auto track0ParCov = getTrackParCov(t1);
-						track0ParCov.getXYZGlo(trk0ParPos);
-						track0ParCov.getPxPyPzGlo(trk0ParMom);
-						track0ParCov.getCovXYZPxPyPzGlo(trk0Cov);
+          auto track0ParCov = getTrackParCov(t1);
+          track0ParCov.getXYZGlo(trk0ParPos);
+          track0ParCov.getPxPyPzGlo(trk0ParMom);
+          track0ParCov.getCovXYZPxPyPzGlo(trk0Cov);
 
-						float trk0ParKF[6] = {trk0ParPos[0], trk0ParPos[1], trk0ParPos[2], trk0ParMom[0], trk0ParMom[1], trk0ParMom[2]};
-						float trk0CovKF[21];
-						for (int i=0; i<21; i++){
-							trk0CovKF[i] = trk0Cov[i];
-						}
+          float trk0ParKF[6] = {trk0ParPos[0], trk0ParPos[1], trk0ParPos[2], trk0ParMom[0], trk0ParMom[1], trk0ParMom[2]};
+          float trk0CovKF[21];
+          for (int i = 0; i < 21; i++) {
+            trk0CovKF[i] = trk0Cov[i];
+          }
 
-						KFPTrack kfpTrack0;
-						kfpTrack0.SetParameters(trk0ParKF);
-						kfpTrack0.SetCovarianceMatrix(trk0CovKF);
-						kfpTrack0.SetCharge(t1.sign());
+          KFPTrack kfpTrack0;
+          kfpTrack0.SetParameters(trk0ParKF);
+          kfpTrack0.SetCovarianceMatrix(trk0CovKF);
+          kfpTrack0.SetCharge(t1.sign());
 
-						int pdgTrack0 = 0; 
-						if (t1.sign() <0)
-							pdgTrack0 = 11;//e-
-						if (t1.sign() >0)
-							pdgTrack0 = -11;//e+
-						KFParticle trk0KF(kfpTrack0, pdgTrack0);
+          int pdgTrack0 = 0;
+          if (t1.sign() < 0)
+            pdgTrack0 = 11; // e-
+          if (t1.sign() > 0)
+            pdgTrack0 = -11; // e+
+          KFParticle trk0KF(kfpTrack0, pdgTrack0);
 
-						//dauther1;
-						std::array<float, 3> trk1ParPos;
-						std::array<float, 3> trk1ParMom;
-						std::array<float, 21> trk1Cov;
+          // dauther1;
+          std::array<float, 3> trk1ParPos;
+          std::array<float, 3> trk1ParMom;
+          std::array<float, 21> trk1Cov;
 
-						auto track1ParCov = getTrackParCov(t2);
-						track1ParCov.getXYZGlo(trk1ParPos);
-						track1ParCov.getPxPyPzGlo(trk1ParMom);
-						track1ParCov.getCovXYZPxPyPzGlo(trk1Cov);
+          auto track1ParCov = getTrackParCov(t2);
+          track1ParCov.getXYZGlo(trk1ParPos);
+          track1ParCov.getPxPyPzGlo(trk1ParMom);
+          track1ParCov.getCovXYZPxPyPzGlo(trk1Cov);
 
-						float trk1ParKF[6] = {trk1ParPos[0], trk1ParPos[1], trk1ParPos[2], trk1ParMom[0], trk1ParMom[1], trk1ParMom[2]};
-						float trk1CovKF[21];
-						for (int i=0; i<21; i++){
-							trk1CovKF[i] = trk1Cov[i];
-						}
+          float trk1ParKF[6] = {trk1ParPos[0], trk1ParPos[1], trk1ParPos[2], trk1ParMom[0], trk1ParMom[1], trk1ParMom[2]};
+          float trk1CovKF[21];
+          for (int i = 0; i < 21; i++) {
+            trk1CovKF[i] = trk1Cov[i];
+          }
 
-						KFPTrack kfpTrack1;
-						kfpTrack1.SetParameters(trk1ParKF);
-						kfpTrack1.SetCovarianceMatrix(trk1CovKF);
-						kfpTrack1.SetCharge(t2.sign());
+          KFPTrack kfpTrack1;
+          kfpTrack1.SetParameters(trk1ParKF);
+          kfpTrack1.SetCovarianceMatrix(trk1CovKF);
+          kfpTrack1.SetCharge(t2.sign());
 
-						int pdgTrack1 = 0; 
-						if (t2.sign() <0)
-							pdgTrack1 = 11;//e-
-						if (t2.sign() >0)
-							pdgTrack1 = -11;//e+
-						KFParticle trk1KF(kfpTrack1, pdgTrack1);
+          int pdgTrack1 = 0;
+          if (t2.sign() < 0)
+            pdgTrack1 = 11; // e-
+          if (t2.sign() > 0)
+            pdgTrack1 = -11; // e+
+          KFParticle trk1KF(kfpTrack1, pdgTrack1);
 
-						// get PV information
-						for(int i=0;i<8;i++){
-							PVParameters[i] = KFPV.GetParameter(i);
-						}
-						for(int i=0;i<36;i++){
-							PVCovariance[i] = KFPV.GetCovariance(i);
-						}
+          // get PV information
+          for (int i = 0; i < 8; i++) {
+            PVParameters[i] = KFPV.GetParameter(i);
+          }
+          for (int i = 0; i < 36; i++) {
+            PVCovariance[i] = KFPV.GetCovariance(i);
+          }
 
-						// get tracks information
-						for(int i=0;i<8;i++){
-							trk0Parameters[i] = trk0KF.GetParameter(i);
-							trk1Parameters[i] = trk1KF.GetParameter(i);
-						}
-						for(int i=0;i<36;i++){
-							trk0Covariance[i] = trk0KF.GetCovariance(i);
-							trk1Covariance[i] = trk1KF.GetCovariance(i);
-						}
+          // reconstruct Jpsi via KF
+          KFParticle JpsiGeo;
+          JpsiGeo.SetConstructMethod(2);
+          JpsiGeo.AddDaughter(trk0KF);
+          JpsiGeo.AddDaughter(trk1KF);
 
-						// only Geometrical fitting
-						KFParticle JpsiGeo;
-						JpsiGeo.SetConstructMethod(2);
-						JpsiGeo.AddDaughter(trk0KF);
-						JpsiGeo.AddDaughter(trk1KF);
+          KFParticle JpsiGeoTop = JpsiGeo;
+          // trk0KF.SubtractFromVertex(KFPV);
+          // trk1KF.SubtractFromVertex(KFPV);
+          // KFPV += JpsiGeoTop;
+          JpsiGeoTop.SetProductionVertex(KFPV);
+          // trk0KF.SetProductionVertex(JpsiGeoTop);
+          // trk1KF.SetProductionVertex(JpsiGeoTop);
 
-						// Geometrical fitting and topological constraint
-						KFParticle JpsiGeoTop = JpsiGeo;
-						//trk0KF.SubtractFromVertex(KFPV);
-						//trk1KF.SubtractFromVertex(KFPV);
-						//KFPV += JpsiGeoTop;
-						JpsiGeoTop.SetProductionVertex(KFPV);
-						//trk0KF.SetProductionVertex(JpsiGeoTop);
-						//trk1KF.SetProductionVertex(JpsiGeoTop);
+          KFParticle JpsiGeoMass = JpsiGeo;
+          JpsiGeoMass.SetNonlinearMassConstraint(RecoDecay::getMassPDG(443));
 
-						// Geometrical fitting and mass constraint
-						KFParticle JpsiGeoMass = JpsiGeo;
-						JpsiGeoMass.SetNonlinearMassConstraint(RecoDecay::getMassPDG(443));
-						
-						// Geometrical fitting + mass and topological constraints
-						KFParticle JpsiGeoMassTop = JpsiGeo;
-						//trk0KF.SubtractFromVertex(KFPV);
-						//trk1KF.SubtractFromVertex(KFPV);
-						//KFPV += JpsiGeoMassTop;
-						JpsiGeoMassTop.SetProductionVertex(KFPV);
-						//trk0KF.SetProductionVertex(JpsiGeoMassTop);
-						//trk1KF.SetProductionVertex(JpsiGeoMassTop);
-						JpsiGeoMassTop.SetNonlinearMassConstraint(RecoDecay::getMassPDG(443));
+          KFParticle JpsiGeoMassTop = JpsiGeo;
+          // trk0KF.SubtractFromVertex(KFPV);
+          // trk1KF.SubtractFromVertex(KFPV);
+          // KFPV += JpsiGeoMassTop;
+          JpsiGeoMassTop.SetProductionVertex(KFPV);
+          // trk0KF.SetProductionVertex(JpsiGeoMassTop);
+          // trk1KF.SetProductionVertex(JpsiGeoMassTop);
+          JpsiGeoMassTop.SetNonlinearMassConstraint(RecoDecay::getMassPDG(443));
 
-						pairChi2OverNDFKFGeo = JpsiGeo.GetChi2() / JpsiGeo.GetNDF();
-						pairNDFKFGeo = JpsiGeo.GetNDF();
-						pairMassKFGeo = JpsiGeo.GetMass();
-						pairMassErrKFGeo = JpsiGeo.GetErrMass();
-						pairDecayLengthKFGeo = JpsiGeo.GetDecayLength();
-						pairDecayLengthOverErrKFGeo = JpsiGeo.GetDecayLength() / JpsiGeo.GetErrDecayLength();
-						pairPseudoProperDecayTimeKFGeo = JpsiGeo.GetPseudoProperDecayTime(KFPV,pairMassKFGeo);
-						pairPseudoProperDecayLengthManuallyGeo = JpsiGeo.GetDecayLengthXY() * (JpsiGeo.GetMass()/JpsiGeo.GetPt());
-						//dcaTrk0KFGeo = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						//dcaTrk1KFGeo = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						dcaTrk0KFGeo = trk0KF.GetDistanceFromVertex(KFPV);
-						dcaTrk1KFGeo = trk1KF.GetDistanceFromVertex(KFPV);
-						if (dcaTrk0KFGeo > dcaTrk1KFGeo)
-							dcaTrksMaxKFGeo = dcaTrk0KFGeo;
-						else 
-							dcaTrksMaxKFGeo = dcaTrk1KFGeo;
-						dcaBetweenTrksKFGeo = trk0KF.GetDistanceFromParticle(trk1KF);
-						for(int i=0;i<8;i++){
-							pairParametersGeo[i] = JpsiGeo.GetParameter(i);
-						}
-						for(int i=0;i<36;i++){
-							pairCovarianceGeo[i] = JpsiGeo.GetCovariance(i);
-						}
+          // get daughters information
+          trk0Charge = trk0KF.GetQ();
+          trk1Charge = trk1KF.GetQ();
+          for (int i = 0; i < 8; i++) {
+            trk0Parameters[i] = trk0KF.GetParameter(i);
+            trk1Parameters[i] = trk1KF.GetParameter(i);
+          }
 
-						pairChi2OverNDFKFGeoTop = JpsiGeoTop.GetChi2() / JpsiGeoTop.GetNDF();
-						pairNDFKFGeoTop = JpsiGeoTop.GetNDF();
-						pairMassKFGeoTop = JpsiGeoTop.GetMass();
-						pairMassErrKFGeoTop = JpsiGeoTop.GetErrMass();
-						pairDecayLengthKFGeoTop = JpsiGeoTop.GetDecayLength();
-						pairDecayLengthOverErrKFGeoTop = JpsiGeoTop.GetDecayLength() / JpsiGeoTop.GetErrDecayLength();
-						pairPseudoProperDecayTimeKFGeoTop = JpsiGeoTop.GetPseudoProperDecayTime(KFPV,pairMassKFGeoTop);
-						pairPseudoProperDecayLengthManuallyGeoTop = JpsiGeoTop.GetDecayLengthXY() * (JpsiGeoTop.GetMass()/JpsiGeoTop.GetPt());
-						//dcaTrk0KFGeoTop = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						//dcaTrk1KFGeoTop = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						dcaTrk0KFGeoTop = trk0KF.GetDistanceFromVertex(KFPV);
-						dcaTrk1KFGeoTop = trk1KF.GetDistanceFromVertex(KFPV);
-						if (dcaTrk0KFGeoTop > dcaTrk1KFGeoTop)
-							dcaTrksMaxKFGeoTop = dcaTrk0KFGeoTop;
-						else 
-							dcaTrksMaxKFGeoTop = dcaTrk1KFGeoTop;
-						dcaBetweenTrksKFGeoTop = trk0KF.GetDistanceFromParticle(trk1KF);
-						for(int i=0;i<8;i++){
-							pairParametersGeoTop[i] = JpsiGeoTop.GetParameter(i);
-						}
-						for(int i=0;i<36;i++){
-							pairCovarianceGeoTop[i] = JpsiGeoTop.GetCovariance(i);
-						}
+          // get JpsiGeo information
+          pairChi2OverNDFKFGeo = JpsiGeo.GetChi2() / JpsiGeo.GetNDF();
+          pairNDFKFGeo = JpsiGeo.GetNDF();
+          pairMassKFGeo = JpsiGeo.GetMass();
+          pairMassErrKFGeo = JpsiGeo.GetErrMass();
+          pairDecayLengthKFGeo = JpsiGeo.GetDecayLength();
+          pairDecayLengthOverErrKFGeo = JpsiGeo.GetDecayLength() / JpsiGeo.GetErrDecayLength();
+          pairPseudoProperDecayTimeKFGeo = JpsiGeo.GetPseudoProperDecayTime(KFPV, pairMassKFGeo);
+          pairPseudoProperDecayLengthManuallyGeo = JpsiGeo.GetDecayLengthXY() * (JpsiGeo.GetMass() / JpsiGeo.GetPt());
+          // dcaTrk0KFGeo = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          // dcaTrk1KFGeo = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          dcaTrk0KFGeo = trk0KF.GetDistanceFromVertex(KFPV);
+          dcaTrk1KFGeo = trk1KF.GetDistanceFromVertex(KFPV);
+          if (dcaTrk0KFGeo > dcaTrk1KFGeo)
+            dcaTrksMaxKFGeo = dcaTrk0KFGeo;
+          else
+            dcaTrksMaxKFGeo = dcaTrk1KFGeo;
+          dcaBetweenTrksKFGeo = trk0KF.GetDistanceFromParticle(trk1KF);
+          for (int i = 0; i < 8; i++) {
+            pairParametersGeo[i] = JpsiGeo.GetParameter(i);
+          }
+          for (int i = 0; i < 36; i++) {
+            pairCovarianceGeo[i] = JpsiGeo.GetCovariance(i);
+          }
 
-						pairChi2OverNDFKFGeoMass = JpsiGeoMass.GetChi2() / JpsiGeoMass.GetNDF();
-						pairNDFKFGeoMass = JpsiGeoMass.GetNDF();
-						pairMassKFGeoMass = JpsiGeoMass.GetMass();
-						pairMassErrKFGeoMass = JpsiGeoMass.GetErrMass();
-						pairDecayLengthKFGeoMass = JpsiGeoMass.GetDecayLength();
-						pairDecayLengthOverErrKFGeoMass = JpsiGeoMass.GetDecayLength() / JpsiGeoMass.GetErrDecayLength();
-						pairPseudoProperDecayTimeKFGeoMass = JpsiGeoMass.GetPseudoProperDecayTime(KFPV,pairMassKFGeoMass);
-						pairPseudoProperDecayLengthManuallyGeoMass = JpsiGeoMass.GetDecayLengthXY() * (JpsiGeoMass.GetMass()/JpsiGeoMass.GetPt());
-						//dcaTrk0KFGeoMass = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						//dcaTrk1KFGeoMass = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						dcaTrk0KFGeoMass = trk0KF.GetDistanceFromVertex(KFPV);
-						dcaTrk1KFGeoMass = trk1KF.GetDistanceFromVertex(KFPV);
-						if (dcaTrk0KFGeoMass > dcaTrk1KFGeoMass)
-							dcaTrksMaxKFGeoMass = dcaTrk0KFGeoMass;
-						else 
-							dcaTrksMaxKFGeoMass = dcaTrk1KFGeoMass;
-						dcaBetweenTrksKFGeoMass = trk0KF.GetDistanceFromParticle(trk1KF);
-						for(int i=0;i<8;i++){
-							pairParametersGeoMass[i] = JpsiGeoMass.GetParameter(i);
-						}
-						for(int i=0;i<36;i++){
-							pairCovarianceGeoMass[i] = JpsiGeoMass.GetCovariance(i);
-						}
+          pairChi2OverNDFKFGeoTop = JpsiGeoTop.GetChi2() / JpsiGeoTop.GetNDF();
+          pairNDFKFGeoTop = JpsiGeoTop.GetNDF();
+          pairMassKFGeoTop = JpsiGeoTop.GetMass();
+          pairMassErrKFGeoTop = JpsiGeoTop.GetErrMass();
+          pairDecayLengthKFGeoTop = JpsiGeoTop.GetDecayLength();
+          pairDecayLengthOverErrKFGeoTop = JpsiGeoTop.GetDecayLength() / JpsiGeoTop.GetErrDecayLength();
+          pairPseudoProperDecayTimeKFGeoTop = JpsiGeoTop.GetPseudoProperDecayTime(KFPV, pairMassKFGeoTop);
+          pairPseudoProperDecayLengthManuallyGeoTop = JpsiGeoTop.GetDecayLengthXY() * (JpsiGeoTop.GetMass() / JpsiGeoTop.GetPt());
+          // dcaTrk0KFGeoTop = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          // dcaTrk1KFGeoTop = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          dcaTrk0KFGeoTop = trk0KF.GetDistanceFromVertex(KFPV);
+          dcaTrk1KFGeoTop = trk1KF.GetDistanceFromVertex(KFPV);
+          if (dcaTrk0KFGeoTop > dcaTrk1KFGeoTop)
+            dcaTrksMaxKFGeoTop = dcaTrk0KFGeoTop;
+          else
+            dcaTrksMaxKFGeoTop = dcaTrk1KFGeoTop;
+          dcaBetweenTrksKFGeoTop = trk0KF.GetDistanceFromParticle(trk1KF);
+          for (int i = 0; i < 8; i++) {
+            pairParametersGeoTop[i] = JpsiGeoTop.GetParameter(i);
+          }
+          for (int i = 0; i < 36; i++) {
+            pairCovarianceGeoTop[i] = JpsiGeoTop.GetCovariance(i);
+          }
 
+          // get JpsiGeoMass information
+          pairChi2OverNDFKFGeoMass = JpsiGeoMass.GetChi2() / JpsiGeoMass.GetNDF();
+          pairNDFKFGeoMass = JpsiGeoMass.GetNDF();
+          pairMassKFGeoMass = JpsiGeoMass.GetMass();
+          pairMassErrKFGeoMass = JpsiGeoMass.GetErrMass();
+          pairDecayLengthKFGeoMass = JpsiGeoMass.GetDecayLength();
+          pairDecayLengthOverErrKFGeoMass = JpsiGeoMass.GetDecayLength() / JpsiGeoMass.GetErrDecayLength();
+          pairPseudoProperDecayTimeKFGeoMass = JpsiGeoMass.GetPseudoProperDecayTime(KFPV, pairMassKFGeoMass);
+          pairPseudoProperDecayLengthManuallyGeoMass = JpsiGeoMass.GetDecayLengthXY() * (JpsiGeoMass.GetMass() / JpsiGeoMass.GetPt());
+          // dcaTrk0KFGeoMass = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          // dcaTrk1KFGeoMass = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          dcaTrk0KFGeoMass = trk0KF.GetDistanceFromVertex(KFPV);
+          dcaTrk1KFGeoMass = trk1KF.GetDistanceFromVertex(KFPV);
+          if (dcaTrk0KFGeoMass > dcaTrk1KFGeoMass)
+            dcaTrksMaxKFGeoMass = dcaTrk0KFGeoMass;
+          else
+            dcaTrksMaxKFGeoMass = dcaTrk1KFGeoMass;
+          dcaBetweenTrksKFGeoMass = trk0KF.GetDistanceFromParticle(trk1KF);
+          for (int i = 0; i < 8; i++) {
+            pairParametersGeoMass[i] = JpsiGeoMass.GetParameter(i);
+          }
+          for (int i = 0; i < 36; i++) {
+            pairCovarianceGeoMass[i] = JpsiGeoMass.GetCovariance(i);
+          }
 
-						pairChi2OverNDFKFGeoMassTop = JpsiGeoMassTop.GetChi2() / JpsiGeoMassTop.GetNDF();
-						pairNDFKFGeoMassTop = JpsiGeoMassTop.GetNDF();
-						pairMassKFGeoMassTop = JpsiGeoMassTop.GetMass();
-						pairMassErrKFGeoMassTop = JpsiGeoMassTop.GetErrMass();
-						pairDecayLengthKFGeoMassTop = JpsiGeoMassTop.GetDecayLength();
-						pairDecayLengthOverErrKFGeoMassTop = JpsiGeoMassTop.GetDecayLength() / JpsiGeoMassTop.GetErrDecayLength();
-						pairPseudoProperDecayTimeKFGeoMassTop = JpsiGeoMassTop.GetPseudoProperDecayTime(KFPV,pairMassKFGeoMassTop);
-						pairPseudoProperDecayLengthManuallyGeoMassTop = JpsiGeoMassTop.GetDecayLengthXY() * (JpsiGeoMassTop.GetMass()/JpsiGeoMassTop.GetPt());
-						//dcaTrk0KFGeoMassTop = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						//dcaTrk1KFGeoMassTop = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-						dcaTrk0KFGeoMassTop = trk0KF.GetDistanceFromVertex(KFPV);
-						dcaTrk1KFGeoMassTop = trk1KF.GetDistanceFromVertex(KFPV);
-						if (dcaTrk0KFGeoMassTop > dcaTrk1KFGeoMassTop)
-							dcaTrksMaxKFGeoMassTop = dcaTrk0KFGeoMassTop;
-						else 
-							dcaTrksMaxKFGeoMassTop = dcaTrk1KFGeoMassTop;
-						dcaBetweenTrksKFGeoMassTop = trk0KF.GetDistanceFromParticle(trk1KF);
-						for(int i=0;i<8;i++){
-							pairParametersGeoMassTop[i] = JpsiGeoMassTop.GetParameter(i);
-						}
-						for(int i=0;i<36;i++){
-							pairCovarianceGeoMassTop[i] = JpsiGeoMassTop.GetCovariance(i);
-						}
-
-					}
-				}
-				// added by lupz end
+          // get JpsiGeoMassTop information
+          pairChi2OverNDFKFGeoMassTop = JpsiGeoMassTop.GetChi2() / JpsiGeoMassTop.GetNDF();
+          pairNDFKFGeoMassTop = JpsiGeoMassTop.GetNDF();
+          pairMassKFGeoMassTop = JpsiGeoMassTop.GetMass();
+          pairMassErrKFGeoMassTop = JpsiGeoMassTop.GetErrMass();
+          pairDecayLengthKFGeoMassTop = JpsiGeoMassTop.GetDecayLength();
+          pairDecayLengthOverErrKFGeoMassTop = JpsiGeoMassTop.GetDecayLength() / JpsiGeoMassTop.GetErrDecayLength();
+          pairPseudoProperDecayTimeKFGeoMassTop = JpsiGeoMassTop.GetPseudoProperDecayTime(KFPV, pairMassKFGeoMassTop);
+          pairPseudoProperDecayLengthManuallyGeoMassTop = JpsiGeoMassTop.GetDecayLengthXY() * (JpsiGeoMassTop.GetMass() / JpsiGeoMassTop.GetPt());
+          // dcaTrk0KFGeoMassTop = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          // dcaTrk1KFGeoMassTop = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          dcaTrk0KFGeoMassTop = trk0KF.GetDistanceFromVertex(KFPV);
+          dcaTrk1KFGeoMassTop = trk1KF.GetDistanceFromVertex(KFPV);
+          if (dcaTrk0KFGeoMassTop > dcaTrk1KFGeoMassTop)
+            dcaTrksMaxKFGeoMassTop = dcaTrk0KFGeoMassTop;
+          else
+            dcaTrksMaxKFGeoMassTop = dcaTrk1KFGeoMassTop;
+          dcaBetweenTrksKFGeoMassTop = trk0KF.GetDistanceFromParticle(trk1KF);
+          for (int i = 0; i < 8; i++) {
+            pairParametersGeoMassTop[i] = JpsiGeoMassTop.GetParameter(i);
+          }
+          for (int i = 0; i < 36; i++) {
+            pairCovarianceGeoMassTop[i] = JpsiGeoMassTop.GetCovariance(i);
+          }
+        }
+      }
+      // added by lupz end
 
       if constexpr (TPairType == VarManager::kJpsiToEE) {
         twoTrackFilter = uint32_t(t1.isBarrelSelected()) & uint32_t(t2.isBarrelSelected());
@@ -1108,6 +1088,15 @@ struct AnalysisSameEventPairing {
         continue;
       }
       VarManager::FillPair<TPairType, TTrackFillMap>(t1, t2);
+
+      if (t2.reducedMCTrack().has_mothers()) {
+        for (auto& m : t2.reducedMCTrack().mothersIds()) {
+          LOG(info) << "++++++++++++++++M2: " << t2.reducedMCTrack().globalIndex() << " .......... " << m;
+        }
+      }
+
+      // VarManager::FillTrack<gkParticleMCFillMap>(tracksMC);
+
       // secondary vertexing is not implemented for e-mu pairs so we need to hide this function from the e-mu analysis for now
       if constexpr ((TPairType == VarManager::kJpsiToEE) || (TPairType == VarManager::kJpsiToMuMu)) {
         VarManager::FillPairVertexing<TPairType, TEventFillMap, TTrackFillMap>(event, t1, t2, VarManager::fgValues);
@@ -1132,44 +1121,44 @@ struct AnalysisSameEventPairing {
       dileptonFilterMap = twoTrackFilter;
       dileptonMcDecision = mcDecision;
       // added by lupz begin
-				if constexpr ((TPairType == VarManager::kJpsiToEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelPID) > 0)
-				{
-					if (ouputTableForMCSignalOnly)
-					{
-						for (unsigned int icut = 0; icut < ncuts; icut++) {
-							if (twoTrackFilter & (uint8_t(1) << icut)) {
-								if (t1.sign() * t2.sign() < 0) {
-									for (unsigned int isig = 0; isig < fRecMCSignals.size(); isig++) {
-										if (mcDecision & (uint32_t(1) << isig)) {
-											dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision,t1.pt(),
-					t1.eta(),t1.phi(),t1.tpcNClsCrossedRows(),t1.tpcNClsFound(),t1.tpcChi2NCl(),t1.dcaXY(),t1.dcaZ(),t1.tpcSignal(),t1.tpcNSigmaEl(),t1.tpcNSigmaPi(),t1.tpcNSigmaPr(),t1.beta(),t1.tofNSigmaEl(),t1.tofNSigmaPi(),t1.tofNSigmaPr(),t2.pt(),t2.eta(),t2.phi(),t2.tpcNClsCrossedRows(),t2.tpcNClsFound(),t2.tpcChi2NCl(),t2.dcaXY(),t2.dcaZ(),t2.tpcSignal(),t2.tpcNSigmaEl(),t2.tpcNSigmaPi(),t2.tpcNSigmaPr(),t2.beta(),t2.tofNSigmaEl(),t2.tofNSigmaPi(),t2.tofNSigmaPr(),
-					pairMassKFGeo,pairChi2OverNDFKFGeo,pairNDFKFGeo,pairDecayLengthKFGeo,pairDecayLengthOverErrKFGeo,pairPseudoProperDecayTimeKFGeo,pairPseudoProperDecayLengthManuallyGeo,dcaTrk0KFGeo,dcaTrk1KFGeo,dcaTrksMaxKFGeo,dcaBetweenTrksKFGeo,pairParametersGeo,pairCovarianceGeo,
-					pairMassKFGeoTop,pairChi2OverNDFKFGeoTop,pairNDFKFGeoTop,pairDecayLengthKFGeoTop,pairDecayLengthOverErrKFGeoTop,pairPseudoProperDecayTimeKFGeoTop,pairPseudoProperDecayLengthManuallyGeoTop,dcaTrk0KFGeoTop,dcaTrk1KFGeoTop,dcaTrksMaxKFGeoTop,dcaBetweenTrksKFGeoTop,pairParametersGeoTop,pairCovarianceGeoTop,
-					pairMassKFGeoMass,pairChi2OverNDFKFGeoMass,pairNDFKFGeoMass,pairDecayLengthKFGeoMass,pairDecayLengthOverErrKFGeoMass,pairPseudoProperDecayTimeKFGeoMass,pairPseudoProperDecayLengthManuallyGeoMass,dcaTrk0KFGeoMass,dcaTrk1KFGeoMass,dcaTrksMaxKFGeoMass,dcaBetweenTrksKFGeoMass,pairParametersGeoMass,pairCovarianceGeoMass,
-					pairMassKFGeoMassTop,pairChi2OverNDFKFGeoMassTop,pairNDFKFGeoMassTop,pairDecayLengthKFGeoMassTop,pairDecayLengthOverErrKFGeoMassTop,pairPseudoProperDecayTimeKFGeoMassTop,pairPseudoProperDecayLengthManuallyGeoMassTop,dcaTrk0KFGeoMassTop,dcaTrk1KFGeoMassTop,dcaTrksMaxKFGeoMassTop,dcaBetweenTrksKFGeoMassTop,pairParametersGeoMassTop,pairCovarianceGeoMassTop,
-					PVParameters,PVCovariance,PVNContributors,PVNDF
-					); // added by lupz
-										}
-									}
-								}
-							}
-						}
-					}
-					else
-                    {
-						dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision,t1.pt(),
-					t1.eta(),t1.phi(),t1.tpcNClsCrossedRows(),t1.tpcNClsFound(),t1.tpcChi2NCl(),t1.dcaXY(),t1.dcaZ(),t1.tpcSignal(),t1.tpcNSigmaEl(),t1.tpcNSigmaPi(),t1.tpcNSigmaPr(),t1.beta(),t1.tofNSigmaEl(),t1.tofNSigmaPi(),t1.tofNSigmaPr(),t2.pt(),t2.eta(),t2.phi(),t2.tpcNClsCrossedRows(),t2.tpcNClsFound(),t2.tpcChi2NCl(),t2.dcaXY(),t2.dcaZ(),t2.tpcSignal(),t2.tpcNSigmaEl(),t2.tpcNSigmaPi(),t2.tpcNSigmaPr(),t2.beta(),t2.tofNSigmaEl(),t2.tofNSigmaPi(),t2.tofNSigmaPr(),
-					pairMassKFGeo,pairChi2OverNDFKFGeo,pairNDFKFGeo,pairDecayLengthKFGeo,pairDecayLengthOverErrKFGeo,pairPseudoProperDecayTimeKFGeo,pairPseudoProperDecayLengthManuallyGeo,dcaTrk0KFGeo,dcaTrk1KFGeo,dcaTrksMaxKFGeo,dcaBetweenTrksKFGeo,pairParametersGeo,pairCovarianceGeo,
-					pairMassKFGeoTop,pairChi2OverNDFKFGeoTop,pairNDFKFGeoTop,pairDecayLengthKFGeoTop,pairDecayLengthOverErrKFGeoTop,pairPseudoProperDecayTimeKFGeoTop,pairPseudoProperDecayLengthManuallyGeoTop,dcaTrk0KFGeoTop,dcaTrk1KFGeoTop,dcaTrksMaxKFGeoTop,dcaBetweenTrksKFGeoTop,pairParametersGeoTop,pairCovarianceGeoTop,
-					pairMassKFGeoMass,pairChi2OverNDFKFGeoMass,pairNDFKFGeoMass,pairDecayLengthKFGeoMass,pairDecayLengthOverErrKFGeoMass,pairPseudoProperDecayTimeKFGeoMass,pairPseudoProperDecayLengthManuallyGeoMass,dcaTrk0KFGeoMass,dcaTrk1KFGeoMass,dcaTrksMaxKFGeoMass,dcaBetweenTrksKFGeoMass,pairParametersGeoMass,pairCovarianceGeoMass,
-					pairMassKFGeoMassTop,pairChi2OverNDFKFGeoMassTop,pairNDFKFGeoMassTop,pairDecayLengthKFGeoMassTop,pairDecayLengthOverErrKFGeoMassTop,pairPseudoProperDecayTimeKFGeoMassTop,pairPseudoProperDecayLengthManuallyGeoMassTop,dcaTrk0KFGeoMassTop,dcaTrk1KFGeoMassTop,dcaTrksMaxKFGeoMassTop,dcaBetweenTrksKFGeoMassTop,pairParametersGeoMassTop,pairCovarianceGeoMassTop,
-					PVParameters,PVCovariance,PVNContributors,PVNDF
-					); // added by lupz
-                    }
-				}
-				// added by lupz end
+      if constexpr ((TPairType == VarManager::kJpsiToEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelPID) > 0) {
+        if (ouputTableForMCSignalOnly) {
+          for (unsigned int icut = 0; icut < ncuts; icut++) {
+            if (twoTrackFilter & (uint8_t(1) << icut)) {
+              if (t1.sign() * t2.sign() < 0) {
+                for (unsigned int isig = 0; isig < fRecMCSignals.size(); isig++) {
+                  if (mcDecision & (uint32_t(1) << isig)) {
+                    dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
+                                 t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
+                                 // trk0Charge,trk1Charge,trk0Parameters,trk1Parameters,
+                                 pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, dcaTrk0KFGeo, dcaTrk1KFGeo, dcaTrksMaxKFGeo, dcaBetweenTrksKFGeo, pairParametersGeo, pairCovarianceGeo,
+                                 pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, dcaTrk0KFGeoTop, dcaTrk1KFGeoTop, dcaTrksMaxKFGeoTop, dcaBetweenTrksKFGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
+                                 pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, dcaTrk0KFGeoMass, dcaTrk1KFGeoMass, dcaTrksMaxKFGeoMass, dcaBetweenTrksKFGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
+                                 pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, dcaTrk0KFGeoMassTop, dcaTrk1KFGeoMassTop, dcaTrksMaxKFGeoMassTop, dcaBetweenTrksKFGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
+                                 PVParameters, PVCovariance, PVNContributors, PVNDF,
+                                 VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
+                                 VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz]); // added by lupz
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
+                       t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
+                       // trk0Charge,trk1Charge,trk0Parameters,trk1Parameters,
+                       pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, dcaTrk0KFGeo, dcaTrk1KFGeo, dcaTrksMaxKFGeo, dcaBetweenTrksKFGeo, pairParametersGeo, pairCovarianceGeo,
+                       pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, dcaTrk0KFGeoTop, dcaTrk1KFGeoTop, dcaTrksMaxKFGeoTop, dcaBetweenTrksKFGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
+                       pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, dcaTrk0KFGeoMass, dcaTrk1KFGeoMass, dcaTrksMaxKFGeoMass, dcaBetweenTrksKFGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
+                       pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, dcaTrk0KFGeoMassTop, dcaTrk1KFGeoMassTop, dcaTrksMaxKFGeoMassTop, dcaBetweenTrksKFGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
+                       PVParameters, PVCovariance, PVNContributors, PVNDF,
+                       VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
+                       VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz]); // added by lupz
+        }
+      }
+      // added by lupz end
 
-      //dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision);
+      // dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision);
       constexpr bool muonHasCov = ((TTrackFillMap & VarManager::ObjTypes::MuonCov) > 0 || (TTrackFillMap & VarManager::ObjTypes::ReducedMuonCov) > 0);
       if constexpr ((TPairType == VarManager::kJpsiToMuMu) && muonHasCov) {
         dileptonExtraList(t1.globalIndex(), t2.globalIndex(), VarManager::fgValues[VarManager::kVertexingTauz], VarManager::fgValues[VarManager::kVertexingLz], VarManager::fgValues[VarManager::kVertexingLxy]);
@@ -1314,23 +1303,22 @@ struct AnalysisSameEventPairing {
     // do nothing
   }
 
-	// added by lupz begin
-	void processJpsiToEESkimmedKFParticle(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event,
-			soa::Filtered<MyBarrelTracksSelectedWithCov> const& tracks,
-			ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
-	{
-		// Reset the fValues array
-		VarManager::ResetValues(0, VarManager::kNVars);
-		VarManager::FillEvent<gkEventFillMap>(event);
-		VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
+  // added by lupz begin
+  void processJpsiToEESkimmedKFParticle(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event,
+                                        soa::Filtered<MyBarrelTracksSelectedWithCov> const& tracks,
+                                        ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
+  {
+    // Reset the fValues array
+    VarManager::ResetValues(0, VarManager::kNVars);
+    VarManager::FillEvent<gkEventFillMap>(event);
+    VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-		runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC);
-		auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
-		groupedMCTracks.bindInternalIndicesTo(&tracksMC);
-		runMCGen(groupedMCTracks);
-	}
-	// added by lupz end
-
+    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC);
+    auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
+    groupedMCTracks.bindInternalIndicesTo(&tracksMC);
+    runMCGen(groupedMCTracks);
+  }
+  // added by lupz end
 
   PROCESS_SWITCH(AnalysisSameEventPairing, processJpsiToEESkimmed, "Run barrel barrel pairing on DQ skimmed tracks", false);
   PROCESS_SWITCH(AnalysisSameEventPairing, processJpsiToEEVertexingSkimmed, "Run barrel barrel pairing on DQ skimmed tracks including vertexing", false);
@@ -1338,7 +1326,7 @@ struct AnalysisSameEventPairing {
   PROCESS_SWITCH(AnalysisSameEventPairing, processJpsiToMuMuVertexingSkimmed, "Run muon muon pairing on DQ skimmed muons including vertexing", false);
   // PROCESS_SWITCH(AnalysisSameEventPairing, processElectronMuonSkimmed, "Run barrel muon pairing on DQ skimmed tracks", false);
   PROCESS_SWITCH(AnalysisSameEventPairing, processDummy, "Dummy process function", false);
-	PROCESS_SWITCH(AnalysisSameEventPairing, processJpsiToEESkimmedKFParticle, "Run Jpsi reconstruction using KFparticle tools, with skimmed tracks", false); // added by lupz
+  PROCESS_SWITCH(AnalysisSameEventPairing, processJpsiToEESkimmedKFParticle, "Run Jpsi reconstruction using KFparticle tools, with skimmed tracks", false); // added by lupz
 };
 
 struct AnalysisDileptonTrack {

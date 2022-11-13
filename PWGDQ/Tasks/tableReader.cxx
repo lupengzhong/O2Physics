@@ -816,10 +816,16 @@ struct AnalysisSameEventPairing {
     dileptonExtraList.reserve(1);
 
 			// added by lupz begin
+			// PV information
 			float PVNContributors = -999.;
 			int   PVNDF = -999;
-			float PVParameters[8] = {0.};
-			float PVCovariance[36] = {0.};
+			float PVParameters[8] = {-999.};
+			float PVCovariance[36] = {-999.};
+			// tracks information
+			char trk0Charge;
+			char trk1Charge;
+			float trk0Parameters[8] = {-999.};
+			float trk1Parameters[8] = {-999.};
 			// only Geometrical fitting
 			float pairMassKFGeo = -999.; // added by lupz
 			float pairMassErrKFGeo = -999.; // added by lupz
@@ -833,8 +839,8 @@ struct AnalysisSameEventPairing {
 			float dcaTrk1KFGeo = -999.;
 			float dcaTrksMaxKFGeo = -999.;
 			float dcaBetweenTrksKFGeo = -999.;
-			float pairParametersGeo[8] = {0.};
-			float pairCovarianceGeo[36] = {0.};
+			float pairParametersGeo[8] = {-999.};
+			float pairCovarianceGeo[36] = {-999.};
 			// Geometrical fitting and topological constraint
 			float pairMassKFGeoTop = -999.; // added by lupz
 			float pairMassErrKFGeoTop = -999.; // added by lupz
@@ -848,8 +854,8 @@ struct AnalysisSameEventPairing {
 			float dcaTrk1KFGeoTop = -999.;
 			float dcaBetweenTrksKFGeoTop = -999.;
 			float dcaTrksMaxKFGeoTop = -999.;
-			float pairParametersGeoTop[8] = {0.};
-			float pairCovarianceGeoTop[36] = {0.};
+			float pairParametersGeoTop[8] = {-999.};
+			float pairCovarianceGeoTop[36] = {-999.};
 			// Geometrical fitting and mass constraint
 			float pairMassKFGeoMass = -999.; // added by lupz
 			float pairMassErrKFGeoMass = -999.; // added by lupz
@@ -863,8 +869,8 @@ struct AnalysisSameEventPairing {
 			float dcaTrk1KFGeoMass = -999.;
 			float dcaTrksMaxKFGeoMass = -999.;
 			float dcaBetweenTrksKFGeoMass = -999.;
-			float pairParametersGeoMass[8] = {0.};
-			float pairCovarianceGeoMass[36] = {0.};
+			float pairParametersGeoMass[8] = {-999.};
+			float pairCovarianceGeoMass[36] = {-999.};
 			// Geometrical fitting + mass and topological constraints
 			float pairMassKFGeoMassTop = -999.; // added by lupz
 			float pairMassErrKFGeoMassTop = -999.; // added by lupz
@@ -878,8 +884,8 @@ struct AnalysisSameEventPairing {
 			float dcaTrk1KFGeoMassTop = -999.;
 			float dcaTrksMaxKFGeoMassTop = -999.;
 			float dcaBetweenTrksKFGeoMassTop = -999.;
-			float pairParametersGeoMassTop[8] = {0.};
-			float pairCovarianceGeoMassTop[36] = {0.};
+			float pairParametersGeoMassTop[8] = {-999.};
+			float pairCovarianceGeoMassTop[36] = {-99.};
 			
 			
 			if (flagKF)
@@ -965,6 +971,7 @@ struct AnalysisSameEventPairing {
 							pdgTrack1 = -11;//e+
 						KFParticle trk1KF(kfpTrack1, pdgTrack1);
 
+						// get PV information
 						for(int i=0;i<8;i++){
 							PVParameters[i] = KFPV.GetParameter(i);
 						}
@@ -972,13 +979,12 @@ struct AnalysisSameEventPairing {
 							PVCovariance[i] = KFPV.GetCovariance(i);
 						}
 
-						// only Geometrical fitting
+						// reconstruct Jpsi via KF
 						KFParticle JpsiGeo;
 						JpsiGeo.SetConstructMethod(2);
 						JpsiGeo.AddDaughter(trk0KF);
 						JpsiGeo.AddDaughter(trk1KF);
 
-						// Geometrical fitting and topological constraint
 						KFParticle JpsiGeoTop = JpsiGeo;
 						//trk0KF.SubtractFromVertex(KFPV);
 						//trk1KF.SubtractFromVertex(KFPV);
@@ -987,11 +993,9 @@ struct AnalysisSameEventPairing {
 						//trk0KF.SetProductionVertex(JpsiGeoTop);
 						//trk1KF.SetProductionVertex(JpsiGeoTop);
 
-						// Geometrical fitting and mass constraint
 						KFParticle JpsiGeoMass = JpsiGeo;
 						JpsiGeoMass.SetNonlinearMassConstraint(RecoDecay::getMassPDG(443));
 						
-						// Geometrical fitting + mass and topological constraints
 						KFParticle JpsiGeoMassTop = JpsiGeo;
 						//trk0KF.SubtractFromVertex(KFPV);
 						//trk1KF.SubtractFromVertex(KFPV);
@@ -1000,6 +1004,14 @@ struct AnalysisSameEventPairing {
 						//trk0KF.SetProductionVertex(JpsiGeoMassTop);
 						//trk1KF.SetProductionVertex(JpsiGeoMassTop);
 						JpsiGeoMassTop.SetNonlinearMassConstraint(RecoDecay::getMassPDG(443));
+
+						// get daughters information
+						trk0Charge = trk0KF.GetQ();
+						trk1Charge = trk1KF.GetQ();
+						for(int i=0;i<8;i++){
+							trk0Parameters[i] = trk0KF.GetParameter(i);
+							trk1Parameters[i] = trk1KF.GetParameter(i);
+						}
 
 						pairChi2OverNDFKFGeo = JpsiGeo.GetChi2() / JpsiGeo.GetNDF();
 						pairNDFKFGeo = JpsiGeo.GetNDF();
@@ -1025,7 +1037,6 @@ struct AnalysisSameEventPairing {
 							pairCovarianceGeo[i] = JpsiGeo.GetCovariance(i);
 						}
 
-
 						pairChi2OverNDFKFGeoTop = JpsiGeoTop.GetChi2() / JpsiGeoTop.GetNDF();
 						pairNDFKFGeoTop = JpsiGeoTop.GetNDF();
 						pairMassKFGeoTop = JpsiGeoTop.GetMass();
@@ -1050,7 +1061,6 @@ struct AnalysisSameEventPairing {
 							pairCovarianceGeoTop[i] = JpsiGeoTop.GetCovariance(i);
 						}
 
-
 						pairChi2OverNDFKFGeoMass = JpsiGeoMass.GetChi2() / JpsiGeoMass.GetNDF();
 						pairNDFKFGeoMass = JpsiGeoMass.GetNDF();
 						pairMassKFGeoMass = JpsiGeoMass.GetMass();
@@ -1074,7 +1084,6 @@ struct AnalysisSameEventPairing {
 						for(int i=0;i<36;i++){
 							pairCovarianceGeoMass[i] = JpsiGeoMass.GetCovariance(i);
 						}
-
 
 						pairChi2OverNDFKFGeoMassTop = JpsiGeoMassTop.GetChi2() / JpsiGeoMassTop.GetNDF();
 						pairNDFKFGeoMassTop = JpsiGeoMassTop.GetNDF();
@@ -1116,7 +1125,6 @@ struct AnalysisSameEventPairing {
         continue;
       }
       constexpr bool eventHasQvector = ((TEventFillMap & VarManager::ObjTypes::ReducedEventQvector) > 0);
-
       // TODO: FillPair functions need to provide a template argument to discriminate between cases when cov matrix is available or not
       VarManager::FillPair<TPairType, TTrackFillMap>(t1, t2);
       if constexpr ((TPairType == pairTypeEE) || (TPairType == pairTypeMuMu)) { // call this just for ee or mumu pairs
@@ -1126,6 +1134,7 @@ struct AnalysisSameEventPairing {
         }
       }
 
+
       // TODO: provide the type of pair to the dilepton table (e.g. ee, mumu, emu...)
       dileptonFilterMap = twoTrackFilter;
       // added by lupz begin
@@ -1133,14 +1142,18 @@ struct AnalysisSameEventPairing {
 				{
 					dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision,t1.pt(),
 					t1.eta(),t1.phi(),t1.tpcNClsCrossedRows(),t1.tpcNClsFound(),t1.tpcChi2NCl(),t1.dcaXY(),t1.dcaZ(),t1.tpcSignal(),t1.tpcNSigmaEl(),t1.tpcNSigmaPi(),t1.tpcNSigmaPr(),t1.beta(),t1.tofNSigmaEl(),t1.tofNSigmaPi(),t1.tofNSigmaPr(),t2.pt(),t2.eta(),t2.phi(),t2.tpcNClsCrossedRows(),t2.tpcNClsFound(),t2.tpcChi2NCl(),t2.dcaXY(),t2.dcaZ(),t2.tpcSignal(),t2.tpcNSigmaEl(),t2.tpcNSigmaPi(),t2.tpcNSigmaPr(),t2.beta(),t2.tofNSigmaEl(),t2.tofNSigmaPi(),t2.tofNSigmaPr(),
+					//trk0Charge,trk1Charge,trk0Parameters,trk1Parameters,
 					pairMassKFGeo,pairChi2OverNDFKFGeo,pairNDFKFGeo,pairDecayLengthKFGeo,pairDecayLengthOverErrKFGeo,pairPseudoProperDecayTimeKFGeo,pairPseudoProperDecayLengthManuallyGeo,dcaTrk0KFGeo,dcaTrk1KFGeo,dcaTrksMaxKFGeo,dcaBetweenTrksKFGeo,pairParametersGeo,pairCovarianceGeo,
 					pairMassKFGeoTop,pairChi2OverNDFKFGeoTop,pairNDFKFGeoTop,pairDecayLengthKFGeoTop,pairDecayLengthOverErrKFGeoTop,pairPseudoProperDecayTimeKFGeoTop,pairPseudoProperDecayLengthManuallyGeoTop,dcaTrk0KFGeoTop,dcaTrk1KFGeoTop,dcaTrksMaxKFGeoTop,dcaBetweenTrksKFGeoTop,pairParametersGeoTop,pairCovarianceGeoTop,
 					pairMassKFGeoMass,pairChi2OverNDFKFGeoMass,pairNDFKFGeoMass,pairDecayLengthKFGeoMass,pairDecayLengthOverErrKFGeoMass,pairPseudoProperDecayTimeKFGeoMass,pairPseudoProperDecayLengthManuallyGeoMass,dcaTrk0KFGeoMass,dcaTrk1KFGeoMass,dcaTrksMaxKFGeoMass,dcaBetweenTrksKFGeoMass,pairParametersGeoMass,pairCovarianceGeoMass,
 					pairMassKFGeoMassTop,pairChi2OverNDFKFGeoMassTop,pairNDFKFGeoMassTop,pairDecayLengthKFGeoMassTop,pairDecayLengthOverErrKFGeoMassTop,pairPseudoProperDecayTimeKFGeoMassTop,pairPseudoProperDecayLengthManuallyGeoMassTop,dcaTrk0KFGeoMassTop,dcaTrk1KFGeoMassTop,dcaTrksMaxKFGeoMassTop,dcaBetweenTrksKFGeoMassTop,pairParametersGeoMassTop,pairCovarianceGeoMassTop,
-					PVParameters,PVCovariance,PVNContributors,PVNDF
+					PVParameters,PVCovariance,PVNContributors,PVNDF,
+					VarManager::fgValues[VarManager::kMCVtxX],VarManager::fgValues[VarManager::kMCVtxY],VarManager::fgValues[VarManager::kMCVtxZ],
+					VarManager::fgValues[VarManager::kMCVx],VarManager::fgValues[VarManager::kMCVy],VarManager::fgValues[VarManager::kMCVz],VarManager::fgValues[VarManager::kMCPx],VarManager::fgValues[VarManager::kMCPy],VarManager::fgValues[VarManager::kMCPz]
 					); // added by lupz
 				}
 				// added by lupz end
+
       //dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision);
 
       constexpr bool muonHasCov = ((TTrackFillMap & VarManager::ObjTypes::MuonCov) > 0 || (TTrackFillMap & VarManager::ObjTypes::ReducedMuonCov) > 0);

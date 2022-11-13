@@ -413,10 +413,14 @@ DECLARE_SOA_COLUMN(Cos2DeltaPhi, cos2deltaphi, float); //! Cosinus term using ev
 DECLARE_SOA_COLUMN(Cos3DeltaPhi, cos3deltaphi, float); //! Cosinus term using event plane angle (harmonic 3)
 
 // added by lupz begin
+// PV information
 DECLARE_SOA_COLUMN(PVNContributorsKF,pvncontributorsKF, float); // added by lupz
 DECLARE_SOA_COLUMN(PVNDFKF,pvndfKF, int); // added by lupz
 DECLARE_SOA_COLUMN(PVParametersKF,pvparametersKF, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(PVCovarianceKF,pvcovarianceKF, float[36]); // added by lupz
+// tracks information
+DECLARE_SOA_COLUMN(Trk0ParametersKF,trk0parametersKF, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(Trk1ParametersKF,trk1parametersKF, float[8]); // added by lupz
 // only Geometrical fitting
 DECLARE_SOA_COLUMN(MassKFGeo, massKFGeo, float); // added by lupz 
 DECLARE_SOA_COLUMN(Chi2OverNDFKFGeo, chi2overndfKFGeo, float); // added by lupz
@@ -473,6 +477,16 @@ DECLARE_SOA_COLUMN(DCATrksMaxKFGeoMassTop,dcatrksmaxKFGeoMassTop, float); // add
 DECLARE_SOA_COLUMN(DCABetweenTrksKFGeoMassTop,dcabetweentrksKFGeoMassTop, float); // added by lupz
 DECLARE_SOA_COLUMN(ParametersKFGeoMassTop,parametersKFGeoMassTop, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(CovarianceKFGeoMassTop,covarianceKFGeoMassTop, float[36]); // added by lupz
+// MC true information
+DECLARE_SOA_COLUMN(VtxXMC,vtxXMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxYMC,vtxYMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxZMC,vtxZMC, float); // added by lupz
+DECLARE_SOA_COLUMN(PosXMC,posXMC, float); // added by lupz
+DECLARE_SOA_COLUMN(PosYMC,posYMC, float); // added by lupz
+DECLARE_SOA_COLUMN(PosZMC,posZMC, float); // added by lupz
+DECLARE_SOA_COLUMN(MomXMC,momXMC, float); // added by lupz
+DECLARE_SOA_COLUMN(MomYMC,momYMC, float); // added by lupz
+DECLARE_SOA_COLUMN(MomZMC,momZMC, float); // added by lupz
 // added by lupz end
 
 // DECLARE_SOA_INDEX_COLUMN(ReducedMuon, reducedmuon2); //!
@@ -513,6 +527,8 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   reducedpair::MassKFGeoMass,reducedpair::Chi2OverNDFKFGeoMass,reducedpair::NDFKFGeoMass,reducedpair::DecayLengthKFGeoMass,reducedpair::DecayLengthOverErrKFGeoMass,reducedpair::PseudoproperDecayTimeKFGeoMass,reducedpair::PseudoproperDecayTimeKFManGeoMass,reducedpair::DCATrk0KFGeoMass,reducedpair::DCATrk1KFGeoMass,reducedpair::DCATrksMaxKFGeoMass,reducedpair::DCABetweenTrksKFGeoMass,reducedpair::ParametersKFGeoMass,reducedpair::CovarianceKFGeoMass,
                   reducedpair::MassKFGeoMassTop,reducedpair::Chi2OverNDFKFGeoMassTop,reducedpair::NDFKFGeoMassTop,reducedpair::DecayLengthKFGeoMassTop,reducedpair::DecayLengthOverErrKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFManGeoMassTop,reducedpair::DCATrk0KFGeoMassTop,reducedpair::DCATrk1KFGeoMassTop,reducedpair::DCATrksMaxKFGeoMassTop,reducedpair::DCABetweenTrksKFGeoMassTop,reducedpair::ParametersKFGeoMassTop,reducedpair::CovarianceKFGeoMassTop,
                   reducedpair::PVParametersKF,reducedpair::PVCovarianceKF,reducedpair::PVNContributorsKF,reducedpair::PVNDFKF,
+                  reducedpair::VtxXMC,reducedpair::VtxYMC,reducedpair::VtxZMC,
+                  reducedpair::PosXMC,reducedpair::PosYMC,reducedpair::PosZMC,reducedpair::MomXMC,reducedpair::MomYMC,reducedpair::MomZMC,
                   reducedpair::Px<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Py<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Pz<reducedpair::Pt, reducedpair::Eta>,
