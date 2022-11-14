@@ -1089,13 +1089,33 @@ struct AnalysisSameEventPairing {
       }
       VarManager::FillPair<TPairType, TTrackFillMap>(t1, t2);
 
+      // added by lupz begin
       if (t2.reducedMCTrack().has_mothers()) {
         for (auto& m : t2.reducedMCTrack().mothersIds()) {
           LOG(info) << "++++++++++++++++M2: " << t2.reducedMCTrack().globalIndex() << " .......... " << m;
         }
       }
 
-      // VarManager::FillTrack<gkParticleMCFillMap>(tracksMC);
+      float motherPx = -999.;
+      if (t2.reducedMCTrack().has_mothers()) {
+        if constexpr (TTrackFillMap & VarManager::ObjTypes::ReducedTrack || TTrackFillMap & VarManager::ObjTypes::ReducedMuon) { // for skimmed DQ model
+          auto mothers = t2.reducedMCTrack().template mothers_first_as<TTracksMC>();
+          VarManager::FillTrack<gkParticleMCFillMap>(mothers);
+          //auto mothers = t2.reducedMCTrack();
+          //VarManager::FillTrack<gkParticleMCFillMap>(mothers);
+          //motherPx = mothers[0].px();
+        }
+
+        if constexpr (TTrackFillMap & VarManager::ObjTypes::Track || TTrackFillMap & VarManager::ObjTypes::Muon) { // for Framework data model
+          const auto mcParticle = t2.template mcParticle_as<aod::McParticles_001>();
+          if (mcParticle.has_mothers()) {
+            auto mothers = mcParticle.template mothers_as<aod::McParticles_001>();
+            motherPx = mothers[0].px();
+            // VarManager::FillTrack<gkParticleMCFillMap>(mothers[0]);
+          }
+        }
+      }
+      // added by lupz end
 
       // secondary vertexing is not implemented for e-mu pairs so we need to hide this function from the e-mu analysis for now
       if constexpr ((TPairType == VarManager::kJpsiToEE) || (TPairType == VarManager::kJpsiToMuMu)) {
@@ -1130,14 +1150,15 @@ struct AnalysisSameEventPairing {
                   if (mcDecision & (uint32_t(1) << isig)) {
                     dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                                  t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                                 // trk0Charge,trk1Charge,trk0Parameters,trk1Parameters,
+                                 trk0Parameters, trk1Parameters, // trk0Charge,trk1Charge,
                                  pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, dcaTrk0KFGeo, dcaTrk1KFGeo, dcaTrksMaxKFGeo, dcaBetweenTrksKFGeo, pairParametersGeo, pairCovarianceGeo,
                                  pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, dcaTrk0KFGeoTop, dcaTrk1KFGeoTop, dcaTrksMaxKFGeoTop, dcaBetweenTrksKFGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
                                  pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, dcaTrk0KFGeoMass, dcaTrk1KFGeoMass, dcaTrksMaxKFGeoMass, dcaBetweenTrksKFGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
                                  pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, dcaTrk0KFGeoMassTop, dcaTrk1KFGeoMassTop, dcaTrksMaxKFGeoMassTop, dcaBetweenTrksKFGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
                                  PVParameters, PVCovariance, PVNContributors, PVNDF,
                                  VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
-                                 VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz]); // added by lupz
+                                 VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], motherPx, VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
+                                 event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(), event.reducedMCevent().globalIndex(), t1.reducedMCTrack().reducedMCeventId(), t2.reducedMCTrack().reducedMCeventId()); // added by lupz
                   }
                 }
               }
@@ -1146,14 +1167,15 @@ struct AnalysisSameEventPairing {
         } else {
           dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                        t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                       // trk0Charge,trk1Charge,trk0Parameters,trk1Parameters,
+                       trk0Parameters, trk1Parameters, // trk0Charge,trk1Charge,
                        pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, dcaTrk0KFGeo, dcaTrk1KFGeo, dcaTrksMaxKFGeo, dcaBetweenTrksKFGeo, pairParametersGeo, pairCovarianceGeo,
                        pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, dcaTrk0KFGeoTop, dcaTrk1KFGeoTop, dcaTrksMaxKFGeoTop, dcaBetweenTrksKFGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
                        pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, dcaTrk0KFGeoMass, dcaTrk1KFGeoMass, dcaTrksMaxKFGeoMass, dcaBetweenTrksKFGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
                        pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, dcaTrk0KFGeoMassTop, dcaTrk1KFGeoMassTop, dcaTrksMaxKFGeoMassTop, dcaBetweenTrksKFGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
                        PVParameters, PVCovariance, PVNContributors, PVNDF,
                        VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
-                       VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz]); // added by lupz
+                       VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
+                       event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(), event.reducedMCevent().globalIndex(), t1.reducedMCTrack().reducedMCeventId(), t2.reducedMCTrack().reducedMCeventId()); // added by lupz
         }
       }
       // added by lupz end

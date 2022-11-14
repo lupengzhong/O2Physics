@@ -487,6 +487,12 @@ DECLARE_SOA_COLUMN(PosZMC,posZMC, float); // added by lupz
 DECLARE_SOA_COLUMN(MomXMC,momXMC, float); // added by lupz
 DECLARE_SOA_COLUMN(MomYMC,momYMC, float); // added by lupz
 DECLARE_SOA_COLUMN(MomZMC,momZMC, float); // added by lupz
+DECLARE_SOA_COLUMN(EventId,eventId, int); // added by lupz
+DECLARE_SOA_COLUMN(Trk0EventId,trk0EventId, int); // added by lupz
+DECLARE_SOA_COLUMN(Trk1EventId,trk1EventId, int); // added by lupz
+DECLARE_SOA_COLUMN(EventIdMC,eventIdMC, int); // added by lupz
+DECLARE_SOA_COLUMN(Trk0EventIdMC,trk0EventIdMC, int); // added by lupz
+DECLARE_SOA_COLUMN(Trk1EventIdMC,trk1EventIdMC, int); // added by lupz
 // added by lupz end
 
 // DECLARE_SOA_INDEX_COLUMN(ReducedMuon, reducedmuon2); //!
@@ -522,6 +528,7 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   dilepton_track_index::TPCNSigmaEl2, dilepton_track_index::TPCNSigmaPi2, dilepton_track_index::TPCNSigmaPr2,
                   dilepton_track_index::Beta2,
                   dilepton_track_index::TOFNSigmaEl2, dilepton_track_index::TOFNSigmaPi2, dilepton_track_index::TOFNSigmaPr2,
+                  reducedpair::Trk0ParametersKF,reducedpair::Trk1ParametersKF,
                   reducedpair::MassKFGeo,reducedpair::Chi2OverNDFKFGeo,reducedpair::NDFKFGeo,reducedpair::DecayLengthKFGeo,reducedpair::DecayLengthOverErrKFGeo,reducedpair::PseudoproperDecayTimeKFGeo,reducedpair::PseudoproperDecayTimeKFManGeo,reducedpair::DCATrk0KFGeo,reducedpair::DCATrk1KFGeo,reducedpair::DCATrksMaxKFGeo,reducedpair::DCABetweenTrksKFGeo,reducedpair::ParametersKFGeo,reducedpair::CovarianceKFGeo,
                   reducedpair::MassKFGeoTop,reducedpair::Chi2OverNDFKFGeoTop,reducedpair::NDFKFGeoTop,reducedpair::DecayLengthKFGeoTop,reducedpair::DecayLengthOverErrKFGeoTop,reducedpair::PseudoproperDecayTimeKFGeoTop,reducedpair::PseudoproperDecayTimeKFManGeoTop,reducedpair::DCATrk0KFGeoTop,reducedpair::DCATrk1KFGeoTop,reducedpair::DCATrksMaxKFGeoTop,reducedpair::DCABetweenTrksKFGeoTop,reducedpair::ParametersKFGeoTop,reducedpair::CovarianceKFGeoTop,
                   reducedpair::MassKFGeoMass,reducedpair::Chi2OverNDFKFGeoMass,reducedpair::NDFKFGeoMass,reducedpair::DecayLengthKFGeoMass,reducedpair::DecayLengthOverErrKFGeoMass,reducedpair::PseudoproperDecayTimeKFGeoMass,reducedpair::PseudoproperDecayTimeKFManGeoMass,reducedpair::DCATrk0KFGeoMass,reducedpair::DCATrk1KFGeoMass,reducedpair::DCATrksMaxKFGeoMass,reducedpair::DCABetweenTrksKFGeoMass,reducedpair::ParametersKFGeoMass,reducedpair::CovarianceKFGeoMass,
@@ -529,6 +536,7 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   reducedpair::PVParametersKF,reducedpair::PVCovarianceKF,reducedpair::PVNContributorsKF,reducedpair::PVNDFKF,
                   reducedpair::VtxXMC,reducedpair::VtxYMC,reducedpair::VtxZMC,
                   reducedpair::PosXMC,reducedpair::PosYMC,reducedpair::PosZMC,reducedpair::MomXMC,reducedpair::MomYMC,reducedpair::MomZMC,
+                  reducedpair::EventId,reducedpair::Trk0EventId,reducedpair::Trk1EventId,reducedpair::EventIdMC,reducedpair::Trk0EventIdMC,reducedpair::Trk1EventIdMC,
                   reducedpair::Px<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Py<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Pz<reducedpair::Pt, reducedpair::Eta>,
