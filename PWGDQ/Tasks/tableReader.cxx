@@ -130,6 +130,15 @@ constexpr static int pairTypeEE = VarManager::kJpsiToEE;
 constexpr static int pairTypeMuMu = VarManager::kJpsiToMuMu;
 constexpr static int pairTypeEMu = VarManager::kElectronMuon;
 
+// added by lupz begin
+namespace o2::aod
+{
+DECLARE_SOA_TABLE(AmbiguousTracksMid, "AOD", "AMBIGUOUSTRACK", //! Table for tracks which are not uniquely associated with a collision
+                  o2::soa::Index<>, o2::aod::ambiguous::TrackId, o2::aod::ambiguous::BCIdSlice, o2::soa::Marker<2>);
+} // namespace o2::aod
+constexpr static uint32_t gkTrackFillMapWithAmbi = VarManager::ObjTypes::Track | VarManager::ObjTypes::AmbiTrack;
+// added by lupz end
+
 // Global function used to define needed histogram classes
 void DefineHistograms(HistogramManager* histMan, TString histClasses); // defines histograms for all tasks
 
@@ -791,8 +800,8 @@ struct AnalysisSameEventPairing {
   // added by lupz end
 
   // Template function to run same event pairing (barrel-barrel, muon-muon, barrel-muon)
-  template <int TPairType, uint32_t TEventFillMap, uint32_t TTrackFillMap, typename TEvent, typename TTracks1, typename TTracks2>
-  void runSameEventPairing(TEvent const& event, TTracks1 const& tracks1, TTracks2 const& tracks2)
+  template <int TPairType, uint32_t TEventFillMap, uint32_t TTrackFillMap, typename TEvent, typename TTracks1, typename TTracks2, typename TAmbiTracks>
+  void runSameEventPairing(TEvent const& event, TTracks1 const& tracks1, TTracks2 const& tracks2, TAmbiTracks const& ambiTracksMid)
   {
 
     unsigned int ncuts = fTrackHistNames.size();
@@ -819,6 +828,8 @@ struct AnalysisSameEventPairing {
     float PVParameters[8] = {-999.};
     float PVCovariance[36] = {-999.};
     // tracks information
+    int trk0IsAmbiguous = 0;
+    int trk1IsAmbiguous = 0;
     char trk0Charge;
     char trk1Charge;
     float trk0Parameters[8] = {-999.};
@@ -906,6 +917,30 @@ struct AnalysisSameEventPairing {
     for (auto& [t1, t2] : combinations(tracks1, tracks2)) {
       // added by lupz begin
       if (flagKF) {
+        /*
+        if constexpr ((TTrackFillMap & VarManager::ObjTypes::AmbiTrack) > 0) {
+          trk0IsAmbiguous = 0;
+          trk1IsAmbiguous = 0;
+          for (auto& ambiTrackMid : ambiTracksMid) {
+            auto ambiTrack = ambiTrackMid.template track_as<MyBarrelTracks>();
+            auto ambiTrackWithCov = ambiTrackMid.template track_as<MyBarrelTracksWithCov>();
+            if (ambiTrack.globalIndex() == t1.globalIndex() || ambiTrackWithCov.globalIndex() == t1.globalIndex()) {
+              trk0IsAmbiguous = 1;
+              break;
+            }
+          }
+          for (auto& ambiTrackMid : ambiTracksMid) {
+            auto ambiTrack = ambiTrackMid.template track_as<MyBarrelTracks>();
+            auto ambiTrackWithCov = ambiTrackMid.template track_as<MyBarrelTracksWithCov>();
+            if (ambiTrack.globalIndex() == t2.globalIndex() || ambiTrackWithCov.globalIndex() == t2.globalIndex()) {
+              trk1IsAmbiguous = 1;
+              break;
+            }
+          }
+        }
+        */
+       trk0IsAmbiguous = t1.isAmbiguous();
+       trk1IsAmbiguous = t2.isAmbiguous();
         if constexpr ((TPairType == pairTypeEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelCov) > 0) {
           // dauther0;
           std::array<float, 3> trk0ParPos;
@@ -1131,7 +1166,7 @@ struct AnalysisSameEventPairing {
       if constexpr ((TPairType == pairTypeEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelPID) > 0) {
         dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                      t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                     trk0Parameters,trk1Parameters,// trk0Charge,trk1Charge,
+                     trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters,trk1Parameters,// trk0Charge,trk1Charge,
                      pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, dcaTrk0KFGeo, dcaTrk1KFGeo, dcaTrksMaxKFGeo, dcaBetweenTrksKFGeo, pairParametersGeo, pairCovarianceGeo,
                      pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, dcaTrk0KFGeoTop, dcaTrk1KFGeoTop, dcaTrksMaxKFGeoTop, dcaBetweenTrksKFGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
                      pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, dcaTrk0KFGeoMass, dcaTrk1KFGeoMass, dcaTrksMaxKFGeoMass, dcaBetweenTrksKFGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
@@ -1175,51 +1210,51 @@ struct AnalysisSameEventPairing {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMap, gkTrackFillMap>(event, tracks, tracks);
+    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMap, gkTrackFillMap>(event, tracks, tracks, nullptr);
   }
   void processJpsiToMuMuSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, soa::Filtered<MyMuonTracksSelected> const& muons)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMuonFillMap>(event, muons, muons);
+    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMuonFillMap>(event, muons, muons, nullptr);
   }
   void processJpsiToMuMuVertexingSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, soa::Filtered<MyMuonTracksSelectedWithCov> const& muons)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCov, gkMuonFillMapWithCov>(event, muons, muons);
+    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCov, gkMuonFillMapWithCov>(event, muons, muons, nullptr);
   }
   void processVnJpsiToEESkimmed(soa::Filtered<MyEventsVtxCovSelectedQvector>::iterator const& event, soa::Filtered<MyBarrelTracksSelected> const& tracks)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMapWithCovQvector>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMapWithCovQvector, gkTrackFillMap>(event, tracks, tracks);
+    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMapWithCovQvector, gkTrackFillMap>(event, tracks, tracks, nullptr);
   }
   void processVnJpsiToMuMuSkimmed(soa::Filtered<MyEventsVtxCovSelectedQvector>::iterator const& event, soa::Filtered<MyMuonTracksSelected> const& muons)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMapWithCovQvector>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCovQvector, gkMuonFillMap>(event, muons, muons);
+    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCovQvector, gkMuonFillMap>(event, muons, muons, nullptr);
   }
   void processElectronMuonSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, soa::Filtered<MyBarrelTracksSelected> const& tracks, soa::Filtered<MyMuonTracksSelected> const& muons)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kElectronMuon, gkEventFillMap, gkTrackFillMap>(event, tracks, muons);
+    runSameEventPairing<VarManager::kElectronMuon, gkEventFillMap, gkTrackFillMap>(event, tracks, muons, nullptr);
   }
   void processAllSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, soa::Filtered<MyBarrelTracksSelected> const& tracks, soa::Filtered<MyMuonTracksSelected> const& muons)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMap, gkTrackFillMap>(event, tracks, tracks);
-    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMuonFillMap>(event, muons, muons);
-    runSameEventPairing<VarManager::kElectronMuon, gkEventFillMap, gkTrackFillMap>(event, tracks, muons);
+    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMap, gkTrackFillMap>(event, tracks, tracks, nullptr);
+    runSameEventPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMuonFillMap>(event, muons, muons, nullptr);
+    runSameEventPairing<VarManager::kElectronMuon, gkEventFillMap, gkTrackFillMap>(event, tracks, muons, nullptr);
   }
   // TODO: dummy function for the case when no process function is enabled
   void processDummy(MyEvents&)
@@ -1227,12 +1262,12 @@ struct AnalysisSameEventPairing {
     // do nothing
   }
   // added by lupz begin
-  void processJpsiToEESkimmedKFParticle(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, soa::Filtered<MyBarrelTracksSelectedWithCov> const& tracks)
+  void processJpsiToEESkimmedKFParticle(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, soa::Filtered<MyBarrelTracksSelectedWithCov> const& tracks, aod::AmbiguousTracksMid const& ambiTracksMid)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMapWithCov>(event, VarManager::fgValues);
-    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkTrackFillMapWithCov>(event, tracks, tracks);
+    runSameEventPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkTrackFillMapWithCov>(event, tracks, tracks, ambiTracksMid);
   }
   // added by lupz end
 

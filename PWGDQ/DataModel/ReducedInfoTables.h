@@ -419,6 +419,8 @@ DECLARE_SOA_COLUMN(PVNDFKF,pvndfKF, int); // added by lupz
 DECLARE_SOA_COLUMN(PVParametersKF,pvparametersKF, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(PVCovarianceKF,pvcovarianceKF, float[36]); // added by lupz
 // tracks information
+DECLARE_SOA_COLUMN(Trk0IsAmbiguous, trk0isAmbiguous, int); //!
+DECLARE_SOA_COLUMN(Trk1IsAmbiguous, trk1isAmbiguous, int); //!
 DECLARE_SOA_COLUMN(Trk0ParametersKF,trk0parametersKF, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(Trk1ParametersKF,trk1parametersKF, float[8]); // added by lupz
 // only Geometrical fitting
@@ -529,7 +531,7 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   dilepton_track_index::TPCNSigmaEl2, dilepton_track_index::TPCNSigmaPi2, dilepton_track_index::TPCNSigmaPr2,
                   dilepton_track_index::Beta2,
                   dilepton_track_index::TOFNSigmaEl2, dilepton_track_index::TOFNSigmaPi2, dilepton_track_index::TOFNSigmaPr2,
-                  reducedpair::Trk0ParametersKF,reducedpair::Trk1ParametersKF,
+                  reducedpair::Trk0IsAmbiguous,reducedpair::Trk1IsAmbiguous,reducedpair::Trk0ParametersKF,reducedpair::Trk1ParametersKF,
                   reducedpair::MassKFGeo,reducedpair::Chi2OverNDFKFGeo,reducedpair::NDFKFGeo,reducedpair::DecayLengthKFGeo,reducedpair::DecayLengthOverErrKFGeo,reducedpair::PseudoproperDecayTimeKFGeo,reducedpair::PseudoproperDecayTimeKFManGeo,reducedpair::DCATrk0KFGeo,reducedpair::DCATrk1KFGeo,reducedpair::DCATrksMaxKFGeo,reducedpair::DCABetweenTrksKFGeo,reducedpair::ParametersKFGeo,reducedpair::CovarianceKFGeo,
                   reducedpair::MassKFGeoTop,reducedpair::Chi2OverNDFKFGeoTop,reducedpair::NDFKFGeoTop,reducedpair::DecayLengthKFGeoTop,reducedpair::DecayLengthOverErrKFGeoTop,reducedpair::PseudoproperDecayTimeKFGeoTop,reducedpair::PseudoproperDecayTimeKFManGeoTop,reducedpair::DCATrk0KFGeoTop,reducedpair::DCATrk1KFGeoTop,reducedpair::DCATrksMaxKFGeoTop,reducedpair::DCABetweenTrksKFGeoTop,reducedpair::ParametersKFGeoTop,reducedpair::CovarianceKFGeoTop,
                   reducedpair::MassKFGeoMass,reducedpair::Chi2OverNDFKFGeoMass,reducedpair::NDFKFGeoMass,reducedpair::DecayLengthKFGeoMass,reducedpair::DecayLengthOverErrKFGeoMass,reducedpair::PseudoproperDecayTimeKFGeoMass,reducedpair::PseudoproperDecayTimeKFManGeoMass,reducedpair::DCATrk0KFGeoMass,reducedpair::DCATrk1KFGeoMass,reducedpair::DCATrksMaxKFGeoMass,reducedpair::DCABetweenTrksKFGeoMass,reducedpair::ParametersKFGeoMass,reducedpair::CovarianceKFGeoMass,
