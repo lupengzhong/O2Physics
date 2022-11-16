@@ -849,7 +849,7 @@ struct AnalysisSameEventPairing {
     int pairNDFKFGeo = -999;
     float pairDecayLengthKFGeo = -999.;
     float pairDecayLengthOverErrKFGeo = -999.;
-    float pairDecayLengthOverErrKFGeo = -999.;
+    float pairDecayLengthXYKFGeo = -999.;
     float pairDecayLengthXYOverErrKFGeo = -999.;
     float pairPseudoProperDecayTimeKFGeo = -999.;
     float pairPseudoProperDecayLengthManuallyGeo = -999.;
