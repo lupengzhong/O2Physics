@@ -803,19 +803,25 @@ struct AnalysisSameEventPairing {
     char trk1Charge;
     float trk0Parameters[8] = {-999.};
     float trk1Parameters[8] = {-999.};
+    float dcaTrk0KF = -999.;
+    float dcaTrk1KF = -999.;
+    float dcaTrksMaxKF = -999.;
+    float dcaBetweenTrksKF = -999.;
+    float dcaXYTrk0KF = -999.;
+    float dcaXYTrk1KF = -999.;
+    float dcaXYTrksMaxKF = -999.;
+    float dcaXYBetweenTrksKF = -999.;
     // only Geometrical fitting
     float pairMassKFGeo = -999.;        // added by lupz
     float pairMassErrKFGeo = -999.;     // added by lupz
     float pairChi2OverNDFKFGeo = -999.; // added by lupz
     int pairNDFKFGeo = -999;
     float pairDecayLengthKFGeo = -999.;
+    float pairDecayLengthXYKFGeo = -999.;
     float pairDecayLengthOverErrKFGeo = -999.;
+    float pairDecayLengthXYOverErrKFGeo = -999.;
     float pairPseudoProperDecayTimeKFGeo = -999.;
     float pairPseudoProperDecayLengthManuallyGeo = -999.;
-    float dcaTrk0KFGeo = -999.;
-    float dcaTrk1KFGeo = -999.;
-    float dcaTrksMaxKFGeo = -999.;
-    float dcaBetweenTrksKFGeo = -999.;
     float pairParametersGeo[8] = {-999.};
     float pairCovarianceGeo[36] = {-999.};
     // Geometrical fitting and topological constraint
@@ -825,12 +831,10 @@ struct AnalysisSameEventPairing {
     int pairNDFKFGeoTop = -999;
     float pairDecayLengthKFGeoTop = -999.;
     float pairDecayLengthOverErrKFGeoTop = -999.;
+    float pairDecayLengthXYKFGeoTop = -999.;
+    float pairDecayLengthXYOverErrKFGeoTop = -999.;
     float pairPseudoProperDecayTimeKFGeoTop = -999.;
     float pairPseudoProperDecayLengthManuallyGeoTop = -999.;
-    float dcaTrk0KFGeoTop = -999.;
-    float dcaTrk1KFGeoTop = -999.;
-    float dcaBetweenTrksKFGeoTop = -999.;
-    float dcaTrksMaxKFGeoTop = -999.;
     float pairParametersGeoTop[8] = {-999.};
     float pairCovarianceGeoTop[36] = {-999.};
     // Geometrical fitting and mass constraint
@@ -840,12 +844,10 @@ struct AnalysisSameEventPairing {
     int pairNDFKFGeoMass = -999;
     float pairDecayLengthKFGeoMass = -999.;
     float pairDecayLengthOverErrKFGeoMass = -999.;
+    float pairDecayLengthXYKFGeoMass = -999.;
+    float pairDecayLengthXYOverErrKFGeoMass = -999.;
     float pairPseudoProperDecayTimeKFGeoMass = -999.;
     float pairPseudoProperDecayLengthManuallyGeoMass = -999.;
-    float dcaTrk0KFGeoMass = -999.;
-    float dcaTrk1KFGeoMass = -999.;
-    float dcaTrksMaxKFGeoMass = -999.;
-    float dcaBetweenTrksKFGeoMass = -999.;
     float pairParametersGeoMass[8] = {-999.};
     float pairCovarianceGeoMass[36] = {-999.};
     // Geometrical fitting + mass and topological constraints
@@ -855,12 +857,10 @@ struct AnalysisSameEventPairing {
     int pairNDFKFGeoMassTop = -999;
     float pairDecayLengthKFGeoMassTop = -999.;
     float pairDecayLengthOverErrKFGeoMassTop = -999.;
+    float pairDecayLengthXYKFGeoMassTop = -999.;
+    float pairDecayLengthXYOverErrKFGeoMassTop = -999.;
     float pairPseudoProperDecayTimeKFGeoMassTop = -999.;
     float pairPseudoProperDecayLengthManuallyGeoMassTop = -999.;
-    float dcaTrk0KFGeoMassTop = -999.;
-    float dcaTrk1KFGeoMassTop = -999.;
-    float dcaTrksMaxKFGeoMassTop = -999.;
-    float dcaBetweenTrksKFGeoMassTop = -999.;
     float pairParametersGeoMassTop[8] = {-999.};
     float pairCovarianceGeoMassTop[36] = {-999.};
 
@@ -1012,6 +1012,22 @@ struct AnalysisSameEventPairing {
             trk0Parameters[i] = trk0KF.GetParameter(i);
             trk1Parameters[i] = trk1KF.GetParameter(i);
           }
+          // dcaTrk0KFGeo = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          // dcaTrk1KFGeo = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
+          dcaTrk0KF = trk0KF.GetDistanceFromVertex(KFPV);
+          dcaTrk1KF = trk1KF.GetDistanceFromVertex(KFPV);
+          if (dcaTrk0KF > dcaTrk1KF)
+            dcaTrksMaxKF = dcaTrk0KF;
+          else
+            dcaTrksMaxKF = dcaTrk1KF;
+          dcaBetweenTrksKF = trk0KF.GetDistanceFromParticle(trk1KF);
+          dcaXYTrk0KF = trk0KF.GetDistanceFromVertexXY(KFPV);
+          dcaXYTrk1KF = trk1KF.GetDistanceFromVertexXY(KFPV);
+          if (dcaXYTrk0KF > dcaXYTrk1KF)
+            dcaXYTrksMaxKF = dcaXYTrk0KF;
+          else
+            dcaXYTrksMaxKF = dcaXYTrk1KF;
+          dcaXYBetweenTrksKF = trk0KF.GetDistanceFromParticleXY(trk1KF);
 
           // get JpsiGeo information
           pairChi2OverNDFKFGeo = JpsiGeo.GetChi2() / JpsiGeo.GetNDF();
@@ -1020,17 +1036,10 @@ struct AnalysisSameEventPairing {
           pairMassErrKFGeo = JpsiGeo.GetErrMass();
           pairDecayLengthKFGeo = JpsiGeo.GetDecayLength();
           pairDecayLengthOverErrKFGeo = JpsiGeo.GetDecayLength() / JpsiGeo.GetErrDecayLength();
+          pairDecayLengthXYKFGeo = JpsiGeo.GetDecayLengthXY();
+          pairDecayLengthXYOverErrKFGeo = JpsiGeo.GetDecayLengthXY() / JpsiGeo.GetErrDecayLengthXY();
           pairPseudoProperDecayTimeKFGeo = JpsiGeo.GetPseudoProperDecayTime(KFPV, pairMassKFGeo);
           pairPseudoProperDecayLengthManuallyGeo = JpsiGeo.GetDecayLengthXY() * (JpsiGeo.GetMass() / JpsiGeo.GetPt());
-          // dcaTrk0KFGeo = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          // dcaTrk1KFGeo = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          dcaTrk0KFGeo = trk0KF.GetDistanceFromVertex(KFPV);
-          dcaTrk1KFGeo = trk1KF.GetDistanceFromVertex(KFPV);
-          if (dcaTrk0KFGeo > dcaTrk1KFGeo)
-            dcaTrksMaxKFGeo = dcaTrk0KFGeo;
-          else
-            dcaTrksMaxKFGeo = dcaTrk1KFGeo;
-          dcaBetweenTrksKFGeo = trk0KF.GetDistanceFromParticle(trk1KF);
           for (int i = 0; i < 8; i++) {
             pairParametersGeo[i] = JpsiGeo.GetParameter(i);
           }
@@ -1038,23 +1047,17 @@ struct AnalysisSameEventPairing {
             pairCovarianceGeo[i] = JpsiGeo.GetCovariance(i);
           }
 
+          // get JpsiGeoTop information
           pairChi2OverNDFKFGeoTop = JpsiGeoTop.GetChi2() / JpsiGeoTop.GetNDF();
           pairNDFKFGeoTop = JpsiGeoTop.GetNDF();
           pairMassKFGeoTop = JpsiGeoTop.GetMass();
           pairMassErrKFGeoTop = JpsiGeoTop.GetErrMass();
           pairDecayLengthKFGeoTop = JpsiGeoTop.GetDecayLength();
           pairDecayLengthOverErrKFGeoTop = JpsiGeoTop.GetDecayLength() / JpsiGeoTop.GetErrDecayLength();
+          pairDecayLengthXYKFGeoTop = JpsiGeoTop.GetDecayLengthXY();
+          pairDecayLengthXYOverErrKFGeoTop = JpsiGeoTop.GetDecayLengthXY() / JpsiGeoTop.GetErrDecayLengthXY();
           pairPseudoProperDecayTimeKFGeoTop = JpsiGeoTop.GetPseudoProperDecayTime(KFPV, pairMassKFGeoTop);
           pairPseudoProperDecayLengthManuallyGeoTop = JpsiGeoTop.GetDecayLengthXY() * (JpsiGeoTop.GetMass() / JpsiGeoTop.GetPt());
-          // dcaTrk0KFGeoTop = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          // dcaTrk1KFGeoTop = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          dcaTrk0KFGeoTop = trk0KF.GetDistanceFromVertex(KFPV);
-          dcaTrk1KFGeoTop = trk1KF.GetDistanceFromVertex(KFPV);
-          if (dcaTrk0KFGeoTop > dcaTrk1KFGeoTop)
-            dcaTrksMaxKFGeoTop = dcaTrk0KFGeoTop;
-          else
-            dcaTrksMaxKFGeoTop = dcaTrk1KFGeoTop;
-          dcaBetweenTrksKFGeoTop = trk0KF.GetDistanceFromParticle(trk1KF);
           for (int i = 0; i < 8; i++) {
             pairParametersGeoTop[i] = JpsiGeoTop.GetParameter(i);
           }
@@ -1069,17 +1072,10 @@ struct AnalysisSameEventPairing {
           pairMassErrKFGeoMass = JpsiGeoMass.GetErrMass();
           pairDecayLengthKFGeoMass = JpsiGeoMass.GetDecayLength();
           pairDecayLengthOverErrKFGeoMass = JpsiGeoMass.GetDecayLength() / JpsiGeoMass.GetErrDecayLength();
+          pairDecayLengthXYKFGeoMass = JpsiGeoMass.GetDecayLengthXY();
+          pairDecayLengthXYOverErrKFGeoMass = JpsiGeoMass.GetDecayLengthXY() / JpsiGeoMass.GetErrDecayLengthXY();
           pairPseudoProperDecayTimeKFGeoMass = JpsiGeoMass.GetPseudoProperDecayTime(KFPV, pairMassKFGeoMass);
           pairPseudoProperDecayLengthManuallyGeoMass = JpsiGeoMass.GetDecayLengthXY() * (JpsiGeoMass.GetMass() / JpsiGeoMass.GetPt());
-          // dcaTrk0KFGeoMass = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          // dcaTrk1KFGeoMass = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          dcaTrk0KFGeoMass = trk0KF.GetDistanceFromVertex(KFPV);
-          dcaTrk1KFGeoMass = trk1KF.GetDistanceFromVertex(KFPV);
-          if (dcaTrk0KFGeoMass > dcaTrk1KFGeoMass)
-            dcaTrksMaxKFGeoMass = dcaTrk0KFGeoMass;
-          else
-            dcaTrksMaxKFGeoMass = dcaTrk1KFGeoMass;
-          dcaBetweenTrksKFGeoMass = trk0KF.GetDistanceFromParticle(trk1KF);
           for (int i = 0; i < 8; i++) {
             pairParametersGeoMass[i] = JpsiGeoMass.GetParameter(i);
           }
@@ -1094,17 +1090,10 @@ struct AnalysisSameEventPairing {
           pairMassErrKFGeoMassTop = JpsiGeoMassTop.GetErrMass();
           pairDecayLengthKFGeoMassTop = JpsiGeoMassTop.GetDecayLength();
           pairDecayLengthOverErrKFGeoMassTop = JpsiGeoMassTop.GetDecayLength() / JpsiGeoMassTop.GetErrDecayLength();
+          pairDecayLengthXYKFGeoMassTop = JpsiGeoMassTop.GetDecayLengthXY();
+          pairDecayLengthXYOverErrKFGeoMassTop = JpsiGeoMassTop.GetDecayLengthXY() / JpsiGeoMassTop.GetErrDecayLengthXY();
           pairPseudoProperDecayTimeKFGeoMassTop = JpsiGeoMassTop.GetPseudoProperDecayTime(KFPV, pairMassKFGeoMassTop);
           pairPseudoProperDecayLengthManuallyGeoMassTop = JpsiGeoMassTop.GetDecayLengthXY() * (JpsiGeoMassTop.GetMass() / JpsiGeoMassTop.GetPt());
-          // dcaTrk0KFGeoMassTop = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          // dcaTrk1KFGeoMassTop = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          dcaTrk0KFGeoMassTop = trk0KF.GetDistanceFromVertex(KFPV);
-          dcaTrk1KFGeoMassTop = trk1KF.GetDistanceFromVertex(KFPV);
-          if (dcaTrk0KFGeoMassTop > dcaTrk1KFGeoMassTop)
-            dcaTrksMaxKFGeoMassTop = dcaTrk0KFGeoMassTop;
-          else
-            dcaTrksMaxKFGeoMassTop = dcaTrk1KFGeoMassTop;
-          dcaBetweenTrksKFGeoMassTop = trk0KF.GetDistanceFromParticle(trk1KF);
           for (int i = 0; i < 8; i++) {
             pairParametersGeoMassTop[i] = JpsiGeoMassTop.GetParameter(i);
           }
@@ -1190,11 +1179,11 @@ struct AnalysisSameEventPairing {
                   if (mcDecision & (uint32_t(1) << isig)) {
                     dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                                  t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, // trk0Charge,trk1Charge,
-                                 pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, dcaTrk0KFGeo, dcaTrk1KFGeo, dcaTrksMaxKFGeo, dcaBetweenTrksKFGeo, pairParametersGeo, pairCovarianceGeo,
-                                 pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, dcaTrk0KFGeoTop, dcaTrk1KFGeoTop, dcaTrksMaxKFGeoTop, dcaBetweenTrksKFGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
-                                 pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, dcaTrk0KFGeoMass, dcaTrk1KFGeoMass, dcaTrksMaxKFGeoMass, dcaBetweenTrksKFGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
-                                 pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, dcaTrk0KFGeoMassTop, dcaTrk1KFGeoMassTop, dcaTrksMaxKFGeoMassTop, dcaBetweenTrksKFGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
+                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters,dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF,dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
+                                 pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo,pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo,  pairParametersGeo, pairCovarianceGeo,
+                                 pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
+                                 pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
+                                 pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairDecayLengthXYKFGeoMassTop, pairDecayLengthXYOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
                                  PVParameters, PVCovariance, PVNContributors, PVNDF,
                                  VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
                                  VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
@@ -1206,16 +1195,16 @@ struct AnalysisSameEventPairing {
           }
         } else {
           dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
-                       t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                       trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, // trk0Charge,trk1Charge,
-                       pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, dcaTrk0KFGeo, dcaTrk1KFGeo, dcaTrksMaxKFGeo, dcaBetweenTrksKFGeo, pairParametersGeo, pairCovarianceGeo,
-                       pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, dcaTrk0KFGeoTop, dcaTrk1KFGeoTop, dcaTrksMaxKFGeoTop, dcaBetweenTrksKFGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
-                       pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, dcaTrk0KFGeoMass, dcaTrk1KFGeoMass, dcaTrksMaxKFGeoMass, dcaBetweenTrksKFGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
-                       pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, dcaTrk0KFGeoMassTop, dcaTrk1KFGeoMassTop, dcaTrksMaxKFGeoMassTop, dcaBetweenTrksKFGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
-                       PVParameters, PVCovariance, PVNContributors, PVNDF,
-                       VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
-                       VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
-                       event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(), event.reducedMCevent().globalIndex(), t1.reducedMCTrack().reducedMCeventId(), t2.reducedMCTrack().reducedMCeventId()); // added by lupz
+                                 t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
+                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters,dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF,dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
+                                 pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo,pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo,  pairParametersGeo, pairCovarianceGeo,
+                                 pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
+                                 pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
+                                 pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairDecayLengthXYKFGeoMassTop, pairDecayLengthXYOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
+                                 PVParameters, PVCovariance, PVNContributors, PVNDF,
+                                 VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
+                                 VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
+                                 event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(), event.reducedMCevent().globalIndex(), t1.reducedMCTrack().reducedMCeventId(), t2.reducedMCTrack().reducedMCeventId()); // added by lupz
         }
       }
       // added by lupz end

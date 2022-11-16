@@ -423,18 +423,24 @@ DECLARE_SOA_COLUMN(Trk0IsAmbiguous, trk0isAmbiguous, int); //!
 DECLARE_SOA_COLUMN(Trk1IsAmbiguous, trk1isAmbiguous, int); //!
 DECLARE_SOA_COLUMN(Trk0ParametersKF,trk0parametersKF, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(Trk1ParametersKF,trk1parametersKF, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk0KF,dcatrk0KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk1KF,dcatrk1KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrksMaxKF,dcatrksmaxKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCABetweenTrksKF,dcabetweentrksKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk0KF,dcaxytrk0KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk1KF,dcaxytrk1KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrksMaxKF,dcaxytrksmaxKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYBetweenTrksKF,dcaxybetweentrksKF, float); // added by lupz
 // only Geometrical fitting
 DECLARE_SOA_COLUMN(MassKFGeo, massKFGeo, float); // added by lupz 
 DECLARE_SOA_COLUMN(Chi2OverNDFKFGeo, chi2overndfKFGeo, float); // added by lupz
 DECLARE_SOA_COLUMN(NDFKFGeo, ndfKFGeo, int); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthKFGeo,decaylengthKFGeo, float); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeo,decaylengthovererrKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeo,decaylengthxyKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeo,decaylengthxyovererrKFGeo, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeo,pseudoproperdecaytimeKFGeo, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeo,pseudoproperdecaytimeKFManGeo, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk0KFGeo,dcatrk0KFGeo, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk1KFGeo,dcatrk1KFGeo, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrksMaxKFGeo,dcatrksmaxKFGeo, float); // added by lupz
-DECLARE_SOA_COLUMN(DCABetweenTrksKFGeo,dcabetweentrksKFGeo, float); // added by lupz
 DECLARE_SOA_COLUMN(ParametersKFGeo,parametersKFGeo, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(CovarianceKFGeo,covarianceKFGeo, float[36]); // added by lupz
 // Geometrical fitting and topological constraint
@@ -443,12 +449,10 @@ DECLARE_SOA_COLUMN(Chi2OverNDFKFGeoTop, chi2overndfKFGeoTop, float); // added by
 DECLARE_SOA_COLUMN(NDFKFGeoTop, ndfKFGeoTop, int); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthKFGeoTop,decaylengthKFGeoTop, float); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeoTop,decaylengthovererrKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeoTop,decaylengthxyKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeoTop,decaylengthxyovererrKFGeoTop, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoTop,pseudoproperdecaytimeKFGeoTop, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoTop,pseudoproperdecaytimeKFManGeoTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk0KFGeoTop,dcatrk0KFGeoTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk1KFGeoTop,dcatrk1KFGeoTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrksMaxKFGeoTop,dcatrksmaxKFGeoTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCABetweenTrksKFGeoTop,dcabetweentrksKFGeoTop, float); // added by lupz
 DECLARE_SOA_COLUMN(ParametersKFGeoTop,parametersKFGeoTop, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(CovarianceKFGeoTop,covarianceKFGeoTop, float[36]); // added by lupz
 // Geometrical fitting and mass constraint
@@ -457,12 +461,10 @@ DECLARE_SOA_COLUMN(Chi2OverNDFKFGeoMass, chi2overndfKFGeoMass, float); // added 
 DECLARE_SOA_COLUMN(NDFKFGeoMass, ndfKFGeoMass, int); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthKFGeoMass,decaylengthKFGeoMass, float); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeoMass,decaylengthovererrKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeoMass,decaylengthxyKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeoMass,decaylengthxyovererrKFGeoMass, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoMass,pseudoproperdecaytimeKFGeoMass, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoMass,pseudoproperdecaytimeKFManGeoMass, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk0KFGeoMass,dcatrk0KFGeoMass, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk1KFGeoMass,dcatrk1KFGeoMass, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrksMaxKFGeoMass,dcatrksmaxKFGeoMass, float); // added by lupz
-DECLARE_SOA_COLUMN(DCABetweenTrksKFGeoMass,dcabetweentrksKFGeoMass, float); // added by lupz
 DECLARE_SOA_COLUMN(ParametersKFGeoMass,parametersKFGeoMass, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(CovarianceKFGeoMass,covarianceKFGeoMass, float[36]); // added by lupz
 // Geometrical fitting + mass and topological constraints
@@ -471,12 +473,10 @@ DECLARE_SOA_COLUMN(Chi2OverNDFKFGeoMassTop, chi2overndfKFGeoMassTop, float); // 
 DECLARE_SOA_COLUMN(NDFKFGeoMassTop, ndfKFGeoMassTop, int); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthKFGeoMassTop,decaylengthKFGeoMassTop, float); // added by lupz
 DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeoMassTop,decaylengthovererrKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeoMassTop,decaylengthxyKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeoMassTop,decaylengthxyovererrKFGeoMassTop, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoMassTop,pseudoproperdecaytimeKFGeoMassTop, float); // added by lupz
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoMassTop,pseudoproperdecaytimeKFManGeoMassTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk0KFGeoMassTop,dcatrk0KFGeoMassTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrk1KFGeoMassTop,dcatrk1KFGeoMassTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCATrksMaxKFGeoMassTop,dcatrksmaxKFGeoMassTop, float); // added by lupz
-DECLARE_SOA_COLUMN(DCABetweenTrksKFGeoMassTop,dcabetweentrksKFGeoMassTop, float); // added by lupz
 DECLARE_SOA_COLUMN(ParametersKFGeoMassTop,parametersKFGeoMassTop, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(CovarianceKFGeoMassTop,covarianceKFGeoMassTop, float[36]); // added by lupz
 // MC true information
@@ -531,11 +531,11 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   dilepton_track_index::TPCNSigmaEl2, dilepton_track_index::TPCNSigmaPi2, dilepton_track_index::TPCNSigmaPr2,
                   dilepton_track_index::Beta2,
                   dilepton_track_index::TOFNSigmaEl2, dilepton_track_index::TOFNSigmaPi2, dilepton_track_index::TOFNSigmaPr2,
-                  reducedpair::Trk0IsAmbiguous,reducedpair::Trk1IsAmbiguous,reducedpair::Trk0ParametersKF,reducedpair::Trk1ParametersKF,
-                  reducedpair::MassKFGeo,reducedpair::Chi2OverNDFKFGeo,reducedpair::NDFKFGeo,reducedpair::DecayLengthKFGeo,reducedpair::DecayLengthOverErrKFGeo,reducedpair::PseudoproperDecayTimeKFGeo,reducedpair::PseudoproperDecayTimeKFManGeo,reducedpair::DCATrk0KFGeo,reducedpair::DCATrk1KFGeo,reducedpair::DCATrksMaxKFGeo,reducedpair::DCABetweenTrksKFGeo,reducedpair::ParametersKFGeo,reducedpair::CovarianceKFGeo,
-                  reducedpair::MassKFGeoTop,reducedpair::Chi2OverNDFKFGeoTop,reducedpair::NDFKFGeoTop,reducedpair::DecayLengthKFGeoTop,reducedpair::DecayLengthOverErrKFGeoTop,reducedpair::PseudoproperDecayTimeKFGeoTop,reducedpair::PseudoproperDecayTimeKFManGeoTop,reducedpair::DCATrk0KFGeoTop,reducedpair::DCATrk1KFGeoTop,reducedpair::DCATrksMaxKFGeoTop,reducedpair::DCABetweenTrksKFGeoTop,reducedpair::ParametersKFGeoTop,reducedpair::CovarianceKFGeoTop,
-                  reducedpair::MassKFGeoMass,reducedpair::Chi2OverNDFKFGeoMass,reducedpair::NDFKFGeoMass,reducedpair::DecayLengthKFGeoMass,reducedpair::DecayLengthOverErrKFGeoMass,reducedpair::PseudoproperDecayTimeKFGeoMass,reducedpair::PseudoproperDecayTimeKFManGeoMass,reducedpair::DCATrk0KFGeoMass,reducedpair::DCATrk1KFGeoMass,reducedpair::DCATrksMaxKFGeoMass,reducedpair::DCABetweenTrksKFGeoMass,reducedpair::ParametersKFGeoMass,reducedpair::CovarianceKFGeoMass,
-                  reducedpair::MassKFGeoMassTop,reducedpair::Chi2OverNDFKFGeoMassTop,reducedpair::NDFKFGeoMassTop,reducedpair::DecayLengthKFGeoMassTop,reducedpair::DecayLengthOverErrKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFManGeoMassTop,reducedpair::DCATrk0KFGeoMassTop,reducedpair::DCATrk1KFGeoMassTop,reducedpair::DCATrksMaxKFGeoMassTop,reducedpair::DCABetweenTrksKFGeoMassTop,reducedpair::ParametersKFGeoMassTop,reducedpair::CovarianceKFGeoMassTop,
+                  reducedpair::Trk0IsAmbiguous,reducedpair::Trk1IsAmbiguous,reducedpair::Trk0ParametersKF,reducedpair::Trk1ParametersKF,reducedpair::DCATrk0KF,reducedpair::DCATrk1KF,reducedpair::DCATrksMaxKF,reducedpair::DCABetweenTrksKF,reducedpair::DCAXYTrk0KF,reducedpair::DCAXYTrk1KF,reducedpair::DCAXYTrksMaxKF,reducedpair::DCAXYBetweenTrksKF,
+                  reducedpair::MassKFGeo,reducedpair::Chi2OverNDFKFGeo,reducedpair::NDFKFGeo,reducedpair::DecayLengthKFGeo,reducedpair::DecayLengthOverErrKFGeo,reducedpair::DecayLengthXYKFGeo,reducedpair::DecayLengthXYOverErrKFGeo,reducedpair::PseudoproperDecayTimeKFGeo,reducedpair::PseudoproperDecayTimeKFManGeo,reducedpair::ParametersKFGeo,reducedpair::CovarianceKFGeo,
+                  reducedpair::MassKFGeoTop,reducedpair::Chi2OverNDFKFGeoTop,reducedpair::NDFKFGeoTop,reducedpair::DecayLengthKFGeoTop,reducedpair::DecayLengthOverErrKFGeoTop,reducedpair::DecayLengthXYKFGeoTop,reducedpair::DecayLengthXYOverErrKFGeoTop,reducedpair::PseudoproperDecayTimeKFGeoTop,reducedpair::PseudoproperDecayTimeKFManGeoTop,reducedpair::ParametersKFGeoTop,reducedpair::CovarianceKFGeoTop,
+                  reducedpair::MassKFGeoMass,reducedpair::Chi2OverNDFKFGeoMass,reducedpair::NDFKFGeoMass,reducedpair::DecayLengthKFGeoMass,reducedpair::DecayLengthOverErrKFGeoMass,reducedpair::DecayLengthXYKFGeoMass,reducedpair::DecayLengthXYOverErrKFGeoMass,reducedpair::PseudoproperDecayTimeKFGeoMass,reducedpair::PseudoproperDecayTimeKFManGeoMass,reducedpair::ParametersKFGeoMass,reducedpair::CovarianceKFGeoMass,
+                  reducedpair::MassKFGeoMassTop,reducedpair::Chi2OverNDFKFGeoMassTop,reducedpair::NDFKFGeoMassTop,reducedpair::DecayLengthKFGeoMassTop,reducedpair::DecayLengthOverErrKFGeoMassTop,reducedpair::DecayLengthXYKFGeoMassTop,reducedpair::DecayLengthXYOverErrKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFManGeoMassTop,reducedpair::ParametersKFGeoMassTop,reducedpair::CovarianceKFGeoMassTop,
                   reducedpair::PVParametersKF,reducedpair::PVCovarianceKF,reducedpair::PVNContributorsKF,reducedpair::PVNDFKF,
                   reducedpair::VtxXMC,reducedpair::VtxYMC,reducedpair::VtxZMC,
                   reducedpair::MotherPDG,reducedpair::PosXMC,reducedpair::PosYMC,reducedpair::PosZMC,reducedpair::MomXMC,reducedpair::MomYMC,reducedpair::MomZMC,
