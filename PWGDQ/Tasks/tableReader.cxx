@@ -906,6 +906,7 @@ struct AnalysisSameEventPairing {
         //kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ()); // this is the right one, but the covariance YY and XZ were swaped in run3 data, MC and run2 converted
         kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covXZ(), event.covYY(), event.covYZ(), event.covZZ());
         kfpVertex.SetChi2(event.chi2());
+        kfpVertex.SetNDF(2*event.numContrib() - 3); // added on 2022/11/16
         kfpVertex.SetNContributors(event.numContrib());
         PVNContributors = kfpVertex.GetNContributors();
         PVNDF = kfpVertex.GetNDF();
@@ -962,6 +963,8 @@ struct AnalysisSameEventPairing {
           kfpTrack0.SetParameters(trk0ParKF);
           kfpTrack0.SetCovarianceMatrix(trk0CovKF);
           kfpTrack0.SetCharge(t1.sign());
+          kfpTrack0.SetNDF(1); //added on 2022/11/16
+          //kfpTrack0.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack0 = 0;
           if (t1.sign() < 0)
@@ -990,6 +993,8 @@ struct AnalysisSameEventPairing {
           kfpTrack1.SetParameters(trk1ParKF);
           kfpTrack1.SetCovarianceMatrix(trk1CovKF);
           kfpTrack1.SetCharge(t2.sign());
+          kfpTrack1.SetNDF(1); //added on 2022/11/16
+          //kfpTrack1.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack1 = 0;
           if (t2.sign() < 0)

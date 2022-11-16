@@ -931,7 +931,8 @@ struct AnalysisSameEventPairing {
           kfpTrack0.SetParameters(trk0ParKF);
           kfpTrack0.SetCovarianceMatrix(trk0CovKF);
           kfpTrack0.SetCharge(t1.sign());
-          kfpTrack0.SetNDF(1); //add
+          kfpTrack0.SetNDF(1); //added on 2022/11/16
+          //kfpTrack0.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack0 = 0;
           if (t1.sign() < 0)
@@ -960,6 +961,8 @@ struct AnalysisSameEventPairing {
           kfpTrack1.SetParameters(trk1ParKF);
           kfpTrack1.SetCovarianceMatrix(trk1CovKF);
           kfpTrack1.SetCharge(t2.sign());
+          kfpTrack1.SetNDF(1); //added on 2022/11/16
+          //kfpTrack1.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack1 = 0;
           if (t2.sign() < 0)
