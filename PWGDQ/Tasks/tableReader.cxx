@@ -892,7 +892,8 @@ struct AnalysisSameEventPairing {
       if constexpr ((TPairType == pairTypeEE) && ((TEventFillMap & VarManager::ObjTypes::ReducedEventVtxCov) > 0)) {
         KFPVertex kfpVertex;
         kfpVertex.SetXYZ(event.posX(), event.posY(), event.posZ());
-        kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ());
+        //kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ()); // this is the right one, but the covariance YY and XZ were swaped in run3 data, MC and run2 converted
+        kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covXZ(), event.covYY(), event.covYZ(), event.covZZ());
         kfpVertex.SetChi2(event.chi2());
         kfpVertex.SetNContributors(event.numContrib());
         PVNContributors = kfpVertex.GetNContributors();
@@ -1137,7 +1138,7 @@ struct AnalysisSameEventPairing {
                      pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, dcaTrk0KFGeoMassTop, dcaTrk1KFGeoMassTop, dcaTrksMaxKFGeoMassTop, dcaBetweenTrksKFGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
                      PVParameters, PVCovariance, PVNContributors, PVNDF,
                      VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
-                     VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
+                     VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
                      event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(),0,0,0); // added by lupz
       }
       // added by lupz end
