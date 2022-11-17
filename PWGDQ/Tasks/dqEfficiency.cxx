@@ -58,6 +58,7 @@
 #include "Common/Core/trackUtilities.h"
 #include "Common/Core/TrackSelection.h"
 #include "Common/Core/TrackSelectionDefaults.h"
+#include "Common/DataModel/Multiplicity.h"
 #include "TableHelper.h"
 #include "DataFormatsParameters/GRPObject.h"
 #include "DataFormatsParameters/GRPMagField.h"
@@ -876,7 +877,8 @@ struct AnalysisSameEventPairing {
         kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covXZ(), event.covYY(), event.covYZ(), event.covZZ());
         kfpVertex.SetChi2(event.chi2());
         kfpVertex.SetNDF(2*event.numContrib() - 3); // added on 2022/11/16
-        kfpVertex.SetNContributors(event.numContrib());
+        //kfpVertex.SetNContributors(event.numContrib());
+        kfpVertex.SetNContributors(event.multNTracksPV());
         PVNContributors = kfpVertex.GetNContributors();
         PVNDF = kfpVertex.GetNDF();
         KFPV = KFParticle(kfpVertex);
