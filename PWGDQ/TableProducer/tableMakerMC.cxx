@@ -331,7 +331,7 @@ struct TableMakerMC {
       ((TH2I*)fStatsList->At(0))->Fill(3.0, float(kNaliases));
 
       //event(tag, collision.bc().runNumber(), collision.posX(), collision.posY(), collision.posZ(), collision.numContrib(), collision.collisionTime(), collision.collisionTimeRes());
-      event(tag, collision.bc().runNumber(), collision.posX(), collision.posY(), collision.posZ(), collision.numContrib(), collision.multNTracksPV(), collision.collisionTime(), collision.collisionTimeRes());
+      event(tag, collision.bc().runNumber(), collision.posX(), collision.posY(), collision.posZ(), collision.numContrib(), collision.multNTracksPV(), collision.collisionTime(), collision.collisionTimeRes()); // added by lupz
       eventExtended(collision.bc().globalBC(), collision.bc().triggerMask(), 0, triggerAliases, VarManager::fgValues[VarManager::kCentVZERO]);
       eventVtxCov(collision.covXX(), collision.covXY(), collision.covXZ(), collision.covYY(), collision.covYZ(), collision.covZZ(), collision.chi2());
       // make an entry for this MC event only if it was not already added to the table
@@ -701,7 +701,8 @@ struct TableMakerMC {
         daughterRange[1] = daughters[daughters.size() - 1];
       }
 
-      trackMC(fEventIdx.find(oldLabel)->second, mctrack.pdgCode(), mctrack.statusCode(), mctrack.flags(),
+      //trackMC(fEventIdx.find(oldLabel)->second, mctrack.pdgCode(), mctrack.statusCode(), mctrack.flags(),
+      trackMC(fEventIdx.find(oldLabel)->second, mctrack.mcCollisionId(), mctrack.pdgCode(), mctrack.statusCode(), mctrack.flags(), // added by lupz
               mothers, daughterRange,
               mctrack.weight(), mctrack.pt(), mctrack.eta(), mctrack.phi(), mctrack.e(),
               mctrack.vx(), mctrack.vy(), mctrack.vz(), mctrack.vt(), mcflags);

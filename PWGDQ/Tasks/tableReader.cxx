@@ -1066,10 +1066,19 @@ struct AnalysisSameEventPairing {
           pairNDFKFGeo = JpsiGeo.GetNDF();
           pairMassKFGeo = JpsiGeo.GetMass();
           pairMassErrKFGeo = JpsiGeo.GetErrMass();
-          pairDecayLengthKFGeo = JpsiGeo.GetDecayLength();
-          pairDecayLengthOverErrKFGeo = JpsiGeo.GetDecayLength() / JpsiGeo.GetErrDecayLength();
-          pairDecayLengthXYKFGeo = JpsiGeo.GetDecayLengthXY();
-          pairDecayLengthXYOverErrKFGeo = JpsiGeo.GetDecayLengthXY() / JpsiGeo.GetErrDecayLengthXY();
+          double dxJpsiGeo = JpsiGeo.GetX()-KFPV.GetX();
+          double dyJpsiGeo = JpsiGeo.GetY()-KFPV.GetY();
+          double dzJpsiGeo = JpsiGeo.GetZ()-KFPV.GetZ();
+          pairDecayLengthKFGeo = sqrt(dxJpsiGeo*dxJpsiGeo + dyJpsiGeo*dyJpsiGeo + dzJpsiGeo*dzJpsiGeo);
+          double pairDecayLengthErrKFGeo = (KFPV.GetCovariance(0)+JpsiGeo.GetCovariance(0))*dxJpsiGeo*dxJpsiGeo + (KFPV.GetCovariance(2)+JpsiGeo.GetCovariance(2))*dyJpsiGeo*dyJpsiGeo + (KFPV.GetCovariance(5)+JpsiGeo.GetCovariance(5))*dzJpsiGeo*dzJpsiGeo + 2*( (KFPV.GetCovariance(1)+JpsiGeo.GetCovariance(1))*dxJpsiGeo*dyJpsiGeo + (KFPV.GetCovariance(3)+JpsiGeo.GetCovariance(3))*dxJpsiGeo*dzJpsiGeo + (KFPV.GetCovariance(4)+JpsiGeo.GetCovariance(4))*dyJpsiGeo*dzJpsiGeo );
+          pairDecayLengthOverErrKFGeo = pairDecayLengthKFGeo / pairDecayLengthErrKFGeo;
+          pairDecayLengthXYKFGeo = sqrt(dxJpsiGeo*dxJpsiGeo + dyJpsiGeo*dyJpsiGeo);
+          double pairDecayLengthXYErrKFGeo = (KFPV.GetCovariance(0)+JpsiGeo.GetCovariance(0))*dxJpsiGeo*dxJpsiGeo + (KFPV.GetCovariance(5)+JpsiGeo.GetCovariance(5))*dzJpsiGeo*dzJpsiGeo + 2*( (KFPV.GetCovariance(3)+JpsiGeo.GetCovariance(3))*dxJpsiGeo*dzJpsiGeo);
+          pairDecayLengthXYOverErrKFGeo = pairDecayLengthXYKFGeo / pairDecayLengthXYErrKFGeo;
+          //pairDecayLengthKFGeo = JpsiGeo.GetDecayLength();
+          //pairDecayLengthOverErrKFGeo = JpsiGeo.GetDecayLength() / JpsiGeo.GetErrDecayLength();
+          //pairDecayLengthXYKFGeo = JpsiGeo.GetDecayLengthXY();
+          //pairDecayLengthXYOverErrKFGeo = JpsiGeo.GetDecayLengthXY() / JpsiGeo.GetErrDecayLengthXY();
           pairPseudoProperDecayTimeKFGeo = JpsiGeo.GetPseudoProperDecayTime(KFPV, pairMassKFGeo);
           pairPseudoProperDecayLengthManuallyGeo = JpsiGeo.GetDecayLengthXY() * (JpsiGeo.GetMass() / JpsiGeo.GetPt());
           for (int i = 0; i < 8; i++) {
@@ -1169,9 +1178,11 @@ struct AnalysisSameEventPairing {
                      pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
                      pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairDecayLengthXYKFGeoMassTop, pairDecayLengthXYOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
                      PVParameters, PVCovariance, PVNContributors, PVNDF,
+                     0,0,0,
+                     0,0,0,
                      VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
                      VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
-                     event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(),0,0,0); // added by lupz
+                     event.globalIndex(), 0,0); // added by lupz
       }
       // added by lupz end
 

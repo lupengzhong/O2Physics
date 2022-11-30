@@ -206,7 +206,7 @@ DECLARE_SOA_DYNAMIC_COLUMN(Y, y, //! Particle rapidity
 // NOTE: This table is nearly identical to the one from Framework (except that it points to the event ID, not the BC id)
 //       This table contains all MC truth tracks (both barrel and muon)
 DECLARE_SOA_TABLE_FULL(ReducedMCTracks, "ReducedMCTracks", "AOD", "RTMC", //!  MC track information (on disk)
-                       o2::soa::Index<>, reducedtrackMC::ReducedMCEventId,
+                       o2::soa::Index<>, reducedtrackMC::ReducedMCEventId, mcparticle::McCollisionId,
                        mcparticle::PdgCode, mcparticle::StatusCode, mcparticle::Flags,
                        reducedtrackMC::MothersIds, reducedtrackMC::DaughtersIdSlice,
                        mcparticle::Weight,
@@ -357,6 +357,7 @@ DECLARE_SOA_COLUMN(Vy2, vy2, float); //! Y production vertex in cm
 DECLARE_SOA_COLUMN(Vz2, vz2, float); //! Z production vertex in cm
 DECLARE_SOA_COLUMN(Vt2, vt2, float); //! Production vertex time
 // added by lupz begin
+// leg1
 DECLARE_SOA_COLUMN(TPCInnerParam1, tpcInnerParam1, float); 
 DECLARE_SOA_COLUMN(TPCNClsFound1, tpcNClsFound1, float); 
 DECLARE_SOA_COLUMN(TPCNClsCR1, tpcNClsCR1, float); 
@@ -372,6 +373,7 @@ DECLARE_SOA_COLUMN(Beta1, beta1, float);
 DECLARE_SOA_COLUMN(TOFNSigmaEl1, tofNSigmaEl1, float); 
 DECLARE_SOA_COLUMN(TOFNSigmaPi1, tofNSigmaPi1, float); 
 DECLARE_SOA_COLUMN(TOFNSigmaPr1, tofNSigmaPr1, float); 
+// leg2
 DECLARE_SOA_COLUMN(TPCInnerParam2, tpcInnerParam2, float); 
 DECLARE_SOA_COLUMN(TPCNClsFound2, tpcNClsFound2, float); 
 DECLARE_SOA_COLUMN(TPCNClsCR2, tpcNClsCR2, float); 
@@ -480,10 +482,16 @@ DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoMassTop,pseudoproperdecaytimeKFGeoM
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoMassTop,pseudoproperdecaytimeKFManGeoMassTop, float); // added by lupz
 DECLARE_SOA_COLUMN(ParametersKFGeoMassTop,parametersKFGeoMassTop, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(CovarianceKFGeoMassTop,covarianceKFGeoMassTop, float[36]); // added by lupz
+DECLARE_SOA_COLUMN(LBetweenJpsiGeoTopDecayVertexToPV,lbetweenJpsiGeotopdecayVertexToPV, float); // for test
+DECLARE_SOA_COLUMN(DecayLengthKFGeoTop2,decaylengthKFGeoTop2, float); // for test
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoTop2,pseudoproperdecaytimeKFGeoTop2, float); // for test
 // MC true information
-DECLARE_SOA_COLUMN(VtxXMC,vtxXMC, float); // added by lupz
-DECLARE_SOA_COLUMN(VtxYMC,vtxYMC, float); // added by lupz
-DECLARE_SOA_COLUMN(VtxZMC,vtxZMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxXRecMC,vtxXRecMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxYRecMC,vtxYRecMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxZRecMC,vtxZRecMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxXRealMC,vtxXRealMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxYRealMC,vtxYRealMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxZRealMC,vtxZRealMC, float); // added by lupz
 DECLARE_SOA_COLUMN(MotherPDG,motherpdg, int); // added by lupz
 DECLARE_SOA_COLUMN(PosXMC,posXMC, float); // added by lupz
 DECLARE_SOA_COLUMN(PosYMC,posYMC, float); // added by lupz
@@ -494,7 +502,8 @@ DECLARE_SOA_COLUMN(MomZMC,momZMC, float); // added by lupz
 DECLARE_SOA_COLUMN(EventId,eventId, int); // added by lupz
 DECLARE_SOA_COLUMN(Trk0EventId,trk0EventId, int); // added by lupz
 DECLARE_SOA_COLUMN(Trk1EventId,trk1EventId, int); // added by lupz
-DECLARE_SOA_COLUMN(EventIdMC,eventIdMC, int); // added by lupz
+DECLARE_SOA_COLUMN(EventIdRecMC,eventIdRecMC, int); // added by lupz
+DECLARE_SOA_COLUMN(EventIdRealMC,eventIdRealMC, short); // for test
 DECLARE_SOA_COLUMN(Trk0EventIdMC,trk0EventIdMC, int); // added by lupz
 DECLARE_SOA_COLUMN(Trk1EventIdMC,trk1EventIdMC, int); // added by lupz
 // added by lupz end
@@ -538,9 +547,11 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   reducedpair::MassKFGeoMass,reducedpair::Chi2OverNDFKFGeoMass,reducedpair::NDFKFGeoMass,reducedpair::DecayLengthKFGeoMass,reducedpair::DecayLengthOverErrKFGeoMass,reducedpair::DecayLengthXYKFGeoMass,reducedpair::DecayLengthXYOverErrKFGeoMass,reducedpair::PseudoproperDecayTimeKFGeoMass,reducedpair::PseudoproperDecayTimeKFManGeoMass,reducedpair::ParametersKFGeoMass,reducedpair::CovarianceKFGeoMass,
                   reducedpair::MassKFGeoMassTop,reducedpair::Chi2OverNDFKFGeoMassTop,reducedpair::NDFKFGeoMassTop,reducedpair::DecayLengthKFGeoMassTop,reducedpair::DecayLengthOverErrKFGeoMassTop,reducedpair::DecayLengthXYKFGeoMassTop,reducedpair::DecayLengthXYOverErrKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFGeoMassTop,reducedpair::PseudoproperDecayTimeKFManGeoMassTop,reducedpair::ParametersKFGeoMassTop,reducedpair::CovarianceKFGeoMassTop,
                   reducedpair::PVParametersKF,reducedpair::PVCovarianceKF,reducedpair::PVNContributorsKF,reducedpair::PVNDFKF,
-                  reducedpair::VtxXMC,reducedpair::VtxYMC,reducedpair::VtxZMC,
+                  reducedpair::VtxXRealMC,reducedpair::VtxYRealMC,reducedpair::VtxZRealMC,
+                  reducedpair::LBetweenJpsiGeoTopDecayVertexToPV,reducedpair::PseudoproperDecayTimeKFGeoTop2,reducedpair::DecayLengthKFGeoTop2,
+                  reducedpair::VtxXRecMC,reducedpair::VtxYRecMC,reducedpair::VtxZRecMC,
                   reducedpair::MotherPDG,reducedpair::PosXMC,reducedpair::PosYMC,reducedpair::PosZMC,reducedpair::MomXMC,reducedpair::MomYMC,reducedpair::MomZMC,
-                  reducedpair::EventId,reducedpair::Trk0EventId,reducedpair::Trk1EventId,reducedpair::EventIdMC,reducedpair::Trk0EventIdMC,reducedpair::Trk1EventIdMC,
+                  reducedpair::EventId,reducedpair::EventIdRecMC,reducedpair::EventIdRealMC,
                   reducedpair::Px<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Py<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Pz<reducedpair::Pt, reducedpair::Eta>,

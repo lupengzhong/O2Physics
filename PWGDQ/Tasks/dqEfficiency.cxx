@@ -113,7 +113,7 @@ constexpr static uint32_t gkEventFillMap = VarManager::ObjTypes::ReducedEvent | 
 constexpr static uint32_t gkMCEventFillMap = VarManager::ObjTypes::ReducedEventMC;
 constexpr static uint32_t gkEventFillMapWithCov = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::ReducedEventVtxCov;
 constexpr static uint32_t gkTrackFillMap = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelPID;
-//constexpr static uint32_t gkTrackFillMapWithCov = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelCov | VarManager::ObjTypes::ReducedTrackBarrelPID;
+// constexpr static uint32_t gkTrackFillMapWithCov = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelCov | VarManager::ObjTypes::ReducedTrackBarrelPID;
 constexpr static uint32_t gkMuonFillMap = VarManager::ObjTypes::ReducedMuon | VarManager::ObjTypes::ReducedMuonExtra;
 constexpr static uint32_t gkMuonFillMapWithCov = VarManager::ObjTypes::ReducedMuon | VarManager::ObjTypes::ReducedMuonExtra | VarManager::ObjTypes::ReducedMuonCov;
 constexpr static uint32_t gkParticleMCFillMap = VarManager::ObjTypes::ParticleMC;
@@ -764,8 +764,8 @@ struct AnalysisSameEventPairing {
   }
   // added by lupz end
 
-  template <int TPairType, uint32_t TEventFillMap, uint32_t TEventMCFillMap, uint32_t TTrackFillMap, typename TEvent, typename TTracks1, typename TTracks2, typename TEventsMC, typename TTracksMC, typename TAmbiTracks>
-  void runPairing(TEvent const& event, TTracks1 const& tracks1, TTracks2 const& tracks2, TEventsMC const& eventsMC, TTracksMC const& tracksMC, TAmbiTracks const& ambiTracksMid)
+  template <int TPairType, uint32_t TEventFillMap, uint32_t TEventMCFillMap, uint32_t TTrackFillMap, typename TEvent, typename TTracks1, typename TTracks2, typename TEventsMC, typename TTracksMC, typename TAmbiTracks, typename TCollionsMC>
+  void runPairing(TEvent const& event, TTracks1 const& tracks1, TTracks2 const& tracks2, TEventsMC const& eventsMC, TTracksMC const& tracksMC, TAmbiTracks const& ambiTracksMid, TCollionsMC const& collisionsMC)
   {
     // establish the right histogram classes to be filled depending on TPairType (ee,mumu,emu)
     unsigned int ncuts = fBarrelHistNames.size();
@@ -865,6 +865,9 @@ struct AnalysisSameEventPairing {
     float pairPseudoProperDecayLengthManuallyGeoMassTop = -999.;
     float pairParametersGeoMassTop[8] = {-999.};
     float pairCovarianceGeoMassTop[36] = {-999.};
+    double LBetweenJpsiGeoTopDecayVertexToPV = -999.;  // for test
+    double pairPseudoProperDecayTimeKFGeoTop2 = -999.; // for test
+    double pairDecayLengthKFGeoTop2 = -999.;           // for test
 
     if (flagKF) {
       CheckAndUpdate(event.runNumber(), event.timestamp());
@@ -876,8 +879,8 @@ struct AnalysisSameEventPairing {
         // kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ()); // this is the right one, but the covariance YY and XZ were swaped in run3 data, MC and run2 converted
         kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covXZ(), event.covYY(), event.covYZ(), event.covZZ());
         kfpVertex.SetChi2(event.chi2());
-        kfpVertex.SetNDF(2*event.numContrib() - 3); // added on 2022/11/16
-        //kfpVertex.SetNContributors(event.numContrib());
+        kfpVertex.SetNDF(2 * event.numContrib() - 3); // added on 2022/11/16
+        // kfpVertex.SetNContributors(event.numContrib());
         kfpVertex.SetNContributors(event.multNTracksPV());
         PVNContributors = kfpVertex.GetNContributors();
         PVNDF = kfpVertex.GetNDF();
@@ -893,6 +896,7 @@ struct AnalysisSameEventPairing {
         if constexpr ((TTrackFillMap & VarManager::ObjTypes::AmbiTrack) > 0) {
           trk0IsAmbiguous = 0;
           trk1IsAmbiguous = 0;
+          auto const & ambiTrackMidTest = ambiTracksMid.iteratorAt(1);
           for (auto& ambiTrackMid : ambiTracksMid) {
             auto ambiTrack = ambiTrackMid.template track_as<MyBarrelTracks>();
             auto ambiTrackWithCov = ambiTrackMid.template track_as<MyBarrelTracksWithCov>();
@@ -911,8 +915,8 @@ struct AnalysisSameEventPairing {
           }
         }
         */
-       trk0IsAmbiguous = t1.isAmbiguous();
-       trk1IsAmbiguous = t2.isAmbiguous();
+        trk0IsAmbiguous = t1.isAmbiguous();
+        trk1IsAmbiguous = t2.isAmbiguous();
         if constexpr ((TPairType == VarManager::kJpsiToEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelCov) > 0) {
           // dauther0;
           std::array<float, 3> trk0ParPos;
@@ -934,8 +938,8 @@ struct AnalysisSameEventPairing {
           kfpTrack0.SetParameters(trk0ParKF);
           kfpTrack0.SetCovarianceMatrix(trk0CovKF);
           kfpTrack0.SetCharge(t1.sign());
-          kfpTrack0.SetNDF(1); //added on 2022/11/16
-          //kfpTrack0.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
+          kfpTrack0.SetNDF(1); // added on 2022/11/16
+          // kfpTrack0.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack0 = 0;
           if (t1.sign() < 0)
@@ -964,8 +968,8 @@ struct AnalysisSameEventPairing {
           kfpTrack1.SetParameters(trk1ParKF);
           kfpTrack1.SetCovarianceMatrix(trk1CovKF);
           kfpTrack1.SetCharge(t2.sign());
-          kfpTrack1.SetNDF(1); //added on 2022/11/16
-          //kfpTrack1.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
+          kfpTrack1.SetNDF(1); // added on 2022/11/16
+          // kfpTrack1.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack1 = 0;
           if (t2.sign() < 0)
@@ -1017,7 +1021,10 @@ struct AnalysisSameEventPairing {
           }
           // dcaTrk0KFGeo = trk0KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
           // dcaTrk1KFGeo = trk1KF.GetR(); // distance to the origin of the coordinate system {0,0,0}
-          dcaTrk0KF = trk0KF.GetDistanceFromVertex(KFPV);
+          // float vtx[3] = {event.posX(), event.posY(), event.posZ()}; // for test
+          // dcaTrk0KF = trk0KF.GetDistanceFromVertex(vtx); // for test
+          // dcaTrk1KF = trk1KF.GetDistanceFromVertex(vtx); // for test
+          dcaTrk0KF = trk0KF.GetDistanceFromVertex(KFPV); // same as the top method
           dcaTrk1KF = trk1KF.GetDistanceFromVertex(KFPV);
           if (dcaTrk0KF > dcaTrk1KF)
             dcaTrksMaxKF = dcaTrk0KF;
@@ -1037,10 +1044,19 @@ struct AnalysisSameEventPairing {
           pairNDFKFGeo = JpsiGeo.GetNDF();
           pairMassKFGeo = JpsiGeo.GetMass();
           pairMassErrKFGeo = JpsiGeo.GetErrMass();
-          pairDecayLengthKFGeo = JpsiGeo.GetDecayLength();
-          pairDecayLengthOverErrKFGeo = JpsiGeo.GetDecayLength() / JpsiGeo.GetErrDecayLength();
-          pairDecayLengthXYKFGeo = JpsiGeo.GetDecayLengthXY();
-          pairDecayLengthXYOverErrKFGeo = JpsiGeo.GetDecayLengthXY() / JpsiGeo.GetErrDecayLengthXY();
+          double dxJpsiGeo = JpsiGeo.GetX() - KFPV.GetX();
+          double dyJpsiGeo = JpsiGeo.GetY() - KFPV.GetY();
+          double dzJpsiGeo = JpsiGeo.GetZ() - KFPV.GetZ();
+          pairDecayLengthKFGeo = sqrt(dxJpsiGeo * dxJpsiGeo + dyJpsiGeo * dyJpsiGeo + dzJpsiGeo * dzJpsiGeo);
+          double pairDecayLengthErrKFGeo = (KFPV.GetCovariance(0) + JpsiGeo.GetCovariance(0)) * dxJpsiGeo * dxJpsiGeo + (KFPV.GetCovariance(2) + JpsiGeo.GetCovariance(2)) * dyJpsiGeo * dyJpsiGeo + (KFPV.GetCovariance(5) + JpsiGeo.GetCovariance(5)) * dzJpsiGeo * dzJpsiGeo + 2 * ((KFPV.GetCovariance(1) + JpsiGeo.GetCovariance(1)) * dxJpsiGeo * dyJpsiGeo + (KFPV.GetCovariance(3) + JpsiGeo.GetCovariance(3)) * dxJpsiGeo * dzJpsiGeo + (KFPV.GetCovariance(4) + JpsiGeo.GetCovariance(4)) * dyJpsiGeo * dzJpsiGeo);
+          pairDecayLengthOverErrKFGeo = pairDecayLengthKFGeo / pairDecayLengthErrKFGeo;
+          pairDecayLengthXYKFGeo = sqrt(dxJpsiGeo * dxJpsiGeo + dyJpsiGeo * dyJpsiGeo);
+          double pairDecayLengthXYErrKFGeo = (KFPV.GetCovariance(0) + JpsiGeo.GetCovariance(0)) * dxJpsiGeo * dxJpsiGeo + (KFPV.GetCovariance(5) + JpsiGeo.GetCovariance(5)) * dzJpsiGeo * dzJpsiGeo + 2 * ((KFPV.GetCovariance(3) + JpsiGeo.GetCovariance(3)) * dxJpsiGeo * dzJpsiGeo);
+          pairDecayLengthXYOverErrKFGeo = pairDecayLengthXYKFGeo / pairDecayLengthXYErrKFGeo;
+          // pairDecayLengthKFGeo = JpsiGeo.GetDecayLength();
+          // pairDecayLengthOverErrKFGeo = JpsiGeo.GetDecayLength() / JpsiGeo.GetErrDecayLength();
+          // pairDecayLengthXYKFGeo = JpsiGeo.GetDecayLengthXY();
+          // pairDecayLengthXYOverErrKFGeo = JpsiGeo.GetDecayLengthXY() / JpsiGeo.GetErrDecayLengthXY();
           pairPseudoProperDecayTimeKFGeo = JpsiGeo.GetPseudoProperDecayTime(KFPV, pairMassKFGeo);
           pairPseudoProperDecayLengthManuallyGeo = JpsiGeo.GetDecayLengthXY() * (JpsiGeo.GetMass() / JpsiGeo.GetPt());
           for (int i = 0; i < 8; i++) {
@@ -1067,6 +1083,11 @@ struct AnalysisSameEventPairing {
           for (int i = 0; i < 36; i++) {
             pairCovarianceGeoTop[i] = JpsiGeoTop.GetCovariance(i);
           }
+          KFParticle JpsiGeoTop2 = JpsiGeoTop;                                                                    // for test
+          JpsiGeoTop2.TransportToDecayVertex();                                                                   // for test
+          LBetweenJpsiGeoTopDecayVertexToPV = JpsiGeoTop2.GetDistanceFromVertex(KFPV);                            // for test
+          pairPseudoProperDecayTimeKFGeoTop2 = JpsiGeoTop2.GetPseudoProperDecayTime(KFPV, JpsiGeoTop2.GetMass()); // for test
+          pairDecayLengthKFGeoTop2 = JpsiGeoTop2.GetDecayLength();                                                // for test
 
           // get JpsiGeoMass information
           pairChi2OverNDFKFGeoMass = JpsiGeoMass.GetChi2() / JpsiGeoMass.GetNDF();
@@ -1128,25 +1149,43 @@ struct AnalysisSameEventPairing {
         }
       }
 
-      float motherPx = -999.;
+      float mcRealPVX = -999.;
+      float mcRealPVY = -999.;
+      float mcRealPVZ = -999.;
       if (t2.reducedMCTrack().has_mothers()) {
         if constexpr (TTrackFillMap & VarManager::ObjTypes::ReducedTrack || TTrackFillMap & VarManager::ObjTypes::ReducedMuon) { // for skimmed DQ model
           auto mothers = t2.reducedMCTrack().template mothers_first_as<TTracksMC>();
           VarManager::FillTrack<gkParticleMCFillMap>(mothers);
-          // auto mothers = t2.reducedMCTrack();
-          // VarManager::FillTrack<gkParticleMCFillMap>(mothers);
-          // motherPx = mothers[0].px();
+
+          if (flagKF) {
+            // find real MC event that generate signals
+            int mcRealEventID = t2.reducedMCTrack().mcCollisionId();
+            //const auto& mcRealEvent = collisionsMC.iteratorAt(0);
+            const auto& mcRealEvent = collisionsMC.iteratorAt(mcRealEventID);
+            mcRealPVX = mcRealEvent.posX();
+            mcRealPVY = mcRealEvent.posY();
+            mcRealPVZ = mcRealEvent.posZ();
+            //LOG(info) << "~~~~~~~~~~~~~~~~~The real MC event X position: " << mcRealEvent.PosX();
+            /*
+          if (mcRealEvent != nullptr) {
+          } else {
+            LOG(info) << "Could not find the real MC events ;;;;;;;;;;;;; ";
+          }
+          */
+          }
         }
 
         if constexpr (TTrackFillMap & VarManager::ObjTypes::Track || TTrackFillMap & VarManager::ObjTypes::Muon) { // for Framework data model
           const auto mcParticle = t2.template mcParticle_as<aod::McParticles_001>();
           if (mcParticle.has_mothers()) {
-            auto mothers = mcParticle.template mothers_as<aod::McParticles_001>();
-            motherPx = mothers[0].px();
-            // VarManager::FillTrack<gkParticleMCFillMap>(mothers[0]);
+            // auto mothers = mcParticle.template mothers_first_as<aod::McParticles_001>();
+            auto mothers = mcParticle.template mothers_first_as<TTracksMC>();
+            // motherPx = mothers[0].px();
+            VarManager::FillTrack<gkParticleMCFillMap>(mothers);
           }
         }
       }
+
       // added by lupz end
 
       // secondary vertexing is not implemented for e-mu pairs so we need to hide this function from the e-mu analysis for now
@@ -1182,15 +1221,17 @@ struct AnalysisSameEventPairing {
                   if (mcDecision & (uint32_t(1) << isig)) {
                     dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                                  t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters,dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF,dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
-                                 pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo,pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo,  pairParametersGeo, pairCovarianceGeo,
+                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF, dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
+                                 pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, pairParametersGeo, pairCovarianceGeo,
                                  pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
                                  pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
                                  pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairDecayLengthXYKFGeoMassTop, pairDecayLengthXYOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
                                  PVParameters, PVCovariance, PVNContributors, PVNDF,
+                                 mcRealPVX, mcRealPVY, mcRealPVZ,
+                                 LBetweenJpsiGeoTopDecayVertexToPV, pairPseudoProperDecayTimeKFGeoTop2, pairDecayLengthKFGeoTop2,
                                  VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
                                  VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
-                                 event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(), event.reducedMCevent().globalIndex(), t1.reducedMCTrack().reducedMCeventId(), t2.reducedMCTrack().reducedMCeventId()); // added by lupz
+                                 event.globalIndex(), event.reducedMCevent().globalIndex(),  t2.reducedMCTrack().mcCollisionId()); // added by lupz
                   }
                 }
               }
@@ -1198,16 +1239,18 @@ struct AnalysisSameEventPairing {
           }
         } else {
           dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
-                                 t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters,dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF,dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
-                                 pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo,pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo,  pairParametersGeo, pairCovarianceGeo,
-                                 pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
-                                 pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
-                                 pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairDecayLengthXYKFGeoMassTop, pairDecayLengthXYOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
-                                 PVParameters, PVCovariance, PVNContributors, PVNDF,
-                                 VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
-                                 VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
-                                 event.globalIndex(), t1.reducedeventId(), t2.reducedeventId(), event.reducedMCevent().globalIndex(), t1.reducedMCTrack().reducedMCeventId(), t2.reducedMCTrack().reducedMCeventId()); // added by lupz
+                       t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
+                       trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF, dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
+                       pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, pairParametersGeo, pairCovarianceGeo,
+                       pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
+                       pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
+                       pairMassKFGeoMassTop, pairChi2OverNDFKFGeoMassTop, pairNDFKFGeoMassTop, pairDecayLengthKFGeoMassTop, pairDecayLengthOverErrKFGeoMassTop, pairDecayLengthXYKFGeoMassTop, pairDecayLengthXYOverErrKFGeoMassTop, pairPseudoProperDecayTimeKFGeoMassTop, pairPseudoProperDecayLengthManuallyGeoMassTop, pairParametersGeoMassTop, pairCovarianceGeoMassTop,
+                       PVParameters, PVCovariance, PVNContributors, PVNDF,
+                       mcRealPVX, mcRealPVY, mcRealPVZ,
+                       LBetweenJpsiGeoTopDecayVertexToPV, pairPseudoProperDecayTimeKFGeoTop2, pairDecayLengthKFGeoTop2,
+                       VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
+                       VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
+                       event.globalIndex(),  event.reducedMCevent().globalIndex(), t2.reducedMCTrack().mcCollisionId()); // added by lupz
         }
       }
       // added by lupz end
@@ -1282,14 +1325,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToEESkimmed(soa::Filtered<MyEventsSelected>::iterator const& event,
                               soa::Filtered<MyBarrelTracksSelected> const& tracks,
-                              ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
+                              ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToEE, gkEventFillMap, gkMCEventFillMap, gkTrackFillMap>(event, tracks, tracks, eventsMC, tracksMC, nullptr);
+    runPairing<VarManager::kJpsiToEE, gkEventFillMap, gkMCEventFillMap, gkTrackFillMap>(event, tracks, tracks, eventsMC, tracksMC, nullptr, collisionsMC);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1297,14 +1340,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToEEVertexingSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event,
                                        soa::Filtered<MyBarrelTracksSelectedWithCov> const& tracks,
-                                       ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
+                                       ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMapWithCov>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC, nullptr);
+    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC, nullptr, collisionsMC);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1312,14 +1355,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToMuMuSkimmed(soa::Filtered<MyEventsSelected>::iterator const& event,
                                 soa::Filtered<MyMuonTracksSelected> const& muons,
-                                ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
+                                ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMCEventFillMap, gkMuonFillMap>(event, muons, muons, eventsMC, tracksMC, nullptr);
+    runPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMCEventFillMap, gkMuonFillMap>(event, muons, muons, eventsMC, tracksMC, nullptr, collisionsMC);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1327,14 +1370,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToMuMuVertexingSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event,
                                          soa::Filtered<MyMuonTracksSelectedWithCov> const& muons,
-                                         ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
+                                         ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCov, gkMCEventFillMap, gkMuonFillMapWithCov>(event, muons, muons, eventsMC, tracksMC, nullptr);
+    runPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCov, gkMCEventFillMap, gkMuonFillMapWithCov>(event, muons, muons, eventsMC, tracksMC, nullptr, collisionsMC);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1360,14 +1403,14 @@ struct AnalysisSameEventPairing {
   // added by lupz begin
   void processJpsiToEESkimmedKFParticle(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event,
                                         soa::Filtered<MyBarrelTracksSelectedWithCov> const& tracks,
-                                        ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::AmbiguousTracksMid const& ambiTracksMid)
+                                        ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::AmbiguousTracksMid const& ambiTracksMid, aod::McCollisions const& collisionsMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC, ambiTracksMid);
+    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC, ambiTracksMid, collisionsMC);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
