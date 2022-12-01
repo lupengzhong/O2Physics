@@ -88,7 +88,8 @@ class VarManager : public TObject
     ParticleMC = BIT(16),
     Pair = BIT(17), // TODO: check whether we really need the Pair member here
     AmbiTrack = BIT(18),
-    AmbiMuon = BIT(19)
+    AmbiMuon = BIT(19),
+    TrackRealMC = BIT(20) // added by lupz
   };
 
   enum PairCandidateType {

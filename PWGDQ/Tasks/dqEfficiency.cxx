@@ -113,7 +113,7 @@ constexpr static uint32_t gkEventFillMap = VarManager::ObjTypes::ReducedEvent | 
 constexpr static uint32_t gkMCEventFillMap = VarManager::ObjTypes::ReducedEventMC;
 constexpr static uint32_t gkEventFillMapWithCov = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::ReducedEventVtxCov;
 constexpr static uint32_t gkTrackFillMap = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelPID;
-// constexpr static uint32_t gkTrackFillMapWithCov = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelCov | VarManager::ObjTypes::ReducedTrackBarrelPID;
+constexpr static uint32_t gkTrackFillMapWithCov = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelCov | VarManager::ObjTypes::ReducedTrackBarrelPID;
 constexpr static uint32_t gkMuonFillMap = VarManager::ObjTypes::ReducedMuon | VarManager::ObjTypes::ReducedMuonExtra;
 constexpr static uint32_t gkMuonFillMapWithCov = VarManager::ObjTypes::ReducedMuon | VarManager::ObjTypes::ReducedMuonExtra | VarManager::ObjTypes::ReducedMuonCov;
 constexpr static uint32_t gkParticleMCFillMap = VarManager::ObjTypes::ParticleMC;
@@ -124,7 +124,7 @@ namespace o2::aod
 DECLARE_SOA_TABLE(AmbiguousTracksMid, "AOD", "AMBIGUOUSTRACK", //! Table for tracks which are not uniquely associated with a collision
                   o2::soa::Index<>, o2::aod::ambiguous::TrackId, o2::aod::ambiguous::BCIdSlice, o2::soa::Marker<2>);
 } // namespace o2::aod
-constexpr static uint32_t gkTrackFillMapWithCov = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelCov | VarManager::ObjTypes::ReducedTrackBarrelPID | VarManager::ObjTypes::AmbiTrack;
+constexpr static uint32_t gkTrackFillMapWithCovKF = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelCov | VarManager::ObjTypes::ReducedTrackBarrelPID | VarManager::ObjTypes::AmbiTrack | VarManager::ObjTypes::TrackRealMC;
 constexpr static uint32_t gkTrackFillMapWithAmbi = VarManager::ObjTypes::Track | VarManager::ObjTypes::AmbiTrack;
 // added by lupz end
 
@@ -1157,7 +1157,9 @@ struct AnalysisSameEventPairing {
           auto mothers = t2.reducedMCTrack().template mothers_first_as<TTracksMC>();
           VarManager::FillTrack<gkParticleMCFillMap>(mothers);
 
-          if (flagKF) {
+        if constexpr (TTrackFillMap & VarManager::ObjTypes::TrackRealMC) { // for skimmed DQ model
+
+
             // find real MC event that generate signals
             int mcRealEventID = t2.reducedMCTrack().mcCollisionId();
             //const auto& mcRealEvent = collisionsMC.iteratorAt(0);
@@ -1325,14 +1327,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToEESkimmed(soa::Filtered<MyEventsSelected>::iterator const& event,
                               soa::Filtered<MyBarrelTracksSelected> const& tracks,
-                              ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
+                              ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToEE, gkEventFillMap, gkMCEventFillMap, gkTrackFillMap>(event, tracks, tracks, eventsMC, tracksMC, nullptr, collisionsMC);
+    runPairing<VarManager::kJpsiToEE, gkEventFillMap, gkMCEventFillMap, gkTrackFillMap>(event, tracks, tracks, eventsMC, tracksMC, nullptr, nullptr);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1340,14 +1342,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToEEVertexingSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event,
                                        soa::Filtered<MyBarrelTracksSelectedWithCov> const& tracks,
-                                       ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
+                                       ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMapWithCov>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC, nullptr, collisionsMC);
+    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC, nullptr, nullptr);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1355,14 +1357,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToMuMuSkimmed(soa::Filtered<MyEventsSelected>::iterator const& event,
                                 soa::Filtered<MyMuonTracksSelected> const& muons,
-                                ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
+                                ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMCEventFillMap, gkMuonFillMap>(event, muons, muons, eventsMC, tracksMC, nullptr, collisionsMC);
+    runPairing<VarManager::kJpsiToMuMu, gkEventFillMap, gkMCEventFillMap, gkMuonFillMap>(event, muons, muons, eventsMC, tracksMC, nullptr, nullptr);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1370,14 +1372,14 @@ struct AnalysisSameEventPairing {
 
   void processJpsiToMuMuVertexingSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event,
                                          soa::Filtered<MyMuonTracksSelectedWithCov> const& muons,
-                                         ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC, aod::McCollisions const& collisionsMC)
+                                         ReducedMCEvents const& eventsMC, ReducedMCTracks const& tracksMC)
   {
     // Reset the fValues array
     VarManager::ResetValues(0, VarManager::kNVars);
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCov, gkMCEventFillMap, gkMuonFillMapWithCov>(event, muons, muons, eventsMC, tracksMC, nullptr, collisionsMC);
+    runPairing<VarManager::kJpsiToMuMu, gkEventFillMapWithCov, gkMCEventFillMap, gkMuonFillMapWithCov>(event, muons, muons, eventsMC, tracksMC, nullptr, nullptr);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
@@ -1410,7 +1412,7 @@ struct AnalysisSameEventPairing {
     VarManager::FillEvent<gkEventFillMap>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC, ambiTracksMid, collisionsMC);
+    runPairing<VarManager::kJpsiToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCovKF>(event, tracks, tracks, eventsMC, tracksMC, ambiTracksMid, collisionsMC);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
