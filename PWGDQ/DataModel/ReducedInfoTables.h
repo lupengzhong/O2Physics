@@ -145,6 +145,7 @@ DECLARE_SOA_TABLE(ReducedTracksBarrel, "AOD", "RTBARREL", //!
                   track::TPCNClsFindable, track::TPCNClsFindableMinusFound, track::TPCNClsFindableMinusCrossedRows,
                   track::TPCNClsShared, track::TPCChi2NCl,
                   track::TRDChi2, track::TRDPattern, track::TOFChi2, track::Length, reducedtrack::DcaXY, reducedtrack::DcaZ,
+                  track::ITSNCls<track::ITSClusterMap>,  // added by lupz
                   track::TPCNClsFound<track::TPCNClsFindable, track::TPCNClsFindableMinusFound>,
                   track::TPCNClsCrossedRows<track::TPCNClsFindable, track::TPCNClsFindableMinusCrossedRows>);
 
@@ -358,6 +359,7 @@ DECLARE_SOA_COLUMN(Vz2, vz2, float); //! Z production vertex in cm
 DECLARE_SOA_COLUMN(Vt2, vt2, float); //! Production vertex time
 // added by lupz begin
 // leg1
+DECLARE_SOA_COLUMN(ITSNCls1, itsNCls1, int); 
 DECLARE_SOA_COLUMN(TPCInnerParam1, tpcInnerParam1, float); 
 DECLARE_SOA_COLUMN(TPCNClsFound1, tpcNClsFound1, float); 
 DECLARE_SOA_COLUMN(TPCNClsCR1, tpcNClsCR1, float); 
@@ -374,6 +376,7 @@ DECLARE_SOA_COLUMN(TOFNSigmaEl1, tofNSigmaEl1, float);
 DECLARE_SOA_COLUMN(TOFNSigmaPi1, tofNSigmaPi1, float); 
 DECLARE_SOA_COLUMN(TOFNSigmaPr1, tofNSigmaPr1, float); 
 // leg2
+DECLARE_SOA_COLUMN(ITSNCls2, itsNCls2, int); 
 DECLARE_SOA_COLUMN(TPCInnerParam2, tpcInnerParam2, float); 
 DECLARE_SOA_COLUMN(TPCNClsFound2, tpcNClsFound2, float); 
 DECLARE_SOA_COLUMN(TPCNClsCR2, tpcNClsCR2, float); 
@@ -528,6 +531,7 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   reducedpair::FilterMap,
                   reducedpair::McDecision,
                   dilepton_track_index::Pt1, dilepton_track_index::Eta1, dilepton_track_index::Phi1,
+                  dilepton_track_index::ITSNCls1,
                   dilepton_track_index::TPCNClsFound1,dilepton_track_index::TPCNClsCR1,dilepton_track_index::TPCChi2NCl1,
                   dilepton_track_index::DcaXY1,dilepton_track_index::DcaZ1,
                   dilepton_track_index::TPCSignal1,
@@ -535,6 +539,7 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   dilepton_track_index::Beta1,
                   dilepton_track_index::TOFNSigmaEl1, dilepton_track_index::TOFNSigmaPi1, dilepton_track_index::TOFNSigmaPr1,
                   dilepton_track_index::Pt2, dilepton_track_index::Eta2, dilepton_track_index::Phi2,
+                  dilepton_track_index::ITSNCls2,
                   dilepton_track_index::TPCNClsFound2,dilepton_track_index::TPCNClsCR2,dilepton_track_index::TPCChi2NCl2,
                   dilepton_track_index::DcaXY2,dilepton_track_index::DcaZ2,
                   dilepton_track_index::TPCSignal2,
