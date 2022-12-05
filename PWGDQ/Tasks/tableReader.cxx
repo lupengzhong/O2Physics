@@ -906,8 +906,9 @@ struct AnalysisSameEventPairing {
         //kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ()); // this is the right one, but the covariance YY and XZ were swaped in run3 data, MC and run2 converted
         kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covXZ(), event.covYY(), event.covYZ(), event.covZZ());
         kfpVertex.SetChi2(event.chi2());
-        kfpVertex.SetNDF(2*event.numContrib() - 3); // added on 2022/11/16
-        kfpVertex.SetNContributors(event.numContrib());
+        kfpVertex.SetNDF(2*event.multNTracksPV() - 3); // added on 2022/11/16
+        //kfpVertex.SetNContributors(event.numContrib());
+        kfpVertex.SetNContributors(event.multNTracksPV());
         PVNContributors = kfpVertex.GetNContributors();
         PVNDF = kfpVertex.GetNDF();
         KFPV = KFParticle(kfpVertex);
@@ -963,7 +964,8 @@ struct AnalysisSameEventPairing {
           kfpTrack0.SetParameters(trk0ParKF);
           kfpTrack0.SetCovarianceMatrix(trk0CovKF);
           kfpTrack0.SetCharge(t1.sign());
-          kfpTrack0.SetNDF(1); //added on 2022/11/16
+          kfpTrack0.SetNDF(t1.tpcNClsFound()-5); //added on 2022/12/05
+          //kfpTrack0.SetNDF(1); //added on 2022/11/16
           //kfpTrack0.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack0 = 0;
@@ -993,7 +995,8 @@ struct AnalysisSameEventPairing {
           kfpTrack1.SetParameters(trk1ParKF);
           kfpTrack1.SetCovarianceMatrix(trk1CovKF);
           kfpTrack1.SetCharge(t2.sign());
-          kfpTrack1.SetNDF(1); //added on 2022/11/16
+          kfpTrack1.SetNDF(t2.tpcNClsFound()-5); //added on 2022/12/05
+          //kfpTrack1.SetNDF(1); //added on 2022/11/16
           //kfpTrack1.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack1 = 0;
@@ -1172,7 +1175,7 @@ struct AnalysisSameEventPairing {
       if constexpr ((TPairType == pairTypeEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelPID) > 0) {
         dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                      t1.eta(), t1.phi(), t1.itsNCls(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(),t2.itsNCls(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                     trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters,dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF,dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
+                     trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF, dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF,0, 0, 0,0, 0, 0, // trk0Charge,trk1Charge,
                      pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo,pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo,  pairParametersGeo, pairCovarianceGeo,
                      pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
                      pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
@@ -1182,7 +1185,7 @@ struct AnalysisSameEventPairing {
                      0,0,0,
                      VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
                      VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
-                     event.globalIndex(), 0,0); // added by lupz
+                     event.globalIndex(), 0,0,t1.globalIndex(),t2.globalIndex()); // added by lupz
       }
       // added by lupz end
 

@@ -425,6 +425,8 @@ DECLARE_SOA_COLUMN(PVNDFKF,pvndfKF, int); // added by lupz
 DECLARE_SOA_COLUMN(PVParametersKF,pvparametersKF, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(PVCovarianceKF,pvcovarianceKF, float[36]); // added by lupz
 // tracks information
+DECLARE_SOA_COLUMN(Trk0Index, trk0Index, int); //!
+DECLARE_SOA_COLUMN(Trk1Index, trk1Index, int); //!
 DECLARE_SOA_COLUMN(Trk0IsAmbiguous, trk0isAmbiguous, int); //!
 DECLARE_SOA_COLUMN(Trk1IsAmbiguous, trk1isAmbiguous, int); //!
 DECLARE_SOA_COLUMN(Trk0ParametersKF,trk0parametersKF, float[8]); // added by lupz
@@ -432,10 +434,16 @@ DECLARE_SOA_COLUMN(Trk1ParametersKF,trk1parametersKF, float[8]); // added by lup
 DECLARE_SOA_COLUMN(DCATrk0KF,dcatrk0KF, float); // added by lupz
 DECLARE_SOA_COLUMN(DCATrk1KF,dcatrk1KF, float); // added by lupz
 DECLARE_SOA_COLUMN(DCATrksMaxKF,dcatrksmaxKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk02MCRealPVKF,dcatrk02MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk12MCRealPVKF,dcatrk12MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrksMax2MCRealPVKF,dcatrksmax2MCRealPVKF, float); // added by lupz
 DECLARE_SOA_COLUMN(DCABetweenTrksKF,dcabetweentrksKF, float); // added by lupz
 DECLARE_SOA_COLUMN(DCAXYTrk0KF,dcaxytrk0KF, float); // added by lupz
 DECLARE_SOA_COLUMN(DCAXYTrk1KF,dcaxytrk1KF, float); // added by lupz
 DECLARE_SOA_COLUMN(DCAXYTrksMaxKF,dcaxytrksmaxKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk02MCRealPVKF,dcaxytrk02MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk12MCRealPVKF,dcaxytrk12MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrksMax2MCRealPVKF,dcaxytrksmax2MCRealPVKF, float); // added by lupz
 DECLARE_SOA_COLUMN(DCAXYBetweenTrksKF,dcaxybetweentrksKF, float); // added by lupz
 // only Geometrical fitting
 DECLARE_SOA_COLUMN(MassKFGeo, massKFGeo, float); // added by lupz 
@@ -546,7 +554,7 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   dilepton_track_index::TPCNSigmaEl2, dilepton_track_index::TPCNSigmaPi2, dilepton_track_index::TPCNSigmaPr2,
                   dilepton_track_index::Beta2,
                   dilepton_track_index::TOFNSigmaEl2, dilepton_track_index::TOFNSigmaPi2, dilepton_track_index::TOFNSigmaPr2,
-                  reducedpair::Trk0IsAmbiguous,reducedpair::Trk1IsAmbiguous,reducedpair::Trk0ParametersKF,reducedpair::Trk1ParametersKF,reducedpair::DCATrk0KF,reducedpair::DCATrk1KF,reducedpair::DCATrksMaxKF,reducedpair::DCABetweenTrksKF,reducedpair::DCAXYTrk0KF,reducedpair::DCAXYTrk1KF,reducedpair::DCAXYTrksMaxKF,reducedpair::DCAXYBetweenTrksKF,
+                  reducedpair::Trk0IsAmbiguous,reducedpair::Trk1IsAmbiguous,reducedpair::Trk0ParametersKF,reducedpair::Trk1ParametersKF,reducedpair::DCATrk0KF,reducedpair::DCATrk1KF,reducedpair::DCATrksMaxKF,reducedpair::DCABetweenTrksKF,reducedpair::DCAXYTrk0KF,reducedpair::DCAXYTrk1KF,reducedpair::DCAXYTrksMaxKF,reducedpair::DCAXYBetweenTrksKF,reducedpair::DCATrk02MCRealPVKF,reducedpair::DCATrk12MCRealPVKF,reducedpair::DCATrksMax2MCRealPVKF,reducedpair::DCAXYTrk02MCRealPVKF,reducedpair::DCAXYTrk12MCRealPVKF,reducedpair::DCAXYTrksMax2MCRealPVKF,
                   reducedpair::MassKFGeo,reducedpair::Chi2OverNDFKFGeo,reducedpair::NDFKFGeo,reducedpair::DecayLengthKFGeo,reducedpair::DecayLengthOverErrKFGeo,reducedpair::DecayLengthXYKFGeo,reducedpair::DecayLengthXYOverErrKFGeo,reducedpair::PseudoproperDecayTimeKFGeo,reducedpair::PseudoproperDecayTimeKFManGeo,reducedpair::ParametersKFGeo,reducedpair::CovarianceKFGeo,
                   reducedpair::MassKFGeoTop,reducedpair::Chi2OverNDFKFGeoTop,reducedpair::NDFKFGeoTop,reducedpair::DecayLengthKFGeoTop,reducedpair::DecayLengthOverErrKFGeoTop,reducedpair::DecayLengthXYKFGeoTop,reducedpair::DecayLengthXYOverErrKFGeoTop,reducedpair::PseudoproperDecayTimeKFGeoTop,reducedpair::PseudoproperDecayTimeKFManGeoTop,reducedpair::ParametersKFGeoTop,reducedpair::CovarianceKFGeoTop,
                   reducedpair::MassKFGeoMass,reducedpair::Chi2OverNDFKFGeoMass,reducedpair::NDFKFGeoMass,reducedpair::DecayLengthKFGeoMass,reducedpair::DecayLengthOverErrKFGeoMass,reducedpair::DecayLengthXYKFGeoMass,reducedpair::DecayLengthXYOverErrKFGeoMass,reducedpair::PseudoproperDecayTimeKFGeoMass,reducedpair::PseudoproperDecayTimeKFManGeoMass,reducedpair::ParametersKFGeoMass,reducedpair::CovarianceKFGeoMass,
@@ -556,7 +564,7 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   reducedpair::LBetweenJpsiGeoTopDecayVertexToPV,reducedpair::PseudoproperDecayTimeKFGeoTop2,reducedpair::DecayLengthKFGeoTop2,
                   reducedpair::VtxXRecMC,reducedpair::VtxYRecMC,reducedpair::VtxZRecMC,
                   reducedpair::MotherPDG,reducedpair::PosXMC,reducedpair::PosYMC,reducedpair::PosZMC,reducedpair::MomXMC,reducedpair::MomYMC,reducedpair::MomZMC,
-                  reducedpair::EventId,reducedpair::EventIdRecMC,reducedpair::EventIdRealMC,
+                  reducedpair::EventId,reducedpair::EventIdRecMC,reducedpair::EventIdRealMC,reducedpair::Trk0Index,reducedpair::Trk1Index,
                   reducedpair::Px<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Py<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Pz<reducedpair::Pt, reducedpair::Eta>,

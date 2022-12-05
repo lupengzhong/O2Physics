@@ -549,6 +549,8 @@ struct AnalysisSameEventPairing {
   bool flagKF = false;
   Configurable<bool> ouputTableForMCSignalOnly{"ouputTableForMCSignalOnly", false, "Have output tables for MC true siganl or for reconstructed signal"}; // added by lupz
   KFParticle KFPV;
+  KFParticle trk0KF;
+  KFParticle trk1KF;
   // added by lupz end
 
   // TODO: here we specify signals, however signal decisions are precomputed and stored in mcReducedFlags
@@ -813,6 +815,12 @@ struct AnalysisSameEventPairing {
     float dcaXYTrk1KF = -999.;
     float dcaXYTrksMaxKF = -999.;
     float dcaXYBetweenTrksKF = -999.;
+    float dcaTrk02MCRealPVKF = -999.;
+    float dcaTrk12MCRealPVKF = -999.;
+    float dcaTrksMax2MCRealPVKF = -999.;
+    float dcaXYTrk02MCRealPVKF = -999.;
+    float dcaXYTrk12MCRealPVKF = -999.;
+    float dcaXYTrksMax2MCRealPVKF = -999.;
     // only Geometrical fitting
     float pairMassKFGeo = -999.;        // added by lupz
     float pairMassErrKFGeo = -999.;     // added by lupz
@@ -879,7 +887,7 @@ struct AnalysisSameEventPairing {
         // kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covYY(), event.covXZ(), event.covYZ(), event.covZZ()); // this is the right one, but the covariance YY and XZ were swaped in run3 data, MC and run2 converted
         kfpVertex.SetCovarianceMatrix(event.covXX(), event.covXY(), event.covXZ(), event.covYY(), event.covYZ(), event.covZZ());
         kfpVertex.SetChi2(event.chi2());
-        kfpVertex.SetNDF(2 * event.numContrib() - 3); // added on 2022/11/16
+        kfpVertex.SetNDF(2 * event.multNTracksPV() - 3); // added on 2022/11/16
         // kfpVertex.SetNContributors(event.numContrib());
         kfpVertex.SetNContributors(event.multNTracksPV());
         PVNContributors = kfpVertex.GetNContributors();
@@ -892,29 +900,7 @@ struct AnalysisSameEventPairing {
     for (auto& [t1, t2] : combinations(tracks1, tracks2)) {
       // added by lupz begin
       if (flagKF) {
-        /*
-        if constexpr ((TTrackFillMap & VarManager::ObjTypes::AmbiTrack) > 0) {
-          trk0IsAmbiguous = 0;
-          trk1IsAmbiguous = 0;
-          auto const & ambiTrackMidTest = ambiTracksMid.iteratorAt(1);
-          for (auto& ambiTrackMid : ambiTracksMid) {
-            auto ambiTrack = ambiTrackMid.template track_as<MyBarrelTracks>();
-            auto ambiTrackWithCov = ambiTrackMid.template track_as<MyBarrelTracksWithCov>();
-            if (ambiTrack.globalIndex() == t1.globalIndex() || ambiTrackWithCov.globalIndex() == t1.globalIndex()) {
-              trk0IsAmbiguous = 1;
-              break;
-            }
-          }
-          for (auto& ambiTrackMid : ambiTracksMid) {
-            auto ambiTrack = ambiTrackMid.template track_as<MyBarrelTracks>();
-            auto ambiTrackWithCov = ambiTrackMid.template track_as<MyBarrelTracksWithCov>();
-            if (ambiTrack.globalIndex() == t2.globalIndex() || ambiTrackWithCov.globalIndex() == t2.globalIndex()) {
-              trk1IsAmbiguous = 1;
-              break;
-            }
-          }
-        }
-        */
+
         trk0IsAmbiguous = t1.isAmbiguous();
         trk1IsAmbiguous = t2.isAmbiguous();
         if constexpr ((TPairType == VarManager::kJpsiToEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelCov) > 0) {
@@ -938,7 +924,8 @@ struct AnalysisSameEventPairing {
           kfpTrack0.SetParameters(trk0ParKF);
           kfpTrack0.SetCovarianceMatrix(trk0CovKF);
           kfpTrack0.SetCharge(t1.sign());
-          kfpTrack0.SetNDF(1); // added on 2022/11/16
+          kfpTrack0.SetNDF(t1.tpcNClsFound()-5); //added on 2022/12/05
+          //kfpTrack0.SetNDF(1); // added on 2022/11/16
           // kfpTrack0.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack0 = 0;
@@ -946,7 +933,7 @@ struct AnalysisSameEventPairing {
             pdgTrack0 = 11; // e-
           if (t1.sign() > 0)
             pdgTrack0 = -11; // e+
-          KFParticle trk0KF(kfpTrack0, pdgTrack0);
+          trk0KF = KFParticle(kfpTrack0, pdgTrack0);
 
           // dauther1;
           std::array<float, 3> trk1ParPos;
@@ -968,7 +955,8 @@ struct AnalysisSameEventPairing {
           kfpTrack1.SetParameters(trk1ParKF);
           kfpTrack1.SetCovarianceMatrix(trk1CovKF);
           kfpTrack1.SetCharge(t2.sign());
-          kfpTrack1.SetNDF(1); // added on 2022/11/16
+          kfpTrack1.SetNDF(t2.tpcNClsFound()-5); //added on 2022/12/05
+          //kfpTrack1.SetNDF(1); // added on 2022/11/16
           // kfpTrack1.SetChi2(...); //added on 2022/11/16, do not have this information in AO2D
 
           int pdgTrack1 = 0;
@@ -976,7 +964,7 @@ struct AnalysisSameEventPairing {
             pdgTrack1 = 11; // e-
           if (t2.sign() > 0)
             pdgTrack1 = -11; // e+
-          KFParticle trk1KF(kfpTrack1, pdgTrack1);
+          trk1KF = KFParticle(kfpTrack1, pdgTrack1);
 
           // get PV information
           for (int i = 0; i < 8; i++) {
@@ -1024,6 +1012,8 @@ struct AnalysisSameEventPairing {
           // float vtx[3] = {event.posX(), event.posY(), event.posZ()}; // for test
           // dcaTrk0KF = trk0KF.GetDistanceFromVertex(vtx); // for test
           // dcaTrk1KF = trk1KF.GetDistanceFromVertex(vtx); // for test
+
+          // Tracks DCA to reconstructed PV
           dcaTrk0KF = trk0KF.GetDistanceFromVertex(KFPV); // same as the top method
           dcaTrk1KF = trk1KF.GetDistanceFromVertex(KFPV);
           if (dcaTrk0KF > dcaTrk1KF)
@@ -1162,11 +1152,27 @@ struct AnalysisSameEventPairing {
 
             // find real MC event that generate signals
             int mcRealEventID = t2.reducedMCTrack().mcCollisionId();
-            //const auto& mcRealEvent = collisionsMC.iteratorAt(0);
             const auto& mcRealEvent = collisionsMC.iteratorAt(mcRealEventID);
+            //const auto& mcRealEvent = eventsMC.iteratorAt(mcRealEventID);
             mcRealPVX = mcRealEvent.posX();
             mcRealPVY = mcRealEvent.posY();
             mcRealPVZ = mcRealEvent.posZ();
+            // Tracks DCA to MC real PV
+          float mcRealVtx[3] = {mcRealPVX, mcRealPVY, mcRealPVZ}; // for test
+          // dcaTrk0KF = trk0KF.GetDistanceFromVertex(vtx); // for test
+          // dcaTrk1KF = trk1KF.GetDistanceFromVertex(vtx); // for test
+          dcaTrk02MCRealPVKF = trk0KF.GetDistanceFromVertex(mcRealVtx); // same as the top method
+          dcaTrk12MCRealPVKF = trk1KF.GetDistanceFromVertex(mcRealVtx);
+          if (dcaTrk02MCRealPVKF > dcaTrk12MCRealPVKF)
+            dcaTrksMax2MCRealPVKF = dcaTrk02MCRealPVKF;
+          else
+            dcaTrksMax2MCRealPVKF = dcaTrk12MCRealPVKF;
+          dcaXYTrk02MCRealPVKF = trk0KF.GetDistanceFromVertexXY(mcRealVtx);
+          dcaXYTrk12MCRealPVKF = trk1KF.GetDistanceFromVertexXY(mcRealVtx);
+          if (dcaXYTrk02MCRealPVKF > dcaXYTrk12MCRealPVKF)
+            dcaXYTrksMax2MCRealPVKF = dcaXYTrk02MCRealPVKF;
+          else
+            dcaXYTrksMax2MCRealPVKF = dcaXYTrk12MCRealPVKF;
             //LOG(info) << "~~~~~~~~~~~~~~~~~The real MC event X position: " << mcRealEvent.PosX();
             /*
           if (mcRealEvent != nullptr) {
@@ -1223,7 +1229,7 @@ struct AnalysisSameEventPairing {
                   if (mcDecision & (uint32_t(1) << isig)) {
                     dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                                  t1.eta(), t1.phi(), t1.itsNCls(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(),t2.itsNCls(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF, dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
+                                 trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF, dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF,dcaTrk02MCRealPVKF, dcaTrk12MCRealPVKF, dcaTrksMax2MCRealPVKF,dcaXYTrk02MCRealPVKF, dcaXYTrk12MCRealPVKF, dcaXYTrksMax2MCRealPVKF, // trk0Charge,trk1Charge,
                                  pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, pairParametersGeo, pairCovarianceGeo,
                                  pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
                                  pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
@@ -1233,7 +1239,7 @@ struct AnalysisSameEventPairing {
                                  LBetweenJpsiGeoTopDecayVertexToPV, pairPseudoProperDecayTimeKFGeoTop2, pairDecayLengthKFGeoTop2,
                                  VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
                                  VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
-                                 event.globalIndex(), event.reducedMCevent().globalIndex(),  t2.reducedMCTrack().mcCollisionId()); // added by lupz
+                                 event.globalIndex(), event.reducedMCevent().globalIndex(),  t2.reducedMCTrack().mcCollisionId(),t1.globalIndex(),t2.globalIndex()); // added by lupz
                   }
                 }
               }
@@ -1242,7 +1248,7 @@ struct AnalysisSameEventPairing {
         } else {
           dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision, t1.pt(),
                        t1.eta(), t1.phi(), t1.itsNCls(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(), t2.pt(), t2.eta(), t2.phi(),t2.itsNCls(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
-                       trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF, dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF, // trk0Charge,trk1Charge,
+                       trk0IsAmbiguous, trk1IsAmbiguous, trk0Parameters, trk1Parameters, dcaTrk0KF, dcaTrk1KF, dcaTrksMaxKF, dcaBetweenTrksKF, dcaXYTrk0KF, dcaXYTrk1KF, dcaXYTrksMaxKF, dcaXYBetweenTrksKF,dcaTrk02MCRealPVKF, dcaTrk12MCRealPVKF, dcaTrksMax2MCRealPVKF,dcaXYTrk02MCRealPVKF, dcaXYTrk12MCRealPVKF, dcaXYTrksMax2MCRealPVKF, // trk0Charge,trk1Charge,
                        pairMassKFGeo, pairChi2OverNDFKFGeo, pairNDFKFGeo, pairDecayLengthKFGeo, pairDecayLengthOverErrKFGeo, pairDecayLengthXYKFGeo, pairDecayLengthXYOverErrKFGeo, pairPseudoProperDecayTimeKFGeo, pairPseudoProperDecayLengthManuallyGeo, pairParametersGeo, pairCovarianceGeo,
                        pairMassKFGeoTop, pairChi2OverNDFKFGeoTop, pairNDFKFGeoTop, pairDecayLengthKFGeoTop, pairDecayLengthOverErrKFGeoTop, pairDecayLengthXYKFGeoTop, pairDecayLengthXYOverErrKFGeoTop, pairPseudoProperDecayTimeKFGeoTop, pairPseudoProperDecayLengthManuallyGeoTop, pairParametersGeoTop, pairCovarianceGeoTop,
                        pairMassKFGeoMass, pairChi2OverNDFKFGeoMass, pairNDFKFGeoMass, pairDecayLengthKFGeoMass, pairDecayLengthOverErrKFGeoMass, pairDecayLengthXYKFGeoMass, pairDecayLengthXYOverErrKFGeoMass, pairPseudoProperDecayTimeKFGeoMass, pairPseudoProperDecayLengthManuallyGeoMass, pairParametersGeoMass, pairCovarianceGeoMass,
@@ -1252,7 +1258,7 @@ struct AnalysisSameEventPairing {
                        LBetweenJpsiGeoTopDecayVertexToPV, pairPseudoProperDecayTimeKFGeoTop2, pairDecayLengthKFGeoTop2,
                        VarManager::fgValues[VarManager::kMCVtxX], VarManager::fgValues[VarManager::kMCVtxY], VarManager::fgValues[VarManager::kMCVtxZ],
                        VarManager::fgValues[VarManager::kMCPdgCode], VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz],
-                       event.globalIndex(),  event.reducedMCevent().globalIndex(), t2.reducedMCTrack().mcCollisionId()); // added by lupz
+                       event.globalIndex(),  event.reducedMCevent().globalIndex(), t2.reducedMCTrack().mcCollisionId(),t1.globalIndex(),t2.globalIndex()); // added by lupz
         }
       }
       // added by lupz end
