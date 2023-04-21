@@ -221,8 +221,9 @@ TString VarManager::GetRunPeriod(float runNumber)
   }
 };
 //__________________________________________________________________
-float VarManager::calculateCosPA(KFParticle kfp, KFParticle PV){
-  return cpaFromKF( kfp,  PV);
+float VarManager::calculateCosPA(KFParticle kfp, KFParticle PV)
+{
+  return cpaFromKF(kfp, PV);
 }
 //__________________________________________________________________
 void VarManager::SetDefaultVarNames()
