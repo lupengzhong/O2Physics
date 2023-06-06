@@ -395,6 +395,43 @@ DECLARE_SOA_COLUMN(FwdDcaY1, fwdDcaY1, float); //! Y component of forward DCA
 DECLARE_SOA_COLUMN(FwdDcaX2, fwdDcaX2, float); //! X component of forward DCA
 DECLARE_SOA_COLUMN(FwdDcaY2, fwdDcaY2, float); //! Y component of forward DCA
 
+// added by lupz begin
+// leg1
+DECLARE_SOA_COLUMN(ITSNCls1, itsNCls1, int); 
+DECLARE_SOA_COLUMN(TPCInnerParam1, tpcInnerParam1, float); 
+DECLARE_SOA_COLUMN(TPCNClsFound1, tpcNClsFound1, float); 
+DECLARE_SOA_COLUMN(TPCNClsCR1, tpcNClsCR1, float); 
+DECLARE_SOA_COLUMN(TPCNClsFindableMinusCrossedRows1, tpcNClsFindableMinusCrossedRows1, float); 
+DECLARE_SOA_COLUMN(TPCChi2NCl1, tpcChi2NCl1, float); 
+DECLARE_SOA_COLUMN(DcaXY1, dcaXY1, float); 
+DECLARE_SOA_COLUMN(DcaZ1, dcaZ1, float); 
+DECLARE_SOA_COLUMN(TPCSignal1, tpcSignal1, float); 
+DECLARE_SOA_COLUMN(TPCNSigmaEl1, tpcNSigmaEl1, float); 
+DECLARE_SOA_COLUMN(TPCNSigmaPi1, tpcNSigmaPi1, float); 
+DECLARE_SOA_COLUMN(TPCNSigmaPr1, tpcNSigmaPr1, float); 
+DECLARE_SOA_COLUMN(Beta1, beta1, float); 
+DECLARE_SOA_COLUMN(TOFNSigmaEl1, tofNSigmaEl1, float); 
+DECLARE_SOA_COLUMN(TOFNSigmaPi1, tofNSigmaPi1, float); 
+DECLARE_SOA_COLUMN(TOFNSigmaPr1, tofNSigmaPr1, float); 
+// leg2
+DECLARE_SOA_COLUMN(ITSNCls2, itsNCls2, int); 
+DECLARE_SOA_COLUMN(TPCInnerParam2, tpcInnerParam2, float); 
+DECLARE_SOA_COLUMN(TPCNClsFound2, tpcNClsFound2, float); 
+DECLARE_SOA_COLUMN(TPCNClsCR2, tpcNClsCR2, float); 
+DECLARE_SOA_COLUMN(TPCNClsFindableMinusCrossedRows2, tpcNClsFindableMinusCrossedRows2, float); 
+DECLARE_SOA_COLUMN(TPCChi2NCl2, tpcChi2NCl2, float); 
+DECLARE_SOA_COLUMN(DcaXY2, dcaXY2, float); 
+DECLARE_SOA_COLUMN(DcaZ2, dcaZ2, float); 
+DECLARE_SOA_COLUMN(TPCSignal2, tpcSignal2, float); 
+DECLARE_SOA_COLUMN(TPCNSigmaEl2, tpcNSigmaEl2, float); 
+DECLARE_SOA_COLUMN(TPCNSigmaPi2, tpcNSigmaPi2, float); 
+DECLARE_SOA_COLUMN(TPCNSigmaPr2, tpcNSigmaPr2, float); 
+DECLARE_SOA_COLUMN(Beta2, beta2, float); 
+DECLARE_SOA_COLUMN(TOFNSigmaEl2, tofNSigmaEl2, float); 
+DECLARE_SOA_COLUMN(TOFNSigmaPi2, tofNSigmaPi2, float); 
+DECLARE_SOA_COLUMN(TOFNSigmaPr2, tofNSigmaPr2, float); 
+// added by lupz end
+
 } // namespace dilepton_track_index
 
 // pair information
@@ -418,6 +455,119 @@ DECLARE_SOA_COLUMN(U2Q2, u2q2, float);                 //! Scalar product betwee
 DECLARE_SOA_COLUMN(U3Q3, u3q3, float);                 //! Scalar product between unitary vector with event flow vector (harmonic 3)
 DECLARE_SOA_COLUMN(Cos2DeltaPhi, cos2deltaphi, float); //! Cosinus term using event plane angle (harmonic 2)
 DECLARE_SOA_COLUMN(Cos3DeltaPhi, cos3deltaphi, float); //! Cosinus term using event plane angle (harmonic 3)
+
+// added by lupz begin
+// PV information
+DECLARE_SOA_COLUMN(PVNContributorsKF,pvncontributorsKF, float); // added by lupz
+DECLARE_SOA_COLUMN(PVNDFKF,pvndfKF, int); // added by lupz
+DECLARE_SOA_COLUMN(PVParametersKF,pvparametersKF, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(PVCovarianceKF,pvcovarianceKF, float[36]); // added by lupz
+DECLARE_SOA_COLUMN(OldPVNContributorsKF,oldPVncontributorsKF, float); // added by lupz
+DECLARE_SOA_COLUMN(OldPVNDFKF,oldPVndfKF, int); // added by lupz
+DECLARE_SOA_COLUMN(OldPVParametersKF,oldPVparametersKF, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(OldPVCovarianceKF,oldPVcovarianceKF, float[36]); // added by lupz
+// tracks information
+DECLARE_SOA_COLUMN(Trk0Index, trk0Index, int); //!
+DECLARE_SOA_COLUMN(Trk1Index, trk1Index, int); //!
+DECLARE_SOA_COLUMN(Trk0IsAmbiguous, trk0isAmbiguous, int); //!
+DECLARE_SOA_COLUMN(Trk1IsAmbiguous, trk1isAmbiguous, int); //!
+DECLARE_SOA_COLUMN(Trk0ParametersKF,trk0parametersKF, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(Trk1ParametersKF,trk1parametersKF, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk0KF,dcatrk0KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk1KF,dcatrk1KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrksMaxKF,dcatrksmaxKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk02MCRealPVKF,dcatrk02MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrk12MCRealPVKF,dcatrk12MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCATrksMax2MCRealPVKF,dcatrksmax2MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCABetweenTrksKF,dcabetweentrksKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk0KF,dcaxytrk0KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk1KF,dcaxytrk1KF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrksMaxKF,dcaxytrksmaxKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk02MCRealPVKF,dcaxytrk02MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrk12MCRealPVKF,dcaxytrk12MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYTrksMax2MCRealPVKF,dcaxytrksmax2MCRealPVKF, float); // added by lupz
+DECLARE_SOA_COLUMN(DCAXYBetweenTrksKF,dcaxybetweentrksKF, float); // added by lupz
+// only Geometrical fitting
+DECLARE_SOA_COLUMN(MassKFGeo, massKFGeo, float); // added by lupz 
+DECLARE_SOA_COLUMN(CosPAKFGeo, cosPAKFGeo, float); // added by lupz 
+DECLARE_SOA_COLUMN(Chi2OverNDFKFGeo, chi2overndfKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(NDFKFGeo, ndfKFGeo, int); // added by lupz
+DECLARE_SOA_COLUMN(Chi2KFGeo, chi2KFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthKFGeo,decaylengthKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeo,decaylengthovererrKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeo,decaylengthxyKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeo,decaylengthxyovererrKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeo,pseudoproperdecaytimeKFGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeo,pseudoproperdecaytimeKFManGeo, float); // added by lupz
+DECLARE_SOA_COLUMN(ParametersKFGeo,parametersKFGeo, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(CovarianceKFGeo,covarianceKFGeo, float[36]); // added by lupz
+// Geometrical fitting and topological constraint
+DECLARE_SOA_COLUMN(MassKFGeoTop, massKFGeoTop, float); // added by lupz 
+DECLARE_SOA_COLUMN(CosPAKFGeoTop, cosPAKFGeoTop, float); // added by lupz 
+DECLARE_SOA_COLUMN(Chi2OverNDFKFGeoTop, chi2overndfKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(NDFKFGeoTop, ndfKFGeoTop, int); // added by lupz
+DECLARE_SOA_COLUMN(Chi2KFGeoTop, chi2KFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthKFGeoTop,decaylengthKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeoTop,decaylengthovererrKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeoTop,decaylengthxyKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeoTop,decaylengthxyovererrKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoTop,pseudoproperdecaytimeKFGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoTop,pseudoproperdecaytimeKFManGeoTop, float); // added by lupz
+DECLARE_SOA_COLUMN(ParametersKFGeoTop,parametersKFGeoTop, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(CovarianceKFGeoTop,covarianceKFGeoTop, float[36]); // added by lupz
+// Geometrical fitting and mass constraint
+DECLARE_SOA_COLUMN(MassKFGeoMass, massKFGeoMass, float); // added by lupz 
+DECLARE_SOA_COLUMN(CosPAKFGeoMass, cosPAKFGeoMass, float); // added by lupz 
+DECLARE_SOA_COLUMN(Chi2OverNDFKFGeoMass, chi2overndfKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(NDFKFGeoMass, ndfKFGeoMass, int); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthKFGeoMass,decaylengthKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeoMass,decaylengthovererrKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeoMass,decaylengthxyKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeoMass,decaylengthxyovererrKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoMass,pseudoproperdecaytimeKFGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoMass,pseudoproperdecaytimeKFManGeoMass, float); // added by lupz
+DECLARE_SOA_COLUMN(ParametersKFGeoMass,parametersKFGeoMass, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(CovarianceKFGeoMass,covarianceKFGeoMass, float[36]); // added by lupz
+// Geometrical fitting + mass and topological constraints
+DECLARE_SOA_COLUMN(MassKFGeoMassTop, massKFGeoMassTop, float); // added by lupz 
+DECLARE_SOA_COLUMN(CosPAKFGeoMassTop, cosPAKFGeoMassTop, float); // added by lupz 
+DECLARE_SOA_COLUMN(Chi2OverNDFKFGeoMassTop, chi2overndfKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(NDFKFGeoMassTop, ndfKFGeoMassTop, int); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthKFGeoMassTop,decaylengthKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthOverErrKFGeoMassTop,decaylengthovererrKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYKFGeoMassTop,decaylengthxyKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(DecayLengthXYOverErrKFGeoMassTop,decaylengthxyovererrKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoMassTop,pseudoproperdecaytimeKFGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoMassTop,pseudoproperdecaytimeKFManGeoMassTop, float); // added by lupz
+DECLARE_SOA_COLUMN(ParametersKFGeoMassTop,parametersKFGeoMassTop, float[8]); // added by lupz
+DECLARE_SOA_COLUMN(CovarianceKFGeoMassTop,covarianceKFGeoMassTop, float[36]); // added by lupz
+DECLARE_SOA_COLUMN(LBetweenJpsiGeoTopDecayVertexToPV,lbetweenJpsiGeotopdecayVertexToPV, float); // for test
+DECLARE_SOA_COLUMN(DecayLengthKFGeoTop2,decaylengthKFGeoTop2, float); // for test
+DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoTop2,pseudoproperdecaytimeKFGeoTop2, float); // for test
+// MC true information
+DECLARE_SOA_COLUMN(VtxXRecMC,vtxXRecMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxYRecMC,vtxYRecMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxZRecMC,vtxZRecMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxXRealMC,vtxXRealMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxYRealMC,vtxYRealMC, float); // added by lupz
+DECLARE_SOA_COLUMN(VtxZRealMC,vtxZRealMC, float); // added by lupz
+DECLARE_SOA_COLUMN(NCollisionsMatched,nCollisionsMatched, int); // added by lupz
+DECLARE_SOA_COLUMN(MotherPDG,motherpdg, int); // added by lupz
+DECLARE_SOA_COLUMN(PosXMC,posXMC, float); // added by lupz
+DECLARE_SOA_COLUMN(PosYMC,posYMC, float); // added by lupz
+DECLARE_SOA_COLUMN(PosZMC,posZMC, float); // added by lupz
+DECLARE_SOA_COLUMN(MomXMC,momXMC, float); // added by lupz
+DECLARE_SOA_COLUMN(MomYMC,momYMC, float); // added by lupz
+DECLARE_SOA_COLUMN(MomZMC,momZMC, float); // added by lupz
+DECLARE_SOA_COLUMN(EventId,eventId, int); // added by lupz
+DECLARE_SOA_COLUMN(Trk0EventId,trk0EventId, int); // added by lupz
+DECLARE_SOA_COLUMN(Trk1EventId,trk1EventId, int); // added by lupz
+DECLARE_SOA_COLUMN(EventIdRecMC,eventIdRecMC, int); // added by lupz
+DECLARE_SOA_COLUMN(EventIdRealMC,eventIdRealMC, short); // for test
+DECLARE_SOA_COLUMN(Trk0EventIdMC,trk0EventIdMC, int); // added by lupz
+DECLARE_SOA_COLUMN(Trk1EventIdMC,trk1EventIdMC, int); // added by lupz
+// added by lupz end
+
 // DECLARE_SOA_INDEX_COLUMN(ReducedMuon, reducedmuon2); //!
 DECLARE_SOA_DYNAMIC_COLUMN(Px, px, //!
                            [](float pt, float phi) -> float { return pt * std::cos(phi); });
@@ -437,6 +587,11 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   reducedpair::Pt, reducedpair::Eta, reducedpair::Phi, reducedpair::Sign,
                   reducedpair::FilterMap,
                   reducedpair::McDecision,
+                  dilepton_track_index::Pt1, dilepton_track_index::Eta1, dilepton_track_index::Phi1, dilepton_track_index::TPCNClsFound1,dilepton_track_index::TPCNClsCR1,dilepton_track_index::TPCChi2NCl1, dilepton_track_index::DcaXY1,dilepton_track_index::DcaZ1, dilepton_track_index::TPCSignal1, dilepton_track_index::TPCNSigmaEl1, dilepton_track_index::TPCNSigmaPi1, dilepton_track_index::TPCNSigmaPr1, dilepton_track_index::Beta1, dilepton_track_index::TOFNSigmaEl1, dilepton_track_index::TOFNSigmaPi1, dilepton_track_index::TOFNSigmaPr1,
+                  dilepton_track_index::Pt2, dilepton_track_index::Eta2, dilepton_track_index::Phi2, dilepton_track_index::TPCNClsFound2,dilepton_track_index::TPCNClsCR2,dilepton_track_index::TPCChi2NCl2, dilepton_track_index::DcaXY2,dilepton_track_index::DcaZ2, dilepton_track_index::TPCSignal2, dilepton_track_index::TPCNSigmaEl2, dilepton_track_index::TPCNSigmaPi2, dilepton_track_index::TPCNSigmaPr2, dilepton_track_index::Beta2, dilepton_track_index::TOFNSigmaEl2, dilepton_track_index::TOFNSigmaPi2, dilepton_track_index::TOFNSigmaPr2,
+                  reducedpair::DCATrk0KF,reducedpair::DCATrk1KF,reducedpair::DCATrksMaxKF,reducedpair::DCABetweenTrksKF,reducedpair::DCAXYTrk0KF,reducedpair::DCAXYTrk1KF,reducedpair::DCAXYTrksMaxKF,reducedpair::DCAXYBetweenTrksKF,
+                  reducedpair::MassKFGeo,reducedpair::Chi2OverNDFKFGeo,reducedpair::DecayLengthKFGeo,reducedpair::DecayLengthOverErrKFGeo,reducedpair::DecayLengthXYKFGeo,reducedpair::DecayLengthXYOverErrKFGeo,reducedpair::PseudoproperDecayTimeKFGeo,reducedpair::CosPAKFGeo,reducedpair::Chi2OverNDFKFGeoTop,reducedpair::MassKFGeoTop,
+                  reducedpair::Chi2KFGeo,reducedpair::NDFKFGeo,reducedpair::Chi2KFGeoTop,reducedpair::NDFKFGeoTop,
                   reducedpair::Px<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Py<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Pz<reducedpair::Pt, reducedpair::Eta>,

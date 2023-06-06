@@ -68,7 +68,7 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "CentFT0C_MultTPC", "CentFT0C vs MultTPC", false, 100, 0., 100., VarManager::kCentFT0C, 50, 0., 50., VarManager::kMultTPC);
     }
     if (subGroupStr.Contains("mult")) {
-      hm->AddHistogram(histClass, "MultTPC", "MultTPC", false, 100, 0.0, 25000.0, VarManager::kMultTPC);
+      hm->AddHistogram(histClass, "MultTPC", "MultTPC", false, 500, 0.0, 500.0, VarManager::kMultTPC);
       hm->AddHistogram(histClass, "MultTPCLow", "MultTPCLow", false, 50, 0.0, 50.0, VarManager::kMultTPC);
       hm->AddHistogram(histClass, "MultFV0A", "MultFV0A", false, 100, 0.0, 25000.0, VarManager::kMultFV0A);
       hm->AddHistogram(histClass, "MultFV0C", "MultFV0C", false, 100, 0.0, 25000.0, VarManager::kMultFV0C);
@@ -79,7 +79,7 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "MultZNA", "MultZNA", false, 100, 0.0, 25000.0, VarManager::kMultZNA);
       hm->AddHistogram(histClass, "MultZNC", "MultZNC", false, 100, 0.0, 25000.0, VarManager::kMultZNC);
       hm->AddHistogram(histClass, "MultTracklets", "MultTracklets", false, 100, 0.0, 25000.0, VarManager::kMultTracklets);
-      hm->AddHistogram(histClass, "VtxNContribReal", "Vtx n contributors", false, 100, 0.0, 100.0, VarManager::kVtxNcontribReal);
+      hm->AddHistogram(histClass, "VtxNContribReal", "Vtx n contributors", false, 200, 0.0, 200.0, VarManager::kVtxNcontribReal);
       hm->AddHistogram(histClass, "MultTPC_MultFV0A", "MultTPC vs MultFV0A", false, 100, 0, 20000.0, VarManager::kMultTPC, 100, 0, 20000.0, VarManager::kMultFV0A);
     }
     if (subGroupStr.Contains("mc")) {

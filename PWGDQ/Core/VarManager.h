@@ -207,6 +207,7 @@ class VarManager : public TObject
     kNBasicTrackVariables,
     kUsedKF,
     kKFMass,
+    kKFMassGeoTop,
 
     // Barrel track variables
     kPin,
@@ -372,9 +373,14 @@ class VarManager : public TObject
     kKFTrack1DCAxy,
     kKFTracksDCAxyMax,
     kKFDCAxyBetweenProngs,
+    kKFChi2Geo,
+    kKFNDFGeo,
     kKFChi2OverNDFGeo,
     kKFNContributorsPV,
     kKFCosPA,
+    kKFChi2OverNDFGeoTop,
+    kKFChi2GeoTop,
+    kKFNDFGeoTop,
 
     // Candidate-track correlation variables
     kPairMass,
@@ -1652,8 +1658,11 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
         values[kVertexingLxyzOverErr] = values[kVertexingLxyz] / values[kVertexingLxyzErr];
       }
 
-      if (fgUsedVars[kKFChi2OverNDFGeo])
+      if (fgUsedVars[kKFChi2OverNDFGeo]) {
+        values[kKFChi2Geo] = KFGeoTwoProngBarrel.GetChi2();
+        values[kKFNDFGeo] = KFGeoTwoProngBarrel.GetNDF();
         values[kKFChi2OverNDFGeo] = KFGeoTwoProngBarrel.GetChi2() / KFGeoTwoProngBarrel.GetNDF();
+      }
       if (fgUsedVars[kKFCosPA])
         values[kKFCosPA] = calculateCosPA(KFGeoTwoProngBarrel, KFPV);
 
@@ -1677,6 +1686,13 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       if (fgUsedVars[kKFTracksDCAxyMax]) {
         values[kKFTracksDCAxyMax] = TMath::Abs(values[kKFTrack0DCAxy]) > TMath::Abs(values[kKFTrack1DCAxy]) ? values[kKFTrack0DCAxy] : values[kKFTrack1DCAxy];
       }
+
+      KFParticle KFGeoTopTwoProngBarrel = KFGeoTwoProngBarrel;
+      KFGeoTopTwoProngBarrel.SetProductionVertex(KFPV);
+      values[kKFMassGeoTop] = KFGeoTopTwoProngBarrel.GetMass();
+      values[kKFChi2GeoTop] = KFGeoTopTwoProngBarrel.GetChi2();
+      values[kKFNDFGeoTop] = KFGeoTopTwoProngBarrel.GetNDF();
+      values[kKFChi2OverNDFGeoTop] = KFGeoTopTwoProngBarrel.GetChi2() / KFGeoTopTwoProngBarrel.GetNDF();
     }
   }
 }
