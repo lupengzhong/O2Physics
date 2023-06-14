@@ -653,8 +653,8 @@ KFPVertex VarManager::createKFPVertexFromCollision(const T& collision)
   kfpVertex.SetXYZ(collision.posX(), collision.posY(), collision.posZ());
   kfpVertex.SetCovarianceMatrix(collision.covXX(), collision.covXY(), collision.covYY(), collision.covXZ(), collision.covYZ(), collision.covZZ());
   kfpVertex.SetChi2(collision.chi2());
-  kfpVertex.SetNDF(2 * collision.multNTracksPV() - 3);
-  kfpVertex.SetNContributors(collision.multNTracksPV());
+  kfpVertex.SetNDF(2 * collision.numContrib() - 3);
+  kfpVertex.SetNContributors(collision.numContrib());
   return kfpVertex;
 }
 
