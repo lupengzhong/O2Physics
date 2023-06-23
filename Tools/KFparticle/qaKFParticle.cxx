@@ -851,7 +851,8 @@ struct qaKFParticle {
   using CollisionTableDataMult = soa::Join<aod::Collisions, aod::McCollisionLabels>;
   using TrackTableMC = soa::Join<TrackTableData, aod::McTrackLabels>;
   // Preslice<o2::aod::McCollisionLabels> perMcCollision = o2::aod::mccollisionlabel::mcCollisionId;
-  void processMC(soa::Filtered<CollisionTableMC>::iterator const& collision, soa::Filtered<CollisionTableMC> const& collisions, soa::Filtered<TrackTableMC> const& tracks, aod::McParticles const& mcParticles, soa::Filtered<aod::McCollisions> const& mcCollisions, aod::BCsWithTimestamps const&)
+  // void processMC(soa::Filtered<CollisionTableMC>::iterator const& collision, soa::Filtered<CollisionTableMC> const& collisions, soa::Filtered<TrackTableMC> const& tracks, aod::McParticles const& mcParticles, soa::Filtered<aod::McCollisions> const& mcCollisions, aod::BCsWithTimestamps const&)
+  void processMC(soa::Filtered<CollisionTableMC>::iterator const& collision, soa::Filtered<CollisionTableMC> const& collisions, soa::Filtered<TrackTableMC> const& tracks, aod::McParticles const& mcParticles, aod::McCollisions const& mcCollisions, aod::BCsWithTimestamps const&)
   {
     auto bc = collision.bc_as<aod::BCsWithTimestamps>();
     if (runNumber != bc.runNumber()) {
@@ -1144,7 +1145,7 @@ struct qaKFParticle {
           histos.fill(HIST("TracksKFPi/nSigmaTPC"), kfpTrackNegPi.GetPt(), TPCnSigmaNegPi);
           histos.fill(HIST("TracksKFKa/nSigmaTPC"), kfpTrackPosKa.GetPt(), TPCnSigmaPosKa);
         }
-        writeVarTree(kfpTrackPosPi, kfpTrackNegKa, KFPosPion, KFNegKaon, KFDZeroBar_PV, KFDZeroBar, KFPV, KFDZeroBar_DecayVtx, TPCnSigmaNegPi, TOFnSigmaNegPi, TPCnSigmaPosKa, TOFnSigmaPosKa, cosThetaStar, track1, sourceD0Bar);
+        writeVarTree(kfpTrackNegPi, kfpTrackPosKa, KFNegPion, KFPosKaon, KFDZeroBar_PV, KFDZeroBar, KFPV, KFDZeroBar_DecayVtx, TPCnSigmaNegPi, TOFnSigmaNegPi, TPCnSigmaPosKa, TOFnSigmaPosKa, cosThetaStar, track1, sourceD0Bar);
       }
     }
   }
