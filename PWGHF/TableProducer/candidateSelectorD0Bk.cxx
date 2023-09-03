@@ -1,0 +1,323 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+/// \file candidateSelectorD0.cxx
+/// \brief D0(bar) → π± K∓ selection task
+///
+/// \author Nima Zardoshti <nima.zardoshti@cern.ch>, CERN
+/// \author Vít Kučera <vit.kucera@cern.ch>, CERN
+
+#include "Framework/AnalysisTask.h"
+#include "Framework/runDataProcessing.h"
+
+#include "Common/Core/TrackSelectorPID.h"
+
+#include "PWGHF/DataModel/CandidateReconstructionTables.h"
+#include "PWGHF/DataModel/CandidateSelectionTables.h"
+
+using namespace o2;
+using namespace o2::framework;
+using namespace o2::aod::hf_cand_2prong;
+using namespace o2::analysis::hf_cuts_d0_to_pi_k;
+
+/// Struct for applying D0 selection cuts
+struct HfCandidateSelectorD0 {
+  Produces<aod::HfSelD0> hfSelD0Candidate;
+
+  Configurable<double> ptCandMin{"ptCandMin", 0., "Lower bound of candidate pT"};
+  Configurable<double> ptCandMax{"ptCandMax", 50., "Upper bound of candidate pT"};
+  // TPC PID
+  Configurable<double> ptPidTpcMin{"ptPidTpcMin", 0.15, "Lower bound of track pT for TPC PID"};
+  Configurable<double> ptPidTpcMax{"ptPidTpcMax", 5., "Upper bound of track pT for TPC PID"};
+  Configurable<double> nSigmaTpcMax{"nSigmaTpcMax", 3., "Nsigma cut on TPC only"};
+  Configurable<double> nSigmaTpcCombinedMax{"nSigmaTpcCombinedMax", 5., "Nsigma cut on TPC combined with TOF"};
+  // TOF PID
+  Configurable<double> ptPidTofMin{"ptPidTofMin", 0.15, "Lower bound of track pT for TOF PID"};
+  Configurable<double> ptPidTofMax{"ptPidTofMax", 5., "Upper bound of track pT for TOF PID"};
+  Configurable<double> nSigmaTofMax{"nSigmaTofMax", 3., "Nsigma cut on TOF only"};
+  Configurable<double> nSigmaTofCombinedMax{"nSigmaTofCombinedMax", 5., "Nsigma cut on TOF combined with TPC"};
+  // AND logic for TOF+TPC PID (as in Run2)
+  Configurable<bool> usePidTpcAndTof{"usePidTpcAndTof", false, "Use AND logic for TPC and TOF PID"};
+  // selecting only background candidates
+  Configurable<bool> keepOnlySidebandCandidates{"keepOnlySidebandCandidates", false, "Select only sideband candidates, for studying background cut variable distributions"};
+  Configurable<double> distanceFromD0MassForSidebands{"distanceFromD0MassForSidebands", 0.15, "Minimum distance from nominal D0 mass value for sideband region"};
+  // topological cuts
+  Configurable<std::vector<double>> binsPt{"binsPt", std::vector<double>{hf_cuts_d0_to_pi_k::vecBinsPt}, "pT bin limits"};
+  Configurable<LabeledArray<double>> cuts{"cuts", {hf_cuts_d0_to_pi_k::cuts[0], nBinsPt, nCutVars, labelsPt, labelsCutVar}, "D0 candidate selection per pT bin"};
+
+  TrackSelectorPi selectorPion;
+  TrackSelectorKa selectorKaon;
+
+  using cand2ProngKF = soa::Join<aod::HfCand2Prong, aod::HfCand2ProngKF>;
+  using TracksSel = soa::Join<aod::TracksWDcaExtra, aod::TracksPidPi, aod::TracksPidKa>;
+
+  void init(InitContext& initContext)
+  {
+    selectorPion.setRangePtTpc(ptPidTpcMin, ptPidTpcMax);
+    selectorPion.setRangeNSigmaTpc(-nSigmaTpcMax, nSigmaTpcMax);
+    selectorPion.setRangeNSigmaTpcCondTof(-nSigmaTpcCombinedMax, nSigmaTpcCombinedMax);
+    selectorPion.setRangePtTof(ptPidTofMin, ptPidTofMax);
+    selectorPion.setRangeNSigmaTof(-nSigmaTofMax, nSigmaTofMax);
+    selectorPion.setRangeNSigmaTofCondTpc(-nSigmaTofCombinedMax, nSigmaTofCombinedMax);
+    selectorKaon = selectorPion;
+  }
+
+  /// Conjugate-independent topological cuts
+  /// \param candidate is candidate
+  /// \return true if candidate passes all cuts
+  template <int ReconstructionType, typename T>
+  bool selectionTopol(const T& candidate)
+  {
+    auto candpT = candidate.pt();
+    auto pTBin = findBin(binsPt, candpT);
+    if (pTBin == -1) {
+      return false;
+    }
+
+    // check that the candidate pT is within the analysis range
+    if (candpT < ptCandMin || candpT >= ptCandMax) {
+      return false;
+    }
+    // product of daughter impact parameters
+    if (candidate.impactParameterProduct() > cuts->get(pTBin, "d0d0")) {
+      return false;
+    }
+    // cosine of pointing angle
+    if (candidate.cpa() < cuts->get(pTBin, "cos pointing angle")) {
+      return false;
+    }
+    // cosine of pointing angle XY
+    if (candidate.cpaXY() < cuts->get(pTBin, "cos pointing angle xy")) {
+      return false;
+    }
+    // normalised decay length in XY plane
+    if (candidate.decayLengthXYNormalised() < cuts->get(pTBin, "normalized decay length XY")) {
+      return false;
+    }
+    // candidate DCA
+    // if (candidate.chi2PCA() > cuts[pTBin][1]) return false;
+
+    // candidate chi2
+    // if constexpr (ReconstructionType == useKFParticle) {
+
+    //   if (candidate.kfTopChi2OverNdf() > cuts->get(pTBin, "topological chi2overndf as D0")) return false;
+    //     return false;
+    // }
+
+    // decay exponentail law, with tau = beta*gamma*ctau
+    // decay length > ctau retains (1-1/e)
+    if (std::abs(candidate.impactParameterNormalised0()) < 0.5 || std::abs(candidate.impactParameterNormalised1()) < 0.5) {
+      return false;
+    }
+    double decayLengthCut = std::min((candidate.p() * 0.0066) + 0.01, cuts->get(pTBin, "minimum decay length"));
+    if (candidate.decayLength() * candidate.decayLength() < decayLengthCut * decayLengthCut) {
+      return false;
+    }
+    if (candidate.decayLength() > cuts->get(pTBin, "decay length")) {
+      return false;
+    }
+    if (candidate.decayLengthXY() > cuts->get(pTBin, "decay length XY")) {
+      return false;
+    }
+    if (candidate.decayLengthNormalised() * candidate.decayLengthNormalised() < 1.0) {
+      // return false; // add back when getter fixed
+    }
+    return true;
+  }
+
+  /// Conjugate-dependent topological cuts
+  /// \param candidate is candidate
+  /// \param trackPion is the track with the pion hypothesis
+  /// \param trackKaon is the track with the kaon hypothesis
+  /// \note trackPion = positive and trackKaon = negative for D0 selection and inverse for D0bar
+  /// \return true if candidate passes all cuts for the given Conjugate
+  template <int ReconstructionType,typename T1, typename T2>
+  bool selectionTopolConjugate(const T1& candidate, const T2& trackPion, const T2& trackKaon)
+  {
+    auto candpT = candidate.pt();
+    auto pTBin = findBin(binsPt, candpT);
+    if (pTBin == -1) {
+      return false;
+    }
+
+    // invariant-mass cut
+    float massD0, massD0bar;
+      if constexpr (ReconstructionType == o2::aod::hf_cand::useKFParticle) {
+        massD0 = candidate.kfGeoMassD0();
+        massD0bar = candidate.kfGeoMassD0bar();
+      }
+      else {
+        massD0 = invMassD0ToPiK(candidate);
+        massD0bar = invMassD0barToKPi(candidate);
+      }
+    if (trackPion.sign() > 0) {
+      if (std::abs(massD0 - RecoDecay::getMassPDG(pdg::Code::kD0)) > cuts->get(pTBin, "m")) {
+        return false;
+      }
+    } else {
+      if (std::abs(massD0bar - RecoDecay::getMassPDG(pdg::Code::kD0)) > cuts->get(pTBin, "m")) {
+        return false;
+      }
+    }
+
+    // cut on daughter pT
+    if (trackPion.pt() < cuts->get(pTBin, "pT Pi") || trackKaon.pt() < cuts->get(pTBin, "pT K")) {
+      return false;
+    }
+
+    // cut on daughter DCA - need to add secondary vertex constraint here
+    if (std::abs(trackPion.dcaXY()) > cuts->get(pTBin, "d0pi") || std::abs(trackKaon.dcaXY()) > cuts->get(pTBin, "d0K")) {
+      return false;
+    }
+
+    // cut on cos(theta*)
+    if (trackPion.sign() > 0) {
+      if (std::abs(cosThetaStarD0(candidate)) > cuts->get(pTBin, "cos theta*")) {
+        return false;
+      }
+    } else {
+      if (std::abs(cosThetaStarD0bar(candidate)) > cuts->get(pTBin, "cos theta*")) {
+        return false;
+      }
+    }
+
+    // in case only sideband candidates have to be stored, additional invariant-mass cut
+    if (keepOnlySidebandCandidates) {
+      if (trackPion.sign() > 0) {
+        if (std::abs(invMassD0ToPiK(candidate) - RecoDecay::getMassPDG(pdg::Code::kD0)) < distanceFromD0MassForSidebands) {
+          return false;
+        }
+      } else {
+        if (std::abs(invMassD0barToKPi(candidate) - RecoDecay::getMassPDG(pdg::Code::kD0)) < distanceFromD0MassForSidebands) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+  template <int ReconstructionType, typename THfCand2Prong>
+  void processSel(THfCand2Prong const& candidates, TracksSel const&)
+  {
+    // looping over 2-prong candidates
+    for (auto& candidate : candidates) {
+
+      // final selection flag: 0 - rejected, 1 - accepted
+      int statusD0 = 0;
+      int statusD0bar = 0;
+      int statusHFFlag = 0;
+      int statusTopol = 0;
+      int statusCand = 0;
+      int statusPID = 0;
+
+      if (!(candidate.hfflag() & 1 << DecayType::D0ToPiK)) {
+        hfSelD0Candidate(statusD0, statusD0bar, statusHFFlag, statusTopol, statusCand, statusPID);
+        continue;
+      }
+      statusHFFlag = 1;
+
+      auto trackPos = candidate.template prong0_as<TracksSel>(); // positive daughter
+      auto trackNeg = candidate.template prong1_as<TracksSel>(); // negative daughter
+
+      // conjugate-independent topological selection
+      if (!selectionTopol<ReconstructionType>(candidate)) {
+        hfSelD0Candidate(statusD0, statusD0bar, statusHFFlag, statusTopol, statusCand, statusPID);
+        continue;
+      }
+      statusTopol = 1;
+
+      // implement filter bit 4 cut - should be done before this task at the track selection level
+      // need to add special cuts (additional cuts on decay length and d0 norm)
+
+      // conjugate-dependent topological selection for D0
+      bool topolD0 = selectionTopolConjugate<ReconstructionType>(candidate, trackPos, trackNeg);
+      // conjugate-dependent topological selection for D0bar
+      bool topolD0bar = selectionTopolConjugate<ReconstructionType>(candidate, trackNeg, trackPos);
+
+      if (!topolD0 && !topolD0bar) {
+        hfSelD0Candidate(statusD0, statusD0bar, statusHFFlag, statusTopol, statusCand, statusPID);
+        continue;
+      }
+      statusCand = 1;
+
+      // track-level PID selection
+      int pidTrackPosKaon = -1;
+      int pidTrackPosPion = -1;
+      int pidTrackNegKaon = -1;
+      int pidTrackNegPion = -1;
+
+      if (usePidTpcAndTof) {
+        pidTrackPosKaon = selectorKaon.statusTpcAndTof(trackPos);
+        pidTrackPosPion = selectorPion.statusTpcAndTof(trackPos);
+        pidTrackNegKaon = selectorKaon.statusTpcAndTof(trackNeg);
+        pidTrackNegPion = selectorPion.statusTpcAndTof(trackNeg);
+      } else {
+        pidTrackPosKaon = selectorKaon.statusTpcOrTof(trackPos);
+        pidTrackPosPion = selectorPion.statusTpcOrTof(trackPos);
+        pidTrackNegKaon = selectorKaon.statusTpcOrTof(trackNeg);
+        pidTrackNegPion = selectorPion.statusTpcOrTof(trackNeg);
+      }
+
+      // int pidBayesTrackPos1Pion = selectorPion.statusBayes(trackPos);
+
+      int pidD0 = -1;
+      int pidD0bar = -1;
+
+      if (pidTrackPosPion == TrackSelectorPID::Accepted &&
+          pidTrackNegKaon == TrackSelectorPID::Accepted) {
+        pidD0 = 1; // accept D0
+      } else if (pidTrackPosPion == TrackSelectorPID::Rejected ||
+                 pidTrackNegKaon == TrackSelectorPID::Rejected) {
+        pidD0 = 0; // exclude D0
+      }
+
+      if (pidTrackNegPion == TrackSelectorPID::Accepted &&
+          pidTrackPosKaon == TrackSelectorPID::Accepted) {
+        pidD0bar = 1; // accept D0bar
+      } else if (pidTrackNegPion == TrackSelectorPID::Rejected ||
+                 pidTrackPosKaon == TrackSelectorPID::Rejected) {
+        pidD0bar = 0; // exclude D0bar
+      }
+
+      if (pidD0 == 0 && pidD0bar == 0) {
+        hfSelD0Candidate(statusD0, statusD0bar, statusHFFlag, statusTopol, statusCand, statusPID);
+        continue;
+      }
+
+      if ((pidD0 == -1 || pidD0 == 1) && topolD0) {
+        statusD0 = 1; // identified as D0
+      }
+      if ((pidD0bar == -1 || pidD0bar == 1) && topolD0bar) {
+        statusD0bar = 1; // identified as D0bar
+      }
+      statusPID = 1;
+      hfSelD0Candidate(statusD0, statusD0bar, statusHFFlag, statusTopol, statusCand, statusPID);
+    }
+  }
+  void processWithDCAFitterN(aod::HfCand2Prong const& candidates, TracksSel const& tracks)
+  {
+    processSel<0>(candidates, tracks);
+  }
+  PROCESS_SWITCH(HfCandidateSelectorD0, processWithDCAFitterN, "process candidates selection with DCAFitterN", true);
+  
+  void processWithKFParticle(cand2ProngKF const& candidates, TracksSel const& tracks)
+  {
+    processSel<1>(candidates, tracks);
+  }
+  PROCESS_SWITCH(HfCandidateSelectorD0, processWithKFParticle, "process candidates selection with KFParticle", false);
+
+};
+
+WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
+{
+  return WorkflowSpec{
+    adaptAnalysisTask<HfCandidateSelectorD0>(cfgc)};
+}

@@ -18,21 +18,19 @@
 /// \author Alexandre Bigot <alexandre.bigot@cern.ch>, Strasbourg University
 /// \author Biao Zhang <biao.zhang@cern.ch>, CCNU
 
+#include <onnxruntime/core/session/experimental_onnxruntime_cxx_api.h> // needed for HFFilterHelpers, to be fixed
+
+#include "CCDB/BasicCCDBManager.h"
 #include "Framework/AnalysisDataModel.h"
 #include "Framework/AnalysisTask.h"
 #include "Framework/ASoAHelpers.h"
 #include "Framework/HistogramRegistry.h"
 #include "Framework/runDataProcessing.h"
 
-// needed for HFFilterHelpers, to be fixed
-#include <onnxruntime/core/session/experimental_onnxruntime_cxx_api.h>
-
-#include "HFFilterHelpers.h"
-
 #include "PWGHF/DataModel/CandidateReconstructionTables.h"
 #include "PWGHF/DataModel/CandidateSelectionTables.h"
 
-#include <CCDB/BasicCCDBManager.h>
+#include "HFFilterHelpers.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -118,7 +116,7 @@ struct HfFilterPrepareMlSamples { // Main struct
 
       // D0(bar) → π± K∓
       bool isInCorrectColl{false};
-      auto indexRec = RecoDecay::getMatchedMCRec(particlesMC, std::array{trackPos, trackNeg}, pdg::Code::kD0, array{+kPiPlus, -kKPlus}, true, &sign);
+      auto indexRec = RecoDecay::getMatchedMCRec(particlesMC, std::array{trackPos, trackNeg}, pdg::Code::kD0, std::array{+kPiPlus, -kKPlus}, true, &sign);
       if (indexRec > -1) {
         auto particle = particlesMC.rawIteratorAt(indexRec);
         flag = RecoDecay::getCharmHadronOrigin(particlesMC, particle);
@@ -199,27 +197,27 @@ struct HfFilterPrepareMlSamples { // Main struct
       int8_t channel = -1;
 
       // D± → π± K∓ π±
-      auto indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kDPlus, array{+kPiPlus, -kKPlus, +kPiPlus}, true, &sign, 2);
+      auto indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kDPlus, std::array{+kPiPlus, -kKPlus, +kPiPlus}, true, &sign, 2);
       if (indexRec >= 0) {
         channel = kDplus;
       }
       if (indexRec < 0) {
         // Ds± → K± K∓ π±
-        indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kDS, array{+kKPlus, -kKPlus, +kPiPlus}, true, &sign, 2);
+        indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kDS, std::array{+kKPlus, -kKPlus, +kPiPlus}, true, &sign, 2);
         if (indexRec >= 0) {
           channel = kDs;
         }
       }
       if (indexRec < 0) {
         // Λc± → p± K∓ π±
-        indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kLambdaCPlus, array{+kProton, -kKPlus, +kPiPlus}, true, &sign, 2);
+        indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kLambdaCPlus, std::array{+kProton, -kKPlus, +kPiPlus}, true, &sign, 2);
         if (indexRec >= 0) {
           channel = kLc;
         }
       }
       if (indexRec < 0) {
         // Ξc± → p± K∓ π±
-        indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kXiCPlus, array{+kProton, -kKPlus, +kPiPlus}, true, &sign, 2);
+        indexRec = RecoDecay::getMatchedMCRec(particlesMC, arrayDaughters, pdg::Code::kXiCPlus, std::array{+kProton, -kKPlus, +kPiPlus}, true, &sign, 2);
         if (indexRec >= 0) {
           channel = kXic;
         }
