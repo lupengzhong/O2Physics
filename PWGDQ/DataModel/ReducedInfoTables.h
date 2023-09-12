@@ -556,6 +556,17 @@ DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFGeoMass,pseudoproperdecaytimeKFGeoMass
 DECLARE_SOA_COLUMN(PseudoproperDecayTimeKFManGeoMass,pseudoproperdecaytimeKFManGeoMass, float); // added by lupz
 DECLARE_SOA_COLUMN(ParametersKFGeoMass,parametersKFGeoMass, float[8]); // added by lupz
 DECLARE_SOA_COLUMN(CovarianceKFGeoMass,covarianceKFGeoMass, float[36]); // added by lupz
+DECLARE_SOA_COLUMN(PairDCAxyz,pairDCAxyz, float); // added by lupz
+DECLARE_SOA_COLUMN(PairDCAxy,pairDCAxy, float); // added by lupz
+DECLARE_SOA_COLUMN(PairPosX,pairPosX, float); // added by lupz
+DECLARE_SOA_COLUMN(PairPosY,pairPosY, float); // added by lupz
+DECLARE_SOA_COLUMN(PairPosZ,pairPosZ, float); // added by lupz
+DECLARE_SOA_COLUMN(PairMomX,pairMomX, float); // added by lupz
+DECLARE_SOA_COLUMN(PairMomY,pairMomY, float); // added by lupz
+DECLARE_SOA_COLUMN(PairMomZ,pairMomZ, float); // added by lupz
+DECLARE_SOA_COLUMN(PVPosX,pvPosX, float); // added by lupz
+DECLARE_SOA_COLUMN(PVPosY,pvPosY, float); // added by lupz
+DECLARE_SOA_COLUMN(PVPosZ,pvPosZ, float); // added by lupz
 // Geometrical fitting + mass and topological constraints
 DECLARE_SOA_COLUMN(MassKFGeoMassTop, massKFGeoMassTop, float); // added by lupz 
 DECLARE_SOA_COLUMN(CosPAKFGeoMassTop, cosPAKFGeoMassTop, float); // added by lupz 
@@ -594,6 +605,25 @@ DECLARE_SOA_COLUMN(EventIdRecMC,eventIdRecMC, int); // added by lupz
 DECLARE_SOA_COLUMN(EventIdRealMC,eventIdRealMC, short); // for test
 DECLARE_SOA_COLUMN(Trk0EventIdMC,trk0EventIdMC, int); // added by lupz
 DECLARE_SOA_COLUMN(Trk1EventIdMC,trk1EventIdMC, int); // added by lupz
+
+DECLARE_SOA_COLUMN(MassConstraintType,massConstraintType, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(MassAfterMassConstraint,massAfterMassConstraint, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairPosX_withMC,pairPosX_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairPosY_withMC,pairPosY_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairPosZ_withMC,pairPosZ_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairMomX_withMC,pairMomX_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairMomY_withMC,pairMomY_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairMomZ_withMC,pairMomZ_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PVPosX_withMC,pvPosX_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PVPosY_withMC,pvPosY_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PVPosZ_withMC,pvPosZ_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairPosXErr_withMC,pairPosXErr_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairPosYErr_withMC,pairPosYErr_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairPosZErr_withMC,pairPosZErr_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairMomXErr_withMC,pairMomXErr_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairMomYErr_withMC,pairMomYErr_withMC, float[5]); // added by lupz
+DECLARE_SOA_COLUMN(PairMomZErr_withMC,pairMomZErr_withMC, float[5]); // added by lupz
+
 // added by lupz end
 
 DECLARE_SOA_COLUMN(CollisionId, collisionId, int);     //!
@@ -621,11 +651,29 @@ DECLARE_SOA_TABLE(Dileptons, "AOD", "RTDILEPTON", //!
                   reducedpair::DCATrk0KF,reducedpair::DCATrk1KF,reducedpair::DCATrksMaxKF,reducedpair::DCABetweenTrksKF,reducedpair::DCAXYTrk0KF,reducedpair::DCAXYTrk1KF,reducedpair::DCAXYTrksMaxKF,reducedpair::DCAXYBetweenTrksKF,
                   reducedpair::MassKFGeo,reducedpair::Chi2OverNDFKFGeo,reducedpair::DecayLengthKFGeo,reducedpair::DecayLengthOverErrKFGeo,reducedpair::DecayLengthXYKFGeo,reducedpair::DecayLengthXYOverErrKFGeo,reducedpair::PseudoproperDecayTimeKFGeo,reducedpair::CosPAKFGeo,reducedpair::Chi2OverNDFKFGeoTop,reducedpair::MassKFGeoTop,
                   reducedpair::Chi2KFGeo,reducedpair::NDFKFGeo,reducedpair::Chi2KFGeoTop,reducedpair::NDFKFGeoTop,
+                  reducedpair::PairDCAxyz,reducedpair::PairDCAxy,
+                  reducedpair::PairPosX,reducedpair::PairPosY,reducedpair::PairPosZ,
+                  reducedpair::PairMomX,reducedpair::PairMomY,reducedpair::PairMomZ,
+                  reducedpair::PVPosX,reducedpair::PVPosY,reducedpair::PVPosZ,
                   reducedpair::Px<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Py<reducedpair::Pt, reducedpair::Phi>,
                   reducedpair::Pz<reducedpair::Pt, reducedpair::Eta>,
                   reducedpair::P<reducedpair::Pt, reducedpair::Eta>,
                   reducedpair::Rap<reducedpair::Pt, reducedpair::Eta, reducedpair::Mass>);
+
+DECLARE_SOA_TABLE(DileptonsWithMC, "AOD", "PairsWITHMC", //!
+                  reducedpair::MassConstraintType,
+                  reducedpair::MassAfterMassConstraint,
+                  reducedpair::PairPosX_withMC,reducedpair::PairPosY_withMC,reducedpair::PairPosZ_withMC,
+                  reducedpair::PairPosXErr_withMC,reducedpair::PairPosYErr_withMC,reducedpair::PairPosZErr_withMC,
+                  reducedpair::PairMomX_withMC,reducedpair::PairMomY_withMC,reducedpair::PairMomZ_withMC,
+                  reducedpair::PairMomXErr_withMC,reducedpair::PairMomYErr_withMC,reducedpair::PairMomZErr_withMC,
+                  reducedpair::PVPosX,reducedpair::PVPosY,reducedpair::PVPosZ,
+                  reducedpair::PosXMC,reducedpair::PosYMC,reducedpair::PosZMC,
+                  reducedpair::MomXMC,reducedpair::MomYMC,reducedpair::MomZMC
+);
+
+
 
 DECLARE_SOA_TABLE(DileptonsExtra, "AOD", "RTDILEPTONEXTRA", //!
                   dilepton_track_index::Index0Id, dilepton_track_index::Index1Id,

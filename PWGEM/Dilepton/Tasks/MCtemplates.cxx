@@ -460,7 +460,11 @@ struct AnalysisSameEventPairing {
                      t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
                      VarManager::fgValues[VarManager::kKFTrack0DCAxyz], VarManager::fgValues[VarManager::kKFTrack1DCAxyz], VarManager::fgValues[VarManager::kKFTracksDCAxyzMax], VarManager::fgValues[VarManager::kKFDCAxyzBetweenProngs], VarManager::fgValues[VarManager::kKFTrack0DCAxy], VarManager::fgValues[VarManager::kKFTrack1DCAxy], VarManager::fgValues[VarManager::kKFTracksDCAxyMax], VarManager::fgValues[VarManager::kKFDCAxyBetweenProngs],
                      VarManager::fgValues[VarManager::kKFMass], VarManager::fgValues[VarManager::kKFChi2OverNDFGeo], VarManager::fgValues[VarManager::kVertexingLxyz], VarManager::fgValues[VarManager::kVertexingLxyzOverErr], VarManager::fgValues[VarManager::kVertexingLxyzErr], VarManager::fgValues[VarManager::kVertexingLxyOverErr], VarManager::fgValues[VarManager::kVertexingTauxy], VarManager::fgValues[VarManager::kKFCosPA],VarManager::fgValues[VarManager::kKFChi2OverNDFGeoTop],VarManager::fgValues[VarManager::kKFMassGeoTop],
-                     VarManager::fgValues[VarManager::kKFChi2Geo],VarManager::fgValues[VarManager::kKFNDFGeo],VarManager::fgValues[VarManager::kKFChi2GeoTop],VarManager::fgValues[VarManager::kKFNDFGeoTop]
+                     VarManager::fgValues[VarManager::kKFChi2Geo],VarManager::fgValues[VarManager::kKFNDFGeo],VarManager::fgValues[VarManager::kKFChi2GeoTop],VarManager::fgValues[VarManager::kKFNDFGeoTop],
+                     VarManager::fgValues[VarManager::kKFJpsiDCAxyz],VarManager::fgValues[VarManager::kKFJpsiDCAxy],
+                     VarManager::fgValues[VarManager::kKFJpsiPosX],VarManager::fgValues[VarManager::kKFJpsiPosY],VarManager::fgValues[VarManager::kKFJpsiPosZ],
+                     VarManager::fgValues[VarManager::kKFJpsiMomX],VarManager::fgValues[VarManager::kKFJpsiMomY],VarManager::fgValues[VarManager::kKFJpsiMomZ],
+                     VarManager::fgValues[VarManager::kKFPVPosX],VarManager::fgValues[VarManager::kKFPVPosY],VarManager::fgValues[VarManager::kKFPVPosZ]
                      );
       }
       // added by lupz end

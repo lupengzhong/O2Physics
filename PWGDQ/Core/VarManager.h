@@ -385,6 +385,75 @@ class VarManager : public TObject
     kKFChi2OverNDFGeoTop,
     kKFChi2GeoTop,
     kKFNDFGeoTop,
+    kKFJpsiDCAxyz,
+    kKFJpsiDCAxy,
+    kKFJpsiPosX,
+    kKFJpsiPosY,
+    kKFJpsiPosZ,
+    kKFJpsiMomX,
+    kKFJpsiMomY,
+    kKFJpsiMomZ,
+    kKFJpsiPosX_Err2,
+    kKFJpsiPosY_Err2,
+    kKFJpsiPosZ_Err2,
+    kKFJpsiMomX_Err2,
+    kKFJpsiMomY_Err2,
+    kKFJpsiMomZ_Err2,
+    kKFPVPosX,
+    kKFPVPosY,
+    kKFPVPosZ,
+    kKFJpsiPosX_1,
+    kKFJpsiPosY_1,
+    kKFJpsiPosZ_1,
+    kKFJpsiMomX_1,
+    kKFJpsiMomY_1,
+    kKFJpsiMomZ_1,
+    kKFJpsiPosX_Err2_1,
+    kKFJpsiPosY_Err2_1,
+    kKFJpsiPosZ_Err2_1,
+    kKFJpsiMomX_Err2_1,
+    kKFJpsiMomY_Err2_1,
+    kKFJpsiMomZ_Err2_1,
+    kKFJpsiPosX_2,
+    kKFJpsiPosY_2,
+    kKFJpsiPosZ_2,
+    kKFJpsiMomX_2,
+    kKFJpsiMomY_2,
+    kKFJpsiMomZ_2,
+    kKFJpsiPosX_Err2_2,
+    kKFJpsiPosY_Err2_2,
+    kKFJpsiPosZ_Err2_2,
+    kKFJpsiMomX_Err2_2,
+    kKFJpsiMomY_Err2_2,
+    kKFJpsiMomZ_Err2_2,
+    kKFJpsiPosX_3,
+    kKFJpsiPosY_3,
+    kKFJpsiPosZ_3,
+    kKFJpsiMomX_3,
+    kKFJpsiMomY_3,
+    kKFJpsiMomZ_3,
+    kKFJpsiPosX_Err2_3,
+    kKFJpsiPosY_Err2_3,
+    kKFJpsiPosZ_Err2_3,
+    kKFJpsiMomX_Err2_3,
+    kKFJpsiMomY_Err2_3,
+    kKFJpsiMomZ_Err2_3,
+    kKFJpsiPosX_4,
+    kKFJpsiPosY_4,
+    kKFJpsiPosZ_4,
+    kKFJpsiMomX_4,
+    kKFJpsiMomY_4,
+    kKFJpsiMomZ_4,
+    kKFJpsiPosX_Err2_4,
+    kKFJpsiPosY_Err2_4,
+    kKFJpsiPosZ_Err2_4,
+    kKFJpsiMomX_Err2_4,
+    kKFJpsiMomY_Err2_4,
+    kKFJpsiMomZ_Err2_4,
+    kKFJpsiMassAfterMC_1,
+    kKFJpsiMassAfterMC_2,
+    kKFJpsiMassAfterMC_3,
+    kKFJpsiMassAfterMC_4,
 
     // Candidate-track correlation variables
     kPairMass,
@@ -1671,8 +1740,12 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       KFGeoTwoProngBarrel.AddDaughter(trk0KF);
       KFGeoTwoProngBarrel.AddDaughter(trk1KF);
 
-      if (fgUsedVars[kKFMass])
-        values[kKFMass] = KFGeoTwoProngBarrel.GetMass();
+      if (fgUsedVars[kKFMass]){
+        float mass = 0., massErr = 0.;
+        if (!KFGeoTwoProngBarrel.GetMass(mass, massErr))
+        values[kKFMass] = mass;
+        else values[kKFMass] = -999.;
+      }
     }
     if constexpr (eventHasVtxCov) {
       KFPVertex kfpVertex = createKFPVertexFromCollision(collision);
@@ -1736,13 +1809,108 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       if (fgUsedVars[kKFTracksDCAxyMax]) {
         values[kKFTracksDCAxyMax] = TMath::Abs(values[kKFTrack0DCAxy]) > TMath::Abs(values[kKFTrack1DCAxy]) ? values[kKFTrack0DCAxy] : values[kKFTrack1DCAxy];
       }
+        values[kKFJpsiDCAxyz] = KFGeoTwoProngBarrel.GetDistanceFromParticle(KFPV);
+        values[kKFJpsiDCAxy] = KFGeoTwoProngBarrel.GetDistanceFromParticleXY(KFPV);
+        values[kKFJpsiPosX] = KFGeoTwoProngBarrel.GetX();
+        values[kKFJpsiPosY] = KFGeoTwoProngBarrel.GetY();
+        values[kKFJpsiPosZ] = KFGeoTwoProngBarrel.GetZ();
+        values[kKFJpsiMomX] = KFGeoTwoProngBarrel.GetPx();
+        values[kKFJpsiMomY] = KFGeoTwoProngBarrel.GetPy();
+        values[kKFJpsiMomZ] = KFGeoTwoProngBarrel.GetPz();
+        values[kKFJpsiPosX_Err2] = KFGeoTwoProngBarrel.GetCovariance(0);
+        values[kKFJpsiPosY_Err2] = KFGeoTwoProngBarrel.GetCovariance(2);
+        values[kKFJpsiPosZ_Err2] = KFGeoTwoProngBarrel.GetCovariance(5);
+        values[kKFJpsiMomX_Err2] = KFGeoTwoProngBarrel.GetCovariance(9);
+        values[kKFJpsiMomY_Err2] = KFGeoTwoProngBarrel.GetCovariance(14);
+        values[kKFJpsiMomZ_Err2] = KFGeoTwoProngBarrel.GetCovariance(20);
+        values[kKFPVPosX] = KFPV.GetX();
+        values[kKFPVPosY] = KFPV.GetY();
+        values[kKFPVPosZ] = KFPV.GetZ();
 
       KFParticle KFGeoTopTwoProngBarrel = KFGeoTwoProngBarrel;
       KFGeoTopTwoProngBarrel.SetProductionVertex(KFPV);
-      values[kKFMassGeoTop] = KFGeoTopTwoProngBarrel.GetMass();
       values[kKFChi2GeoTop] = KFGeoTopTwoProngBarrel.GetChi2();
       values[kKFNDFGeoTop] = KFGeoTopTwoProngBarrel.GetNDF();
       values[kKFChi2OverNDFGeoTop] = KFGeoTopTwoProngBarrel.GetChi2() / KFGeoTopTwoProngBarrel.GetNDF();
+      float mass = 0., massErr = 0.;
+      if (!KFGeoTopTwoProngBarrel.GetMass(mass, massErr))
+      values[kKFMassGeoTop] = mass;
+      else values[kKFMassGeoTop] = -999.;
+
+      KFParticle KFGeoMCTwoProngBarrel_1;
+      const KFParticle* JpsiDaughters[2] = { &trk0KF, &trk1KF };
+      KFGeoMCTwoProngBarrel_1.Construct(JpsiDaughters, 2, nullptr, 3.0969);
+      if (!KFGeoMCTwoProngBarrel_1.GetMass(mass, massErr))
+      values[kKFJpsiMassAfterMC_1] = mass;
+      else values[kKFJpsiMassAfterMC_1] = -999.;
+      values[kKFJpsiPosX_1] = KFGeoMCTwoProngBarrel_1.GetX();
+      values[kKFJpsiPosY_1] = KFGeoMCTwoProngBarrel_1.GetY();
+      values[kKFJpsiPosZ_1] = KFGeoMCTwoProngBarrel_1.GetZ();
+      values[kKFJpsiMomX_1] = KFGeoMCTwoProngBarrel_1.GetPx();
+      values[kKFJpsiMomY_1] = KFGeoMCTwoProngBarrel_1.GetPy();
+      values[kKFJpsiMomZ_1] = KFGeoMCTwoProngBarrel_1.GetPz();
+      values[kKFJpsiPosX_Err2_1] = KFGeoMCTwoProngBarrel_1.GetCovariance(0);
+      values[kKFJpsiPosY_Err2_1] = KFGeoMCTwoProngBarrel_1.GetCovariance(2);
+      values[kKFJpsiPosZ_Err2_1] = KFGeoMCTwoProngBarrel_1.GetCovariance(5);
+      values[kKFJpsiMomX_Err2_1] = KFGeoMCTwoProngBarrel_1.GetCovariance(9);
+      values[kKFJpsiMomY_Err2_1] = KFGeoMCTwoProngBarrel_1.GetCovariance(14);
+      values[kKFJpsiMomZ_Err2_1] = KFGeoMCTwoProngBarrel_1.GetCovariance(20);
+
+      KFParticle KFGeoMCTwoProngBarrel_2 = KFGeoTwoProngBarrel;
+      KFGeoMCTwoProngBarrel_2.SetNonlinearMassConstraint(3.0969);
+      if (!KFGeoMCTwoProngBarrel_2.GetMass(mass, massErr))
+      values[kKFJpsiMassAfterMC_2] = mass;
+      else values[kKFJpsiMassAfterMC_2] = -999.;
+      values[kKFJpsiPosX_2] = KFGeoMCTwoProngBarrel_2.GetX();
+      values[kKFJpsiPosY_2] = KFGeoMCTwoProngBarrel_2.GetY();
+      values[kKFJpsiPosZ_2] = KFGeoMCTwoProngBarrel_2.GetZ();
+      values[kKFJpsiMomX_2] = KFGeoMCTwoProngBarrel_2.GetPx();
+      values[kKFJpsiMomY_2] = KFGeoMCTwoProngBarrel_2.GetPy();
+      values[kKFJpsiMomZ_2] = KFGeoMCTwoProngBarrel_2.GetPz();
+      values[kKFJpsiPosX_Err2_2] = KFGeoMCTwoProngBarrel_2.GetCovariance(0);
+      values[kKFJpsiPosY_Err2_2] = KFGeoMCTwoProngBarrel_2.GetCovariance(2);
+      values[kKFJpsiPosZ_Err2_2] = KFGeoMCTwoProngBarrel_2.GetCovariance(5);
+      values[kKFJpsiMomX_Err2_2] = KFGeoMCTwoProngBarrel_2.GetCovariance(9);
+      values[kKFJpsiMomY_Err2_2] = KFGeoMCTwoProngBarrel_2.GetCovariance(14);
+      values[kKFJpsiMomZ_Err2_2] = KFGeoMCTwoProngBarrel_2.GetCovariance(20);
+
+      KFParticle KFGeoMCTwoProngBarrel_3 = KFGeoTwoProngBarrel;
+      // KFGeoMCTwoProngBarrel_3.SetMassConstraint(3.086,0.027);
+      // KFGeoMCTwoProngBarrel_3.SetMassConstraint(3.0969,0.006 );
+      KFGeoMCTwoProngBarrel_3.SetMassConstraint(3.086,0.006 );
+      if (!KFGeoMCTwoProngBarrel_3.GetMass(mass, massErr))
+      values[kKFJpsiMassAfterMC_3] = mass;
+      else values[kKFJpsiMassAfterMC_3] = -999.;
+      values[kKFJpsiPosX_3] = KFGeoMCTwoProngBarrel_3.GetX();
+      values[kKFJpsiPosY_3] = KFGeoMCTwoProngBarrel_3.GetY();
+      values[kKFJpsiPosZ_3] = KFGeoMCTwoProngBarrel_3.GetZ();
+      values[kKFJpsiMomX_3] = KFGeoMCTwoProngBarrel_3.GetPx();
+      values[kKFJpsiMomY_3] = KFGeoMCTwoProngBarrel_3.GetPy();
+      values[kKFJpsiMomZ_3] = KFGeoMCTwoProngBarrel_3.GetPz();
+      values[kKFJpsiPosX_Err2_3] = KFGeoMCTwoProngBarrel_3.GetCovariance(0);
+      values[kKFJpsiPosY_Err2_3] = KFGeoMCTwoProngBarrel_3.GetCovariance(2);
+      values[kKFJpsiPosZ_Err2_3] = KFGeoMCTwoProngBarrel_3.GetCovariance(5);
+      values[kKFJpsiMomX_Err2_3] = KFGeoMCTwoProngBarrel_3.GetCovariance(9);
+      values[kKFJpsiMomY_Err2_3] = KFGeoMCTwoProngBarrel_3.GetCovariance(14);
+      values[kKFJpsiMomZ_Err2_3] = KFGeoMCTwoProngBarrel_3.GetCovariance(20);
+
+      KFParticle KFGeoMCTwoProngBarrel_4 = KFGeoTwoProngBarrel;
+      KFGeoMCTwoProngBarrel_4.SetMassConstraint(3.0969);
+      if (!KFGeoMCTwoProngBarrel_4.GetMass(mass, massErr))
+      values[kKFJpsiMassAfterMC_4] = mass;
+      else values[kKFJpsiMassAfterMC_4] = -999.;
+      values[kKFJpsiPosX_4] = KFGeoMCTwoProngBarrel_4.GetX();
+      values[kKFJpsiPosY_4] = KFGeoMCTwoProngBarrel_4.GetY();
+      values[kKFJpsiPosZ_4] = KFGeoMCTwoProngBarrel_4.GetZ();
+      values[kKFJpsiMomX_4] = KFGeoMCTwoProngBarrel_4.GetPx();
+      values[kKFJpsiMomY_4] = KFGeoMCTwoProngBarrel_4.GetPy();
+      values[kKFJpsiMomZ_4] = KFGeoMCTwoProngBarrel_4.GetPz();
+      values[kKFJpsiPosX_Err2_4] = KFGeoMCTwoProngBarrel_4.GetCovariance(0);
+      values[kKFJpsiPosY_Err2_4] = KFGeoMCTwoProngBarrel_4.GetCovariance(2);
+      values[kKFJpsiPosZ_Err2_4] = KFGeoMCTwoProngBarrel_4.GetCovariance(5);
+      values[kKFJpsiMomX_Err2_4] = KFGeoMCTwoProngBarrel_4.GetCovariance(9);
+      values[kKFJpsiMomY_Err2_4] = KFGeoMCTwoProngBarrel_4.GetCovariance(14);
+      values[kKFJpsiMomZ_Err2_4] = KFGeoMCTwoProngBarrel_4.GetCovariance(20);
     }
   }
 }
