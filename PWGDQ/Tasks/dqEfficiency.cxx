@@ -480,6 +480,7 @@ struct AnalysisMuonSelection {
 
 struct AnalysisSameEventPairing {
   Produces<aod::Dileptons> dileptonList;
+  Produces<aod::DileptonsWithMC> dileptonWithMCList;
   Produces<aod::DileptonsExtra> dileptonExtraList;
   Produces<aod::DimuonsAll> dimuonAllList;
   Service<o2::ccdb::BasicCCDBManager> ccdb;
@@ -730,6 +731,7 @@ struct AnalysisSameEventPairing {
     uint32_t dileptonFilterMap = 0;
     uint32_t dileptonMcDecision = 0;
     dileptonList.reserve(1);
+    dileptonWithMCList.reserve(1);
     dileptonExtraList.reserve(1);
     if (fConfigFlatTables.value) {
       dimuonAllList.reserve(1);
@@ -772,7 +774,105 @@ struct AnalysisSameEventPairing {
 
       dileptonFilterMap = twoTrackFilter;
       dileptonMcDecision = mcDecision;
-      dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision);
+      //dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision);
+      // added by lupz begin
+      float massConsType[5], massAfterMC[5], pairPosX[5], pairPosY[5], pairPosZ[5], pairMomX[5], pairMomY[5], pairMomZ[5], pairPosXErr[5], pairPosYErr[5], pairPosZErr[5], pairMomXErr[5], pairMomYErr[5], pairMomZErr[5];
+      for (int i = 0; i < 5; i++) {
+        massConsType[i] = i;
+      }
+        massAfterMC[0] = VarManager::fgValues[VarManager::kKFMass];
+        pairPosX[0] = VarManager::fgValues[VarManager::kKFJpsiPosX];
+        pairPosY[0] = VarManager::fgValues[VarManager::kKFJpsiPosY];
+        pairPosZ[0] = VarManager::fgValues[VarManager::kKFJpsiPosZ];
+        pairMomX[0] = VarManager::fgValues[VarManager::kKFJpsiMomX];
+        pairMomY[0] = VarManager::fgValues[VarManager::kKFJpsiMomY];
+        pairMomZ[0] = VarManager::fgValues[VarManager::kKFJpsiMomZ];
+        pairPosXErr[0] = VarManager::fgValues[VarManager::kKFJpsiPosX_Err2];
+        pairPosYErr[0] = VarManager::fgValues[VarManager::kKFJpsiPosY_Err2];
+        pairPosZErr[0] = VarManager::fgValues[VarManager::kKFJpsiPosZ_Err2];
+        pairMomXErr[0] = VarManager::fgValues[VarManager::kKFJpsiMomX_Err2];
+        pairMomYErr[0] = VarManager::fgValues[VarManager::kKFJpsiMomY_Err2];
+        pairMomZErr[0] = VarManager::fgValues[VarManager::kKFJpsiMomZ_Err2];
+        massAfterMC[1] = VarManager::fgValues[VarManager::kKFJpsiMassAfterMC_1];
+        pairPosX[1] = VarManager::fgValues[VarManager::kKFJpsiPosX_1];
+        pairPosY[1] = VarManager::fgValues[VarManager::kKFJpsiPosY_1];
+        pairPosZ[1] = VarManager::fgValues[VarManager::kKFJpsiPosZ_1];
+        pairMomX[1] = VarManager::fgValues[VarManager::kKFJpsiMomX_1];
+        pairMomY[1] = VarManager::fgValues[VarManager::kKFJpsiMomY_1];
+        pairMomZ[1] = VarManager::fgValues[VarManager::kKFJpsiMomZ_1];
+        pairPosXErr[1] = VarManager::fgValues[VarManager::kKFJpsiPosX_Err2_1];
+        pairPosYErr[1] = VarManager::fgValues[VarManager::kKFJpsiPosY_Err2_1];
+        pairPosZErr[1] = VarManager::fgValues[VarManager::kKFJpsiPosZ_Err2_1];
+        pairMomXErr[1] = VarManager::fgValues[VarManager::kKFJpsiMomX_Err2_1];
+        pairMomYErr[1] = VarManager::fgValues[VarManager::kKFJpsiMomY_Err2_1];
+        pairMomZErr[1] = VarManager::fgValues[VarManager::kKFJpsiMomZ_Err2_1];
+        massAfterMC[2] = VarManager::fgValues[VarManager::kKFJpsiMassAfterMC_2];
+        pairPosX[2] = VarManager::fgValues[VarManager::kKFJpsiPosX_2];
+        pairPosY[2] = VarManager::fgValues[VarManager::kKFJpsiPosY_2];
+        pairPosZ[2] = VarManager::fgValues[VarManager::kKFJpsiPosZ_2];
+        pairMomX[2] = VarManager::fgValues[VarManager::kKFJpsiMomX_2];
+        pairMomY[2] = VarManager::fgValues[VarManager::kKFJpsiMomY_2];
+        pairMomZ[2] = VarManager::fgValues[VarManager::kKFJpsiMomZ_2];
+        pairPosXErr[2] = VarManager::fgValues[VarManager::kKFJpsiPosX_Err2_2];
+        pairPosYErr[2] = VarManager::fgValues[VarManager::kKFJpsiPosY_Err2_2];
+        pairPosZErr[2] = VarManager::fgValues[VarManager::kKFJpsiPosZ_Err2_2];
+        pairMomXErr[2] = VarManager::fgValues[VarManager::kKFJpsiMomX_Err2_2];
+        pairMomYErr[2] = VarManager::fgValues[VarManager::kKFJpsiMomY_Err2_2];
+        pairMomZErr[2] = VarManager::fgValues[VarManager::kKFJpsiMomZ_Err2_2];
+        massAfterMC[3] = VarManager::fgValues[VarManager::kKFJpsiMassAfterMC_3];
+        pairPosX[3] = VarManager::fgValues[VarManager::kKFJpsiPosX_3];
+        pairPosY[3] = VarManager::fgValues[VarManager::kKFJpsiPosY_3];
+        pairPosZ[3] = VarManager::fgValues[VarManager::kKFJpsiPosZ_3];
+        pairMomX[3] = VarManager::fgValues[VarManager::kKFJpsiMomX_3];
+        pairMomY[3] = VarManager::fgValues[VarManager::kKFJpsiMomY_3];
+        pairMomZ[3] = VarManager::fgValues[VarManager::kKFJpsiMomZ_3];
+        pairPosXErr[3] = VarManager::fgValues[VarManager::kKFJpsiPosX_Err2_3];
+        pairPosYErr[3] = VarManager::fgValues[VarManager::kKFJpsiPosY_Err2_3];
+        pairPosZErr[3] = VarManager::fgValues[VarManager::kKFJpsiPosZ_Err2_3];
+        pairMomXErr[3] = VarManager::fgValues[VarManager::kKFJpsiMomX_Err2_3];
+        pairMomYErr[3] = VarManager::fgValues[VarManager::kKFJpsiMomY_Err2_3];
+        pairMomZErr[3] = VarManager::fgValues[VarManager::kKFJpsiMomZ_Err2_3];
+        massAfterMC[4] = VarManager::fgValues[VarManager::kKFJpsiMassAfterMC_4];
+        pairPosX[4] = VarManager::fgValues[VarManager::kKFJpsiPosX_4];
+        pairPosY[4] = VarManager::fgValues[VarManager::kKFJpsiPosY_4];
+        pairPosZ[4] = VarManager::fgValues[VarManager::kKFJpsiPosZ_4];
+        pairMomX[4] = VarManager::fgValues[VarManager::kKFJpsiMomX_4];
+        pairMomY[4] = VarManager::fgValues[VarManager::kKFJpsiMomY_4];
+        pairMomZ[4] = VarManager::fgValues[VarManager::kKFJpsiMomZ_4];
+        pairPosXErr[4] = VarManager::fgValues[VarManager::kKFJpsiPosX_Err2_4];
+        pairPosYErr[4] = VarManager::fgValues[VarManager::kKFJpsiPosY_Err2_4];
+        pairPosZErr[4] = VarManager::fgValues[VarManager::kKFJpsiPosZ_Err2_4];
+        pairMomXErr[4] = VarManager::fgValues[VarManager::kKFJpsiMomX_Err2_4];
+        pairMomYErr[4] = VarManager::fgValues[VarManager::kKFJpsiMomY_Err2_4];
+        pairMomZErr[4] = VarManager::fgValues[VarManager::kKFJpsiMomZ_Err2_4];
+
+      if constexpr ((TPairType == VarManager::kDecayToEE) && (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelPID) > 0) {
+        for (unsigned int isig = 0; isig < fRecMCSignals.size(); isig++) {
+              if (mcDecision & (uint32_t(1) << isig)) {
+        dileptonList(event, VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), dileptonFilterMap, dileptonMcDecision,
+                     t1.pt(), t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), t1.tpcSignal(), t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.beta(), t1.tofNSigmaEl(), t1.tofNSigmaPi(), t1.tofNSigmaPr(),
+                     t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), t2.tpcSignal(), t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.beta(), t2.tofNSigmaEl(), t2.tofNSigmaPi(), t2.tofNSigmaPr(),
+                     VarManager::fgValues[VarManager::kKFTrack0DCAxyz], VarManager::fgValues[VarManager::kKFTrack1DCAxyz], VarManager::fgValues[VarManager::kKFTracksDCAxyzMax], VarManager::fgValues[VarManager::kKFDCAxyzBetweenProngs], VarManager::fgValues[VarManager::kKFTrack0DCAxy], VarManager::fgValues[VarManager::kKFTrack1DCAxy], VarManager::fgValues[VarManager::kKFTracksDCAxyMax], VarManager::fgValues[VarManager::kKFDCAxyBetweenProngs],
+                     VarManager::fgValues[VarManager::kKFMass], VarManager::fgValues[VarManager::kKFChi2OverNDFGeo], VarManager::fgValues[VarManager::kVertexingLxyz], VarManager::fgValues[VarManager::kVertexingLxyzOverErr], VarManager::fgValues[VarManager::kVertexingLxyzErr], VarManager::fgValues[VarManager::kVertexingLxyOverErr], VarManager::fgValues[VarManager::kVertexingTauxy], VarManager::fgValues[VarManager::kKFCosPA],VarManager::fgValues[VarManager::kKFChi2OverNDFGeoTop],VarManager::fgValues[VarManager::kKFMassGeoTop],
+                     VarManager::fgValues[VarManager::kKFChi2Geo],VarManager::fgValues[VarManager::kKFNDFGeo],VarManager::fgValues[VarManager::kKFChi2GeoTop],VarManager::fgValues[VarManager::kKFNDFGeoTop],
+                     VarManager::fgValues[VarManager::kKFJpsiDCAxyz],VarManager::fgValues[VarManager::kKFJpsiDCAxy],
+                     VarManager::fgValues[VarManager::kKFJpsiPosX],VarManager::fgValues[VarManager::kKFJpsiPosY],VarManager::fgValues[VarManager::kKFJpsiPosZ],
+                     VarManager::fgValues[VarManager::kKFJpsiMomX],VarManager::fgValues[VarManager::kKFJpsiMomY],VarManager::fgValues[VarManager::kKFJpsiMomZ],
+                     VarManager::fgValues[VarManager::kKFPVPosX],VarManager::fgValues[VarManager::kKFPVPosY],VarManager::fgValues[VarManager::kKFPVPosZ]
+                     );
+        dileptonWithMCList( massConsType,
+                            massAfterMC, 
+                            pairPosX, pairPosY, pairPosZ, 
+                            pairPosXErr, pairPosYErr, pairPosZErr, 
+                            pairMomX, pairMomY, pairMomZ, 
+                            pairMomXErr, pairMomYErr, pairMomZErr,
+                            VarManager::fgValues[VarManager::kKFPVPosX],VarManager::fgValues[VarManager::kKFPVPosY],VarManager::fgValues[VarManager::kKFPVPosZ],
+                            VarManager::fgValues[VarManager::kMCVx], VarManager::fgValues[VarManager::kMCVy], VarManager::fgValues[VarManager::kMCVz], 
+                            VarManager::fgValues[VarManager::kMCPx], VarManager::fgValues[VarManager::kMCPy], VarManager::fgValues[VarManager::kMCPz]);
+              }
+        }
+      }
+      // added by lupz end
       dileptonExtraList(t1.globalIndex(), t2.globalIndex(), VarManager::fgValues[VarManager::kVertexingTauz], VarManager::fgValues[VarManager::kVertexingLz], VarManager::fgValues[VarManager::kVertexingLxy]);
 
       constexpr bool muonHasCov = ((TTrackFillMap & VarManager::ObjTypes::MuonCov) > 0 || (TTrackFillMap & VarManager::ObjTypes::ReducedMuonCov) > 0);
@@ -900,10 +1000,10 @@ struct AnalysisSameEventPairing {
     VarManager::FillEvent<gkEventFillMapWithCov>(event);
     VarManager::FillEvent<gkMCEventFillMap>(event.reducedMCevent());
 
-    runPairing<VarManager::kDecayToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC);
     auto groupedMCTracks = tracksMC.sliceBy(perReducedMcEvent, event.reducedMCevent().globalIndex());
     groupedMCTracks.bindInternalIndicesTo(&tracksMC);
     runMCGen(groupedMCTracks);
+    runPairing<VarManager::kDecayToEE, gkEventFillMapWithCov, gkMCEventFillMap, gkTrackFillMapWithCov>(event, tracks, tracks, eventsMC, tracksMC);
   }
 
   void processDecayToMuMuSkimmed(soa::Filtered<MyEventsSelected>::iterator const& event,

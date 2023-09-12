@@ -524,7 +524,7 @@ void VarManager::SetDefaultVarNames()
   fgVariableUnits[kKFChi2OverNDFGeo] = "";
   fgVariableNames[kKFCosPA] = "cosPA";
   fgVariableUnits[kKFCosPA] = "";
-  fgVariableNames[kKFNContributorsPV] = "Real Number of Trks to PV";
+  fgVariableNames[kKFNContributorsPV] = "Number of Trks to PV";
   fgVariableUnits[kKFNContributorsPV] = "";
   fgVariableNames[kQ2X0A] = "Q_{2,x}^{A} ";
   fgVariableUnits[kQ2X0A] = "";
