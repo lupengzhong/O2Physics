@@ -14,6 +14,7 @@
 ///
 /// \author Gian Michele Innocenti <gian.michele.innocenti@cern.ch>, CERN
 /// \author Vít Kučera <vit.kucera@cern.ch>, CERN
+/// \author Pengzhong Lu <pengzhong.lu@cern.ch>, GSI Darmstadt, USTC
 
 #include "DCAFitter/DCAFitterN.h"
 #include "Framework/AnalysisTask.h"
@@ -25,6 +26,14 @@
 #include "PWGHF/DataModel/CandidateReconstructionTables.h"
 #include "PWGHF/Utils/utilsBfieldCCDB.h"
 
+/// includes KFParticle
+#include "Tools/KFparticle/KFUtilities.h"
+#include <KFPTrack.h>
+#include <KFParticleBase.h>
+#include <KFPVertex.h>
+#include <KFParticle.h>
+#include <KFVertex.h>
+
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::aod::hf_cand;
@@ -33,8 +42,10 @@ using namespace o2::aod::hf_cand_2prong;
 /// Reconstruction of heavy-flavour 2-prong decay candidates
 struct HfCandidateCreator2Prong {
   Produces<aod::HfCand2ProngBase> rowCandidateBase;
+Produces<aod::HfCand2ProngKF> rowCandidateKF;
 
   // vertexing
+Configurable<bool> constrainKfToPv{"constrainKfToPv", true, "constraint KFParticle to PV"};
   Configurable<bool> propagateToPCA{"propagateToPCA", true, "create tracks version propagated to PCA"};
   Configurable<bool> useAbsDCA{"useAbsDCA", false, "Minimise abs. distance rather than chi2"};
   Configurable<bool> useWeightedFinalPCA{"useWeightedFinalPCA", false, "Recalculate vertex position using track covariances, effective only if useAbsDCA is true"};
@@ -74,12 +85,23 @@ struct HfCandidateCreator2Prong {
   OutputObj<TH1F> hCovSVZZ{TH1F("hCovSVZZ", "2-prong candidates;ZZ element of cov. matrix of sec. vtx. position (cm^{2});entries", 100, 0., 0.2)};
   OutputObj<TH2F> hDcaXYProngs{TH2F("hDcaXYProngs", "DCAxy of 2-prong candidates;#it{p}_{T} (GeV/#it{c};#it{d}_{xy}) (#mum);entries", 100, 0., 20., 200, -500., 500.)};
   OutputObj<TH2F> hDcaZProngs{TH2F("hDcaZProngs", "DCAz of 2-prong candidates;#it{p}_{T} (GeV/#it{c};#it{d}_{z}) (#mum);entries", 100, 0., 20., 200, -500., 500.)};
+OutputObj<TH1F> hUseKForDCAFitter{TH1F("hUseKForDCAFitter", ";Use KF or DCAFitterN;entries", 2, -0.5, 1.5)}; // 0 for KF, 1 for DCAFitterN
 
   void init(InitContext const&)
   {
-    if (doprocessPvRefit && doprocessNoPvRefit) {
-      LOGP(fatal, "Only one process function between processPvRefit and processNoPvRefit can be enabled at a time.");
+    std::array<bool, 2> doprocessDF{doprocessPvRefitWithDF, doprocessNoPvRefitWithDF};
+    std::array<bool, 2> doprocessKF{doprocessPvRefitWithKF, doprocessNoPvRefitWithKF};
+    if ((std::accumulate(doprocessDF.begin(), doprocessDF.end(), 0) + std::accumulate(doprocessKF.begin(), doprocessKF.end(), 0)) != 1) {
+      LOGP(fatal, "Only one process function can be enabled at a time.");
     }
+    if (std::accumulate(doprocessDF.begin(), doprocessDF.end(), 0) == 1) {
+      hUseKForDCAFitter->Fill(1.0);
+    }
+    if (std::accumulate(doprocessKF.begin(), doprocessKF.end(), 0) == 1) {
+      hUseKForDCAFitter->Fill(0.0);
+    }
+
+
     ccdb->setURL(ccdbUrl);
     ccdb->setCaching(true);
     ccdb->setLocalObjectValidityChecking();
@@ -87,10 +109,10 @@ struct HfCandidateCreator2Prong {
     runNumber = 0;
   }
 
-  template <bool doPvRefit = false, typename Cand>
-  void runCreator2Prong(aod::Collisions const& collisions,
+  template <bool doPvRefit = false, typename Cand, typename TTracks>
+  void runCreator2ProngWithDF(aod::Collisions const& collisions,
                         Cand const& rowsTrackIndexProng2,
-                        aod::TracksWCov const& tracks,
+                        TTracks const& tracks,
                         aod::BCsWithTimestamps const& bcWithTimeStamps)
   {
     // 2-prong vertex fitter
@@ -106,8 +128,8 @@ struct HfCandidateCreator2Prong {
 
     // loop over pairs of track indices
     for (const auto& rowTrackIndexProng2 : rowsTrackIndexProng2) {
-      auto track0 = rowTrackIndexProng2.template prong0_as<aod::TracksWCov>();
-      auto track1 = rowTrackIndexProng2.template prong1_as<aod::TracksWCov>();
+      auto track0 = rowTrackIndexProng2.template prong0_as<TTracks>();
+      auto track1 = rowTrackIndexProng2.template prong1_as<TTracks>();
       auto trackParVarPos1 = getTrackParCov(track0);
       auto trackParVarNeg1 = getTrackParCov(track1);
       auto collision = rowTrackIndexProng2.collision();
@@ -210,25 +232,171 @@ struct HfCandidateCreator2Prong {
     }
   }
 
-  void processPvRefit(aod::Collisions const& collisions,
+  template <bool doPvRefit = false, typename Cand, typename TTracks>
+  void runCreator2ProngWithKF(aod::Collisions const& collisions,
+                              Cand const& rowsTrackIndexProng2,
+                              TTracks const& tracks,
+                              aod::BCsWithTimestamps const& bcWithTimeStamps)
+  {
+    // hUseKForDCAFitter->Fill(0.0);
+
+    for (const auto& rowTrackIndexProng2 : rowsTrackIndexProng2) {
+      auto track0 = rowTrackIndexProng2.template prong0_as<TTracks>();
+      auto track1 = rowTrackIndexProng2.template prong1_as<TTracks>();
+      auto trackParVarPos1 = getTrackParCov(track0);
+      auto trackParVarNeg1 = getTrackParCov(track1);
+      auto collision = rowTrackIndexProng2.collision();
+
+      /// Set the magnetic field from ccdb.
+      /// The static instance of the propagator was already modified in the HFTrackIndexSkimCreator,
+      /// but this is not true when running on Run2 data/MC already converted into AO2Ds.
+      auto bc = collision.template bc_as<aod::BCsWithTimestamps>();
+      if (runNumber != bc.runNumber()) {
+        LOG(info) << ">>>>>>>>>>>> Current run number: " << runNumber;
+        initCCDB(bc, runNumber, ccdb, isRun2 ? ccdbPathGrp : ccdbPathGrpMag, lut, isRun2);
+        bz = o2::base::Propagator::Instance()->getNominalBz();
+        LOG(info) << ">>>>>>>>>>>> Magnetic field: " << bz;
+        // df.setBz(bz); /// put it outside the 'if'! Otherwise we have a difference wrt bz Configurable (< 1 permille) in Run2 conv. data
+        // df.print();
+      }
+      float covMatrixPV[6];
+
+      KFParticle::SetField(bz);
+      KFPVertex kfpVertex = createKFPVertexFromCollision(collision);
+
+      if constexpr (doPvRefit) {
+        /// use PV refit
+        /// Using it in the rowCandidateBase all dynamic columns shall take it into account
+        // coordinates
+        kfpVertex.SetXYZ(rowTrackIndexProng2.pvRefitX(), rowTrackIndexProng2.pvRefitY(), rowTrackIndexProng2.pvRefitZ());
+        // covariance matrix
+        kfpVertex.SetCovarianceMatrix(rowTrackIndexProng2.pvRefitSigmaX2(), rowTrackIndexProng2.pvRefitSigmaXY(), rowTrackIndexProng2.pvRefitSigmaY2(), rowTrackIndexProng2.pvRefitSigmaXZ(), rowTrackIndexProng2.pvRefitSigmaYZ(), rowTrackIndexProng2.pvRefitSigmaZ2());
+      }
+      kfpVertex.GetCovarianceMatrix(covMatrixPV);
+      KFParticle KFPV(kfpVertex);
+      hCovPVXX->Fill(covMatrixPV[0]);
+      hCovPVYY->Fill(covMatrixPV[2]);
+      hCovPVXZ->Fill(covMatrixPV[3]);
+      hCovPVZZ->Fill(covMatrixPV[5]);
+
+      KFPTrack kfpTrack0=createKFPTrackFromTrack(track0);
+      KFPTrack kfpTrack1=createKFPTrackFromTrack(track1);
+
+      // kfpTrack0 = createKFPTrackFromTrack(track0);
+      // kfpTrack1 = createKFPTrackFromTrack(track1);
+
+      KFParticle kfPosPion(kfpTrack0, kPiPlus);
+      KFParticle kfNegPion(kfpTrack1, kPiPlus);
+      KFParticle kfPosKaon(kfpTrack0, kKPlus);
+      KFParticle kfNegKaon(kfpTrack1, kKPlus);
+
+      float impactParameter0XY = 0., errImpactParameter0XY = 0., impactParameter1XY = 0., errImpactParameter1XY = 0.;
+      if (!kfPosPion.GetDistanceFromVertexXY(KFPV, impactParameter0XY, errImpactParameter0XY)) {
+        hDcaXYProngs->Fill(track0.pt(), impactParameter0XY * toMicrometers);
+        hDcaZProngs->Fill(track0.pt(), std::sqrt(kfPosPion.GetDistanceFromVertex(KFPV) * kfPosPion.GetDistanceFromVertex(KFPV) - impactParameter0XY * impactParameter0XY) * toMicrometers);
+      } else {
+        hDcaXYProngs->Fill(track0.pt(), -999.);
+        hDcaZProngs->Fill(track0.pt(), -999.);
+      }
+      if (!kfNegPion.GetDistanceFromVertexXY(KFPV, impactParameter1XY, errImpactParameter1XY)) {
+        hDcaXYProngs->Fill(track1.pt(), impactParameter1XY * toMicrometers);
+        hDcaZProngs->Fill(track1.pt(), std::sqrt(kfNegPion.GetDistanceFromVertex(KFPV) * kfNegPion.GetDistanceFromVertex(KFPV) - impactParameter1XY * impactParameter1XY) * toMicrometers);
+      } else {
+        hDcaXYProngs->Fill(track1.pt(), -999.);
+        hDcaZProngs->Fill(track1.pt(), -999.);
+      }
+
+      KFParticle kfCandD0;
+      const KFParticle* kfDaughtersD0[2] = {&kfPosPion, &kfNegKaon};
+      kfCandD0.SetConstructMethod(2);
+      kfCandD0.Construct(kfDaughtersD0, 2);
+      KFParticle kfCandD0bar;
+      const KFParticle* kfDaughtersD0bar[2] = {&kfNegPion, &kfPosKaon};
+      kfCandD0bar.SetConstructMethod(2);
+      kfCandD0bar.Construct(kfDaughtersD0bar, 2);
+
+      auto massD0 = kfCandD0.GetMass();
+      auto massD0bar = kfCandD0bar.GetMass();
+
+      hCovSVXX->Fill(kfCandD0.Covariance(0, 0));
+      hCovSVYY->Fill(kfCandD0.Covariance(1, 1));
+      hCovSVXZ->Fill(kfCandD0.Covariance(2, 0));
+      hCovSVZZ->Fill(kfCandD0.Covariance(2, 2));
+      auto covMatrixSV = kfCandD0.CovarianceMatrix();
+
+      double phi, theta;
+      getPointDirection(std::array{KFPV.GetX(), KFPV.GetY(), KFPV.GetZ()}, std::array{kfCandD0.GetX(), kfCandD0.GetY(), kfCandD0.GetZ()}, phi, theta);
+      auto errorDecayLength = std::sqrt(getRotatedCovMatrixXX(covMatrixPV, phi, theta) + getRotatedCovMatrixXX(covMatrixSV, phi, theta));
+      auto errorDecayLengthXY = std::sqrt(getRotatedCovMatrixXX(covMatrixPV, phi, 0.) + getRotatedCovMatrixXX(covMatrixSV, phi, 0.));
+
+      float topolChi2PerNdfD0 = -999.;
+      KFParticle kfCandD0Topol2PV;
+      if (constrainKfToPv) {
+        kfCandD0Topol2PV = kfCandD0;
+        kfCandD0Topol2PV.SetProductionVertex(KFPV);
+        topolChi2PerNdfD0 = kfCandD0Topol2PV.GetChi2() / kfCandD0Topol2PV.GetNDF();
+      }
+
+      // fill candidate table rows
+      rowCandidateBase(collision.globalIndex(),
+                       KFPV.GetX(), KFPV.GetY(), KFPV.GetZ(),
+                       kfCandD0.GetX(), kfCandD0.GetY(), kfCandD0.GetZ(),
+                       errorDecayLength, errorDecayLengthXY,   // TODO: much different from the DCAFitterN one
+                       kfCandD0.GetChi2() / kfCandD0.GetNDF(), // TODO: to make sure it should be chi2 only or chi2/ndf, much different from the DCAFitterN one
+                       kfPosPion.GetPx(), kfPosPion.GetPy(), kfPosPion.GetPz(),
+                       kfNegKaon.GetPx(), kfNegKaon.GetPy(), kfNegKaon.GetPz(),
+                       impactParameter0XY, impactParameter1XY,
+                       errImpactParameter0XY, errImpactParameter1XY,
+                       rowTrackIndexProng2.prong0Id(), rowTrackIndexProng2.prong1Id(),
+                       rowTrackIndexProng2.hfflag());
+      rowCandidateKF(topolChi2PerNdfD0,
+                     massD0, massD0bar);
+
+      // fill histograms
+      if (fillHistograms) {
+        hMass2->Fill(massD0);
+        hMass2->Fill(massD0bar);
+      }
+    }
+  }
+
+  void processPvRefitWithDF(aod::Collisions const& collisions,
                       soa::Join<aod::Hf2Prongs, aod::HfPvRefit2Prong> const& rowsTrackIndexProng2,
                       aod::TracksWCov const& tracks,
                       aod::BCsWithTimestamps const& bcWithTimeStamps)
   {
-    runCreator2Prong<true>(collisions, rowsTrackIndexProng2, tracks, bcWithTimeStamps);
+    runCreator2ProngWithDF<true>(collisions, rowsTrackIndexProng2, tracks, bcWithTimeStamps);
   }
 
-  PROCESS_SWITCH(HfCandidateCreator2Prong, processPvRefit, "Run candidate creator with PV refit", false);
+  PROCESS_SWITCH(HfCandidateCreator2Prong, processPvRefitWithDF, "Run candidate creator with PV refit", false);
 
-  void processNoPvRefit(aod::Collisions const& collisions,
+  void processNoPvRefitWithDF(aod::Collisions const& collisions,
                         aod::Hf2Prongs const& rowsTrackIndexProng2,
                         aod::TracksWCov const& tracks,
                         aod::BCsWithTimestamps const& bcWithTimeStamps)
   {
-    runCreator2Prong(collisions, rowsTrackIndexProng2, tracks, bcWithTimeStamps);
+    runCreator2ProngWithDF(collisions, rowsTrackIndexProng2, tracks, bcWithTimeStamps);
   }
 
-  PROCESS_SWITCH(HfCandidateCreator2Prong, processNoPvRefit, "Run candidate creator without PV refit", true);
+  PROCESS_SWITCH(HfCandidateCreator2Prong, processNoPvRefitWithDF, "Run candidate creator without PV refit", true);
+
+  void processPvRefitWithKF(aod::Collisions const& collisions,
+                            soa::Join<aod::Hf2Prongs, aod::HfPvRefit2Prong> const& rowsTrackIndexProng2,
+                            soa::Join<aod::TracksWCov, aod::TracksExtra> const& tracks,
+                            aod::BCsWithTimestamps const& bcWithTimeStamps)
+  {
+    runCreator2ProngWithKF<true>(collisions, rowsTrackIndexProng2, tracks, bcWithTimeStamps);
+  }
+  PROCESS_SWITCH(HfCandidateCreator2Prong, processPvRefitWithKF, "Run candidate creator with PV refit", false);
+
+  void processNoPvRefitWithKF(aod::Collisions const& collisions,
+                              aod::Hf2Prongs const& rowsTrackIndexProng2,
+                              soa::Join<aod::TracksWCov, aod::TracksExtra> const& tracks,
+                              aod::BCsWithTimestamps const& bcWithTimeStamps)
+  {
+    runCreator2ProngWithKF(collisions, rowsTrackIndexProng2, tracks, bcWithTimeStamps);
+  }
+  PROCESS_SWITCH(HfCandidateCreator2Prong, processNoPvRefitWithKF, "Run candidate creator without PV refit", false);
 };
 
 /// Extends the base table with expression columns.
