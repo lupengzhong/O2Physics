@@ -120,11 +120,7 @@ DECLARE_SOA_TABLE(HfCandD0Fulls, "AOD", "HFCANDD0FULL",
                   hf_cand::ErrorDecayLength,
                   hf_cand::ErrorDecayLengthXY,
                   hf_cand::Chi2PCA,
-<<<<<<< HEAD
-hf_cand_2prong::KfTopolChi2OverNdf,
-=======
                   hf_cand::KfTopolChi2OverNdf,
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
                   full::RSecondaryVertex,
                   full::DecayLength,
                   full::DecayLengthXY,
@@ -202,20 +198,12 @@ struct HfTreeCreatorD0ToKPi {
 
   Configurable<bool> fillCandidateLiteTable{"fillCandidateLiteTable", false, "Switch to fill lite table with candidate properties"};
   // parameters for production of training samples
-<<<<<<< HEAD
-    Configurable<float> downSampleBkgFactor{"downSampleBkgFactor", 1., "Fraction of background candidates to keep for ML trainings"};
-=======
   Configurable<float> downSampleBkgFactor{"downSampleBkgFactor", 1., "Fraction of background candidates to keep for ML trainings"};
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   Configurable<float> ptMaxForDownSample{"ptMaxForDownSample", 10., "Maximum pt for the application of the downsampling factor"};
 
   using TracksWPid = soa::Join<aod::Tracks, aod::TracksPidPi, aod::TracksPidKa>;
   using SelectedCandidatesMc = soa::Filtered<soa::Join<aod::HfCand2Prong, aod::HfCand2ProngMcRec, aod::HfSelD0>>;
-<<<<<<< HEAD
-using SelectedCandidatesMcKf = soa::Filtered<soa::Join<aod::HfCand2Prong, aod::HfCand2ProngKF, aod::HfCand2ProngMcRec, aod::HfSelD0>>;
-=======
   using SelectedCandidatesMcKf = soa::Filtered<soa::Join<aod::HfCand2Prong, aod::HfCand2ProngKF, aod::HfCand2ProngMcRec, aod::HfSelD0>>;
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   using MatchedGenCandidatesMc = soa::Filtered<soa::Join<aod::McParticles, aod::HfCand2ProngMcGen>>;
 
   Filter filterSelectCandidates = aod::hf_sel_candidate_d0::isSelD0 >= 1 || aod::hf_sel_candidate_d0::isSelD0bar >= 1;
@@ -223,22 +211,12 @@ using SelectedCandidatesMcKf = soa::Filtered<soa::Join<aod::HfCand2Prong, aod::H
 
   Partition<SelectedCandidatesMc> reconstructedCandSig = nabs(aod::hf_cand_2prong::flagMcMatchRec) == static_cast<int8_t>(BIT(DecayType::D0ToPiK));
   Partition<SelectedCandidatesMc> reconstructedCandBkg = nabs(aod::hf_cand_2prong::flagMcMatchRec) != static_cast<int8_t>(BIT(DecayType::D0ToPiK));
-<<<<<<< HEAD
-Partition<SelectedCandidatesMcKf> reconstructedCandSigKF = nabs(aod::hf_cand_2prong::flagMcMatchRec) == static_cast<int8_t>(BIT(DecayType::D0ToPiK));
-=======
   Partition<SelectedCandidatesMcKf> reconstructedCandSigKF = nabs(aod::hf_cand_2prong::flagMcMatchRec) == static_cast<int8_t>(BIT(DecayType::D0ToPiK));
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   Partition<SelectedCandidatesMcKf> reconstructedCandBkgKF = nabs(aod::hf_cand_2prong::flagMcMatchRec) != static_cast<int8_t>(BIT(DecayType::D0ToPiK));
 
   void init(InitContext const&)
   {
-<<<<<<< HEAD
-// std::array<bool, 2> doprocessData{doprocessDataWithDCAFitterN, doprocessDataWithKFParticle};
-    std::array<bool, 8> doprocess{doprocessDataWithDCAFitterN, doprocessDataWithKFParticle,doprocessMcWithDCAFitterOnlySig, doprocessMcWithDCAFitterOnlyBkg, doprocessMcWithDCAFitterAll, doprocessMcWithKFParticleOnlySig, doprocessMcWithKFParticleOnlyBkg, doprocessMcWithKFParticleAll};
-    // if ((std::accumulate(doprocessData.begin(), doprocessData.end(), 0) + std::accumulate(doprocessMc.begin(), doprocessMc.end(), 0)) != 1) {
-=======
     std::array<bool, 8> doprocess{doprocessDataWithDCAFitterN, doprocessDataWithKFParticle, doprocessMcWithDCAFitterOnlySig, doprocessMcWithDCAFitterOnlyBkg, doprocessMcWithDCAFitterAll, doprocessMcWithKFParticleOnlySig, doprocessMcWithKFParticleOnlyBkg, doprocessMcWithKFParticleAll};
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
     if (std::accumulate(doprocess.begin(), doprocess.end(), 0) != 1) {
       LOGP(fatal, "Only one process function can be enabled at a time.");
     }
@@ -306,11 +284,7 @@ Partition<SelectedCandidatesMcKf> reconstructedCandSigKF = nabs(aod::hf_cand_2pr
         candidate.errorDecayLength(),
         candidate.errorDecayLengthXY(),
         candidate.chi2PCA(),
-<<<<<<< HEAD
-topoChi2,
-=======
         topoChi2,
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
         candidate.rSecondaryVertex(),
         candidate.decayLength(),
         candidate.decayLengthXY(),
@@ -360,15 +334,9 @@ topoChi2,
     }
   }
 
-<<<<<<< HEAD
-template <int ReconstructionType, typename THfCand2Prong>
-  void processData(aod::Collisions const& collisions,
-                   THfCand2Prong const& candidates,
-=======
   template <int reconstructionType, typename CandType>
   void processData(aod::Collisions const& collisions,
                    CandType const& candidates,
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
                    TracksWPid const&, aod::BCs const&)
   {
     // Filling event properties
@@ -395,15 +363,9 @@ template <int ReconstructionType, typename THfCand2Prong>
       double yD = yD0(candidate);
       double eD = eD0(candidate);
       double ctD = ctD0(candidate);
-<<<<<<< HEAD
-float massD0, massD0bar;
-      float topolChi2PerNdf = -999.;
-      if constexpr (ReconstructionType == o2::aod::hf_cand::useKFParticle) {
-=======
       float massD0, massD0bar;
       float topolChi2PerNdf = -999.;
       if constexpr (reconstructionType == VertexerType::KfParticle) {
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
         massD0 = candidate.kfGeoMassD0();
         massD0bar = candidate.kfGeoMassD0bar();
         topolChi2PerNdf = candidate.kfTopolChi2OverNdf();
@@ -422,35 +384,15 @@ float massD0, massD0bar;
 
   void processDataWithDCAFitterN(aod::Collisions const& collisions,
                                  soa::Filtered<soa::Join<aod::HfCand2Prong, aod::HfSelD0>> const& candidates,
-<<<<<<< HEAD
-                                 TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processData<0>(collisions, candidates, tracks, BCs);
-=======
                                  TracksWPid const& tracks,
                                  aod::BCs const& bcs)
   {
     processData<VertexerType::DCAFitter>(collisions, candidates, tracks, bcs);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processDataWithDCAFitterN, "Process data with DCAFitterN", true);
 
   void processDataWithKFParticle(aod::Collisions const& collisions,
                                  soa::Filtered<soa::Join<aod::HfCand2Prong, aod::HfCand2ProngKF, aod::HfSelD0>> const& candidates,
-<<<<<<< HEAD
-                                 TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processData<1>(collisions, candidates, tracks, BCs);
-  }
-  PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processDataWithKFParticle, "Process data with KFParticle", false);
-
-  template <int ReconstructionType, bool onlyBkg = false, typename THfCand2Prong>
-  void processMc(aod::Collisions const& collisions,
-                 aod::McCollisions const&,
-                 THfCand2Prong const& candidates,
-                 MatchedGenCandidatesMc const& particles,
-                 TracksWPid const&, aod::BCs const&)
-=======
                                  TracksWPid const& tracks,
                                  aod::BCs const& bcs)
   {
@@ -465,7 +407,6 @@ float massD0, massD0bar;
                  MatchedGenCandidatesMc const& mcParticles,
                  TracksWPid const&,
                  aod::BCs const&)
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   {
     // Filling event properties
     rowCandidateFullEvents.reserve(collisions.size());
@@ -474,41 +415,6 @@ float massD0, massD0bar;
     }
 
     // Filling candidate properties
-<<<<<<< HEAD
-          if (fillCandidateLiteTable) {
-        rowCandidateLite.reserve(candidates.size());
-      } else {
-        rowCandidateFull.reserve(candidates.size());
-      }
-      for (const auto& candidate : candidates) {
-        if (onlyBkg && downSampleBkgFactor < 1.) {
-          float pseudoRndm = candidate.ptProng0() * 1000. - (int64_t)(candidate.ptProng0() * 1000);
-          if (candidate.pt() < ptMaxForDownSample && pseudoRndm >= downSampleBkgFactor) {
-            continue;
-          }
-        }
-        auto prong0 = candidate.template prong0_as<TracksWPid>();
-        auto prong1 = candidate.template prong1_as<TracksWPid>();
-        double yD = yD0(candidate);
-        double eD = eD0(candidate);
-        double ctD = ctD0(candidate);
-        float massD0, massD0bar;
-      float topolChi2PerNdf = -999.;
-      if constexpr (ReconstructionType == o2::aod::hf_cand::useKFParticle) {
-        massD0 = candidate.kfGeoMassD0();
-        massD0bar = candidate.kfGeoMassD0bar();
-        topolChi2PerNdf = candidate.kfTopolChi2OverNdf();
-      } else {
-        massD0 = invMassD0ToPiK(candidate);
-        massD0bar = invMassD0barToKPi(candidate);
-      }
-        if (candidate.isSelD0()) {
-          fillTable(candidate, prong0, prong1, 0, massD0, cosThetaStarD0(candidate), topolChi2PerNdf, ctD, yD, eD, candidate.flagMcMatchRec(), candidate.originMcRec());
-        }
-        if (candidate.isSelD0bar()) {
-          fillTable(candidate, prong0, prong1, 1, massD0bar, cosThetaStarD0bar(candidate), topolChi2PerNdf, ctD, yD, eD, candidate.flagMcMatchRec(), candidate.originMcRec());
-              }
-=======
     if (fillCandidateLiteTable) {
       rowCandidateLite.reserve(candidates.size());
     } else {
@@ -542,7 +448,6 @@ float massD0, massD0bar;
       if (candidate.isSelD0bar()) {
         fillTable(candidate, prong0, prong1, 1, massD0bar, cosThetaStarD0bar(candidate), topolChi2PerNdf, ctD, yD, eD, candidate.flagMcMatchRec(), candidate.originMcRec());
       }
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
     }
 
     // Filling particle properties
@@ -563,50 +468,26 @@ float massD0, massD0bar;
   }
 
   void processMcWithDCAFitterOnlySig(aod::Collisions const& collisions,
-<<<<<<< HEAD
-                                     aod::McCollisions const& McCollisions,
-                                     MatchedGenCandidatesMc const& particles,
-                                     TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processMc<0>(collisions, McCollisions, reconstructedCandSig, particles, tracks, BCs);
-=======
                                      aod::McCollisions const& mcCollisions,
                                      MatchedGenCandidatesMc const& mcParticles,
                                      TracksWPid const& tracks,
                                      aod::BCs const& bcs)
   {
     processMc<VertexerType::DCAFitter>(collisions, mcCollisions, reconstructedCandSig, mcParticles, tracks, bcs);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processMcWithDCAFitterOnlySig, "Process MC with DCAFitterN only for signals", false);
 
   void processMcWithDCAFitterOnlyBkg(aod::Collisions const& collisions,
-<<<<<<< HEAD
-                                     aod::McCollisions const& McCollisions,
-                                     MatchedGenCandidatesMc const& particles,
-                                     TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processMc<0, true>(collisions, McCollisions, reconstructedCandBkg, particles, tracks, BCs);
-=======
                                      aod::McCollisions const& mcCollisions,
                                      MatchedGenCandidatesMc const& mcParticles,
                                      TracksWPid const& tracks,
                                      aod::BCs const& bcs)
   {
     processMc<VertexerType::DCAFitter, true>(collisions, mcCollisions, reconstructedCandBkg, mcParticles, tracks, bcs);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processMcWithDCAFitterOnlyBkg, "Process MC with DCAFitterN only for background", false);
 
   void processMcWithDCAFitterAll(aod::Collisions const& collisions,
-<<<<<<< HEAD
-                                 aod::McCollisions const& McCollisions,
-                                 SelectedCandidatesMc const& candidates,
-                                 MatchedGenCandidatesMc const& particles,
-                                 TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processMc<0>(collisions, McCollisions, candidates, particles, tracks, BCs);
-=======
                                  aod::McCollisions const& mcCollisions,
                                  SelectedCandidatesMc const& candidates,
                                  MatchedGenCandidatesMc const& mcParticles,
@@ -614,55 +495,30 @@ float massD0, massD0bar;
                                  aod::BCs const& bcs)
   {
     processMc<VertexerType::DCAFitter>(collisions, mcCollisions, candidates, mcParticles, tracks, bcs);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processMcWithDCAFitterAll, "Process MC with DCAFitterN", false);
 
   void processMcWithKFParticleOnlySig(aod::Collisions const& collisions,
-<<<<<<< HEAD
-                                      aod::McCollisions const& McCollisions,
-                                      MatchedGenCandidatesMc const& particles,
-                                      TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processMc<1>(collisions, McCollisions, reconstructedCandSigKF, particles, tracks, BCs);
-=======
                                       aod::McCollisions const& mcCollisions,
                                       MatchedGenCandidatesMc const& mcParticles,
                                       TracksWPid const& tracks,
                                       aod::BCs const& bcs)
   {
     processMc<VertexerType::KfParticle>(collisions, mcCollisions, reconstructedCandSigKF, mcParticles, tracks, bcs);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processMcWithKFParticleOnlySig, "Process MC with KFParticle only for signals", false);
 
   void processMcWithKFParticleOnlyBkg(aod::Collisions const& collisions,
-<<<<<<< HEAD
-                                      aod::McCollisions const& McCollisions,
-                                      MatchedGenCandidatesMc const& particles,
-                                      TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processMc<1, true>(collisions, McCollisions, reconstructedCandBkgKF, particles, tracks, BCs);
-=======
                                       aod::McCollisions const& mcCollisions,
                                       MatchedGenCandidatesMc const& mcParticles,
                                       TracksWPid const& tracks,
                                       aod::BCs const& bcs)
   {
     processMc<VertexerType::KfParticle, true>(collisions, mcCollisions, reconstructedCandBkgKF, mcParticles, tracks, bcs);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processMcWithKFParticleOnlyBkg, "Process MC with KFParticle only for background", false);
 
   void processMcWithKFParticleAll(aod::Collisions const& collisions,
-<<<<<<< HEAD
-                                  aod::McCollisions const& McCollisions,
-                                  SelectedCandidatesMcKf const& candidates,
-                                  MatchedGenCandidatesMc const& particles,
-                                  TracksWPid const& tracks, aod::BCs const& BCs)
-  {
-    processMc<1>(collisions, McCollisions, candidates, particles, tracks, BCs);
-=======
                                   aod::McCollisions const& mcCollisions,
                                   SelectedCandidatesMcKf const& candidates,
                                   MatchedGenCandidatesMc const& mcParticles,
@@ -670,7 +526,6 @@ float massD0, massD0bar;
                                   aod::BCs const& bcs)
   {
     processMc<VertexerType::KfParticle>(collisions, mcCollisions, candidates, mcParticles, tracks, bcs);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfTreeCreatorD0ToKPi, processMcWithKFParticleAll, "Process MC with KFParticle", false);
 };

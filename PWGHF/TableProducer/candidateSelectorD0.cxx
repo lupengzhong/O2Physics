@@ -151,13 +151,8 @@ struct HfCandidateSelectorD0 {
     // candidate DCA
     // if (candidate.chi2PCA() > cuts[pTBin][1]) return false;
 
-<<<<<<< HEAD
-    // candidate topological chi2 over ndf when using KFParticle, need to add this selection to the SelectorCuts.h 
-    // if constexpr (ReconstructionType == o2::aod::hf_cand::useKFParticle) {
-=======
     // candidate topological chi2 over ndf when using KFParticle, need to add this selection to the SelectorCuts.h
     // if constexpr (reconstructionType == VertexerType::KfParticle) {
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
     //   if (candidate.kfTopolChi2OverNdf() > cuts->get(pTBin, "topological chi2overndf as D0")) return false;
     // }
 
@@ -189,11 +184,7 @@ struct HfCandidateSelectorD0 {
   /// \param trackKaon is the track with the kaon hypothesis
   /// \note trackPion = positive and trackKaon = negative for D0 selection and inverse for D0bar
   /// \return true if candidate passes all cuts for the given Conjugate
-<<<<<<< HEAD
-  template <int ReconstructionType, typename T1, typename T2>
-=======
   template <int reconstructionType, typename T1, typename T2>
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   bool selectionTopolConjugate(const T1& candidate, const T2& trackPion, const T2& trackKaon)
   {
     auto candpT = candidate.pt();
@@ -203,13 +194,8 @@ struct HfCandidateSelectorD0 {
     }
 
     // invariant-mass cut
-<<<<<<< HEAD
-float massD0, massD0bar;
-    if constexpr (ReconstructionType == o2::aod::hf_cand::useKFParticle) {
-=======
     float massD0, massD0bar;
     if constexpr (reconstructionType == VertexerType::KfParticle) {
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
       massD0 = candidate.kfGeoMassD0();
       massD0bar = candidate.kfGeoMassD0bar();
     } else {
@@ -262,14 +248,9 @@ float massD0, massD0bar;
 
     return true;
   }
-<<<<<<< HEAD
-template <int ReconstructionType, typename THfCand2Prong>
-  void processSel(THfCand2Prong const& candidates, TracksSel const&)
-=======
   template <int reconstructionType, typename CandType>
   void processSel(CandType const& candidates,
                   TracksSel const&)
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   {
     // looping over 2-prong candidates
     for (const auto& candidate : candidates) {
@@ -411,15 +392,6 @@ template <int ReconstructionType, typename THfCand2Prong>
 
   void processWithDCAFitterN(aod::HfCand2Prong const& candidates, TracksSel const& tracks)
   {
-<<<<<<< HEAD
-    processSel<0>(candidates, tracks);
-  }
-  PROCESS_SWITCH(HfCandidateSelectorD0, processWithDCAFitterN, "process candidates selection with DCAFitterN", true);
-
-  void processWithKFParticle(cand2ProngKF const& candidates, TracksSel const& tracks)
-  {
-    processSel<1>(candidates, tracks);
-=======
     processSel<VertexerType::DCAFitter>(candidates, tracks);
   }
   PROCESS_SWITCH(HfCandidateSelectorD0, processWithDCAFitterN, "process candidates selection with DCAFitterN", true);
@@ -427,7 +399,6 @@ template <int ReconstructionType, typename THfCand2Prong>
   void processWithKFParticle(soa::Join<aod::HfCand2Prong, aod::HfCand2ProngKF> const& candidates, TracksSel const& tracks)
   {
     processSel<VertexerType::KfParticle>(candidates, tracks);
->>>>>>> 502bbf99cb7eeada2f32974358096e3ef9dbca89
   }
   PROCESS_SWITCH(HfCandidateSelectorD0, processWithKFParticle, "process candidates selection with KFParticle", false);
 };
