@@ -436,7 +436,7 @@ struct HfTaskD0 {
   }
 
   void processMcWithDCAFitterN(soa::Join<aod::McParticles,
-                               aod::HfCand2ProngMcGen> const& particlesMC,
+                                         aod::HfCand2ProngMcGen> const& particlesMC,
                                aod::TracksWMc const& tracks)
   {
     processMc<VertexerType::DCAFitter>(selectedD0CandidatesMc, particlesMC, tracks);
@@ -444,7 +444,7 @@ struct HfTaskD0 {
   PROCESS_SWITCH(HfTaskD0, processMcWithDCAFitterN, "Process MC with DCAFitterN", false);
 
   void processMcWithKFParticle(soa::Join<aod::McParticles,
-                               aod::HfCand2ProngMcGen> const& particlesMC,
+                                         aod::HfCand2ProngMcGen> const& particlesMC,
                                aod::TracksWMc const& tracks)
   {
     processMc<VertexerType::KfParticle>(selectedD0CandidatesMcKF, particlesMC, tracks);
