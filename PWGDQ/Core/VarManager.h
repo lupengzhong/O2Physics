@@ -206,6 +206,9 @@ class VarManager : public TObject
     kUsedKF,
     kKFMass,
     kKFMassGeoTop,
+    B_mass,
+    B_mass_2,
+    B_mass_3,
 
     // Barrel track variables
     kPin,
@@ -1739,11 +1742,12 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       KFGeoTwoProngBarrel.AddDaughter(trk0KF);
       KFGeoTwoProngBarrel.AddDaughter(trk1KF);
 
-      if (fgUsedVars[kKFMass]){
+      if (fgUsedVars[kKFMass]) {
         float mass = 0., massErr = 0.;
         if (!KFGeoTwoProngBarrel.GetMass(mass, massErr))
-        values[kKFMass] = mass;
-        else values[kKFMass] = -999.;
+          values[kKFMass] = mass;
+        else
+          values[kKFMass] = -999.;
       }
     }
     if constexpr (eventHasVtxCov) {
@@ -1808,23 +1812,23 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       if (fgUsedVars[kKFTracksDCAxyMax]) {
         values[kKFTracksDCAxyMax] = TMath::Abs(values[kKFTrack0DCAxy]) > TMath::Abs(values[kKFTrack1DCAxy]) ? values[kKFTrack0DCAxy] : values[kKFTrack1DCAxy];
       }
-        values[kKFJpsiDCAxyz] = KFGeoTwoProngBarrel.GetDistanceFromParticle(KFPV);
-        values[kKFJpsiDCAxy] = KFGeoTwoProngBarrel.GetDistanceFromParticleXY(KFPV);
-        values[kKFJpsiPosX] = KFGeoTwoProngBarrel.GetX();
-        values[kKFJpsiPosY] = KFGeoTwoProngBarrel.GetY();
-        values[kKFJpsiPosZ] = KFGeoTwoProngBarrel.GetZ();
-        values[kKFJpsiMomX] = KFGeoTwoProngBarrel.GetPx();
-        values[kKFJpsiMomY] = KFGeoTwoProngBarrel.GetPy();
-        values[kKFJpsiMomZ] = KFGeoTwoProngBarrel.GetPz();
-        values[kKFJpsiPosX_Err2] = KFGeoTwoProngBarrel.GetCovariance(0);
-        values[kKFJpsiPosY_Err2] = KFGeoTwoProngBarrel.GetCovariance(2);
-        values[kKFJpsiPosZ_Err2] = KFGeoTwoProngBarrel.GetCovariance(5);
-        values[kKFJpsiMomX_Err2] = KFGeoTwoProngBarrel.GetCovariance(9);
-        values[kKFJpsiMomY_Err2] = KFGeoTwoProngBarrel.GetCovariance(14);
-        values[kKFJpsiMomZ_Err2] = KFGeoTwoProngBarrel.GetCovariance(20);
-        values[kKFPVPosX] = KFPV.GetX();
-        values[kKFPVPosY] = KFPV.GetY();
-        values[kKFPVPosZ] = KFPV.GetZ();
+      values[kKFJpsiDCAxyz] = KFGeoTwoProngBarrel.GetDistanceFromParticle(KFPV);
+      values[kKFJpsiDCAxy] = KFGeoTwoProngBarrel.GetDistanceFromParticleXY(KFPV);
+      values[kKFJpsiPosX] = KFGeoTwoProngBarrel.GetX();
+      values[kKFJpsiPosY] = KFGeoTwoProngBarrel.GetY();
+      values[kKFJpsiPosZ] = KFGeoTwoProngBarrel.GetZ();
+      values[kKFJpsiMomX] = KFGeoTwoProngBarrel.GetPx();
+      values[kKFJpsiMomY] = KFGeoTwoProngBarrel.GetPy();
+      values[kKFJpsiMomZ] = KFGeoTwoProngBarrel.GetPz();
+      values[kKFJpsiPosX_Err2] = KFGeoTwoProngBarrel.GetCovariance(0);
+      values[kKFJpsiPosY_Err2] = KFGeoTwoProngBarrel.GetCovariance(2);
+      values[kKFJpsiPosZ_Err2] = KFGeoTwoProngBarrel.GetCovariance(5);
+      values[kKFJpsiMomX_Err2] = KFGeoTwoProngBarrel.GetCovariance(9);
+      values[kKFJpsiMomY_Err2] = KFGeoTwoProngBarrel.GetCovariance(14);
+      values[kKFJpsiMomZ_Err2] = KFGeoTwoProngBarrel.GetCovariance(20);
+      values[kKFPVPosX] = KFPV.GetX();
+      values[kKFPVPosY] = KFPV.GetY();
+      values[kKFPVPosZ] = KFPV.GetZ();
 
       KFParticle KFGeoTopTwoProngBarrel = KFGeoTwoProngBarrel;
       KFGeoTopTwoProngBarrel.SetProductionVertex(KFPV);
@@ -1833,15 +1837,17 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       values[kKFChi2OverNDFGeoTop] = KFGeoTopTwoProngBarrel.GetChi2() / KFGeoTopTwoProngBarrel.GetNDF();
       float mass = 0., massErr = 0.;
       if (!KFGeoTopTwoProngBarrel.GetMass(mass, massErr))
-      values[kKFMassGeoTop] = mass;
-      else values[kKFMassGeoTop] = -999.;
+        values[kKFMassGeoTop] = mass;
+      else
+        values[kKFMassGeoTop] = -999.;
 
       KFParticle KFGeoMCTwoProngBarrel_1;
-      const KFParticle* JpsiDaughters[2] = { &trk0KF, &trk1KF };
+      const KFParticle* JpsiDaughters[2] = {&trk0KF, &trk1KF};
       KFGeoMCTwoProngBarrel_1.Construct(JpsiDaughters, 2, nullptr, 3.0969);
       if (!KFGeoMCTwoProngBarrel_1.GetMass(mass, massErr))
-      values[kKFJpsiMassAfterMC_1] = mass;
-      else values[kKFJpsiMassAfterMC_1] = -999.;
+        values[kKFJpsiMassAfterMC_1] = mass;
+      else
+        values[kKFJpsiMassAfterMC_1] = -999.;
       values[kKFJpsiPosX_1] = KFGeoMCTwoProngBarrel_1.GetX();
       values[kKFJpsiPosY_1] = KFGeoMCTwoProngBarrel_1.GetY();
       values[kKFJpsiPosZ_1] = KFGeoMCTwoProngBarrel_1.GetZ();
@@ -1858,8 +1864,9 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       KFParticle KFGeoMCTwoProngBarrel_2 = KFGeoTwoProngBarrel;
       KFGeoMCTwoProngBarrel_2.SetNonlinearMassConstraint(3.0969);
       if (!KFGeoMCTwoProngBarrel_2.GetMass(mass, massErr))
-      values[kKFJpsiMassAfterMC_2] = mass;
-      else values[kKFJpsiMassAfterMC_2] = -999.;
+        values[kKFJpsiMassAfterMC_2] = mass;
+      else
+        values[kKFJpsiMassAfterMC_2] = -999.;
       values[kKFJpsiPosX_2] = KFGeoMCTwoProngBarrel_2.GetX();
       values[kKFJpsiPosY_2] = KFGeoMCTwoProngBarrel_2.GetY();
       values[kKFJpsiPosZ_2] = KFGeoMCTwoProngBarrel_2.GetZ();
@@ -1876,10 +1883,11 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       KFParticle KFGeoMCTwoProngBarrel_3 = KFGeoTwoProngBarrel;
       // KFGeoMCTwoProngBarrel_3.SetMassConstraint(3.086,0.027);
       // KFGeoMCTwoProngBarrel_3.SetMassConstraint(3.0969,0.006 );
-      KFGeoMCTwoProngBarrel_3.SetMassConstraint(3.086,0.006 );
+      KFGeoMCTwoProngBarrel_3.SetMassConstraint(3.086, 0.006);
       if (!KFGeoMCTwoProngBarrel_3.GetMass(mass, massErr))
-      values[kKFJpsiMassAfterMC_3] = mass;
-      else values[kKFJpsiMassAfterMC_3] = -999.;
+        values[kKFJpsiMassAfterMC_3] = mass;
+      else
+        values[kKFJpsiMassAfterMC_3] = -999.;
       values[kKFJpsiPosX_3] = KFGeoMCTwoProngBarrel_3.GetX();
       values[kKFJpsiPosY_3] = KFGeoMCTwoProngBarrel_3.GetY();
       values[kKFJpsiPosZ_3] = KFGeoMCTwoProngBarrel_3.GetZ();
@@ -1896,8 +1904,9 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
       KFParticle KFGeoMCTwoProngBarrel_4 = KFGeoTwoProngBarrel;
       KFGeoMCTwoProngBarrel_4.SetMassConstraint(3.0969);
       if (!KFGeoMCTwoProngBarrel_4.GetMass(mass, massErr))
-      values[kKFJpsiMassAfterMC_4] = mass;
-      else values[kKFJpsiMassAfterMC_4] = -999.;
+        values[kKFJpsiMassAfterMC_4] = mass;
+      else
+        values[kKFJpsiMassAfterMC_4] = -999.;
       values[kKFJpsiPosX_4] = KFGeoMCTwoProngBarrel_4.GetX();
       values[kKFJpsiPosY_4] = KFGeoMCTwoProngBarrel_4.GetY();
       values[kKFJpsiPosZ_4] = KFGeoMCTwoProngBarrel_4.GetZ();
@@ -1961,26 +1970,79 @@ void VarManager::FillDileptonTrackVertexing(C const& collision, T1 const& lepton
     procCode = VarManager::fgFitterThreeProngFwd.process(pars1, pars2, pars3);
     procCodeJpsi = VarManager::fgFitterTwoProngFwd.process(pars1, pars2);
   } else if constexpr ((candidateType == kBtoJpsiEEK) && trackHasCov) {
-    mlepton = o2::constants::physics::MassElectron;
-    mtrack = o2::constants::physics::MassKaonCharged;
-    std::array<float, 5> lepton1pars = {lepton1.y(), lepton1.z(), lepton1.snp(), lepton1.tgl(), lepton1.signed1Pt()};
-    std::array<float, 15> lepton1covs = {lepton1.cYY(), lepton1.cZY(), lepton1.cZZ(), lepton1.cSnpY(), lepton1.cSnpZ(),
-                                         lepton1.cSnpSnp(), lepton1.cTglY(), lepton1.cTglZ(), lepton1.cTglSnp(), lepton1.cTglTgl(),
-                                         lepton1.c1PtY(), lepton1.c1PtZ(), lepton1.c1PtSnp(), lepton1.c1PtTgl(), lepton1.c1Pt21Pt2()};
-    o2::track::TrackParCov pars1{lepton1.x(), lepton1.alpha(), lepton1pars, lepton1covs};
-    std::array<float, 5> lepton2pars = {lepton2.y(), lepton2.z(), lepton2.snp(), lepton2.tgl(), lepton2.signed1Pt()};
-    std::array<float, 15> lepton2covs = {lepton2.cYY(), lepton2.cZY(), lepton2.cZZ(), lepton2.cSnpY(), lepton2.cSnpZ(),
-                                         lepton2.cSnpSnp(), lepton2.cTglY(), lepton2.cTglZ(), lepton2.cTglSnp(), lepton2.cTglTgl(),
-                                         lepton2.c1PtY(), lepton2.c1PtZ(), lepton2.c1PtSnp(), lepton2.c1PtTgl(), lepton2.c1Pt21Pt2()};
-    o2::track::TrackParCov pars2{lepton2.x(), lepton2.alpha(), lepton2pars, lepton2covs};
-    std::array<float, 5> lepton3pars = {track.y(), track.z(), track.snp(), track.tgl(), track.signed1Pt()};
-    std::array<float, 15> lepton3covs = {track.cYY(), track.cZY(), track.cZZ(), track.cSnpY(), track.cSnpZ(),
-                                         track.cSnpSnp(), track.cTglY(), track.cTglZ(), track.cTglSnp(), track.cTglTgl(),
-                                         track.c1PtY(), track.c1PtZ(), track.c1PtSnp(), track.c1PtTgl(), track.c1Pt21Pt2()};
-    o2::track::TrackParCov pars3{track.x(), track.alpha(), lepton3pars, lepton3covs};
-    procCode = VarManager::fgFitterThreeProngBarrel.process(pars1, pars2, pars3);
-    procCodeJpsi = VarManager::fgFitterTwoProngBarrel.process(pars1, pars2);
-  } else {
+    // if constexpr ((candidateType == kBcToThreeMuons) && muonHasCov) {
+    float mass = 0., massErr = 0.;
+    KFParticle lep1KF;
+    KFParticle lep2KF;
+    KFParticle trk2KF;
+    KFParticle KFGeoTwoProngBarrel;
+    KFPTrack kfpTrack0 = createKFPTrackFromTrack(lepton1);
+    lep1KF = KFParticle(kfpTrack0, -11 * lepton1.sign());
+    KFPTrack kfpTrack1 = createKFPTrackFromTrack(lepton2);
+    lep2KF = KFParticle(kfpTrack1, -11 * lepton2.sign());
+    KFPTrack kfpTrack2 = createKFPTrackFromTrack(track);
+    trk2KF = KFParticle(kfpTrack2, 321 * track.sign());
+
+    KFGeoTwoProngBarrel.SetConstructMethod(2);
+    KFGeoTwoProngBarrel.AddDaughter(lep1KF);
+    KFGeoTwoProngBarrel.AddDaughter(lep2KF);
+
+    KFParticle B_Kf;
+    B_Kf.SetConstructMethod(2);
+    B_Kf.AddDaughter(KFGeoTwoProngBarrel);
+    B_Kf.AddDaughter(trk2KF);
+    if (!B_Kf.GetMass(mass, massErr))
+      values[B_mass] = mass;
+    else
+      values[B_mass] = -999.;
+
+    KFParticle KFGeoMCTwoProngBarrel_2 = KFGeoTwoProngBarrel;
+    KFGeoMCTwoProngBarrel_2.SetNonlinearMassConstraint(3.0969);
+    KFParticle B_Kf_2;
+    B_Kf_2.SetConstructMethod(2);
+    B_Kf_2.AddDaughter(KFGeoMCTwoProngBarrel_2);
+    B_Kf_2.AddDaughter(trk2KF);
+    if (!B_Kf_2.GetMass(mass, massErr))
+      values[B_mass_2] = mass;
+    else
+      values[B_mass_2] = -999.;
+
+    if (!KFGeoMCTwoProngBarrel_2.GetMass(mass, massErr)) {
+      KFParticle B_Kf_3;
+      B_Kf_3.SetConstructMethod(2);
+      B_Kf_3.AddDaughter(KFGeoMCTwoProngBarrel_2);
+      B_Kf_3.AddDaughter(trk2KF);
+      if (!B_Kf_3.GetMass(mass, massErr))
+        values[B_mass_3] = mass;
+    } else
+      values[B_mass_3] = -999.;
+
+    values[kMassDau] = trk2KF.GetMass();
+    values[VarManager::kPairMassDau] = KFGeoMCTwoProngBarrel_2.GetMass();
+
+  }
+  // else if constexpr ((candidateType == kBtoJpsiEEK) && trackHasCov) {
+  //   mlepton = o2::constants::physics::MassElectron;
+  //   mtrack = o2::constants::physics::MassKaonCharged;
+  //   std::array<float, 5> lepton1pars = {lepton1.y(), lepton1.z(), lepton1.snp(), lepton1.tgl(), lepton1.signed1Pt()};
+  //   std::array<float, 15> lepton1covs = {lepton1.cYY(), lepton1.cZY(), lepton1.cZZ(), lepton1.cSnpY(), lepton1.cSnpZ(),
+  //                                        lepton1.cSnpSnp(), lepton1.cTglY(), lepton1.cTglZ(), lepton1.cTglSnp(), lepton1.cTglTgl(),
+  //                                        lepton1.c1PtY(), lepton1.c1PtZ(), lepton1.c1PtSnp(), lepton1.c1PtTgl(), lepton1.c1Pt21Pt2()};
+  //   o2::track::TrackParCov pars1{lepton1.x(), lepton1.alpha(), lepton1pars, lepton1covs};
+  //   std::array<float, 5> lepton2pars = {lepton2.y(), lepton2.z(), lepton2.snp(), lepton2.tgl(), lepton2.signed1Pt()};
+  //   std::array<float, 15> lepton2covs = {lepton2.cYY(), lepton2.cZY(), lepton2.cZZ(), lepton2.cSnpY(), lepton2.cSnpZ(),
+  //                                        lepton2.cSnpSnp(), lepton2.cTglY(), lepton2.cTglZ(), lepton2.cTglSnp(), lepton2.cTglTgl(),
+  //                                        lepton2.c1PtY(), lepton2.c1PtZ(), lepton2.c1PtSnp(), lepton2.c1PtTgl(), lepton2.c1Pt21Pt2()};
+  //   o2::track::TrackParCov pars2{lepton2.x(), lepton2.alpha(), lepton2pars, lepton2covs};
+  //   std::array<float, 5> lepton3pars = {track.y(), track.z(), track.snp(), track.tgl(), track.signed1Pt()};
+  //   std::array<float, 15> lepton3covs = {track.cYY(), track.cZY(), track.cZZ(), track.cSnpY(), track.cSnpZ(),
+  //                                        track.cSnpSnp(), track.cTglY(), track.cTglZ(), track.cTglSnp(), track.cTglTgl(),
+  //                                        track.c1PtY(), track.c1PtZ(), track.c1PtSnp(), track.c1PtTgl(), track.c1Pt21Pt2()};
+  //   o2::track::TrackParCov pars3{track.x(), track.alpha(), lepton3pars, lepton3covs};
+  //   procCode = VarManager::fgFitterThreeProngBarrel.process(pars1, pars2, pars3);
+  //   procCodeJpsi = VarManager::fgFitterTwoProngBarrel.process(pars1, pars2);
+  // }
+  else {
     return;
   }
 
@@ -1990,13 +2052,13 @@ void VarManager::FillDileptonTrackVertexing(C const& collision, T1 const& lepton
   ROOT::Math::PtEtaPhiMVector v12 = v1 + v2;
   ROOT::Math::PtEtaPhiMVector vdilepton(v12.pt(), v12.eta(), v12.phi(), v12.M());
   ROOT::Math::PtEtaPhiMVector v123 = vdilepton + v3;
-  values[VarManager::kPairMass] = v123.M();
-  values[VarManager::kPairPt] = v123.Pt();
-  values[VarManager::kPairEta] = v123.Eta();
+  // values[VarManager::kPairMass] = v123.M();
+  // values[VarManager::kPairPt] = v123.Pt();
+  // values[VarManager::kPairEta] = v123.Eta();
 
-  values[VarManager::kPairMassDau] = v12.M();
-  values[VarManager::kPairPtDau] = v12.Pt();
-  values[VarManager::kPt] = track.pt();
+  // values[VarManager::kPairMassDau] = v12.M();
+  // values[VarManager::kPairPtDau] = v12.Pt();
+  // values[VarManager::kPt] = track.pt();
 
   values[VarManager::kVertexingProcCode] = procCode;
   if (procCode == 0 || procCodeJpsi == 0) {

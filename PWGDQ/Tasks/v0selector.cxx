@@ -344,6 +344,10 @@ struct trackPIDQA {
       registry.add("h2TPCdEdx_Pin_Ka", "TPC dEdx vs. p_{in}", HistType::kTH2F, {{1000, 0.0, 10}, {200, 0.0, 200.}});
       registry.add("h2TPCdEdx_Pin_Pr", "TPC dEdx vs. p_{in}", HistType::kTH2F, {{1000, 0.0, 10}, {200, 0.0, 200.}});
 
+      registry.add("h3TPCnSigmaEl_P_Eta_El", "TPC n#sigma_{e} vs. p_{in}", HistType::kTH3F, {{1000, 0.0, 10},{1000, -1.0, 1.0}, {200, -10, +10}});
+      registry.add("h3TPCnSigmaPi_P_Eta_El", "TPC n#sigma_{e} vs. p_{in}", HistType::kTH3F, {{1000, 0.0, 10},{1000, -1.0, 1.0}, {200, 0, +20}});
+      registry.add("h3TPCnSigmaPr_P_Eta_El", "TPC n#sigma_{e} vs. p_{in}", HistType::kTH3F, {{1000, 0.0, 10},{1000, -1.0, 1.0}, {200, 0, +20}});
+
       registry.add("h2TPCnSigma_Pin_El", "TPC n#sigma_{e} vs. p_{in}", HistType::kTH2F, {{1000, 0.0, 10}, {200, -10, +10}});
       registry.add("h2TPCnSigma_Pin_Pi", "TPC n#sigma_{#pi} vs. p_{in}", HistType::kTH2F, {{1000, 0.0, 10}, {200, -10, +10}});
       registry.add("h2TPCnSigma_Pin_Ka", "TPC n#sigma_{K} vs. p_{in}", HistType::kTH2F, {{1000, 0.0, 10}, {200, -10, +10}});
@@ -423,6 +427,10 @@ struct trackPIDQA {
         registry.fill(HIST("h2TOFbeta_Pin_El"), track.tpcInnerParam(), track.beta());
         registry.fill(HIST("h2TPCnSigma_Pin_El"), track.tpcInnerParam(), track.tpcNSigmaEl());
         registry.fill(HIST("h2TOFnSigma_Pin_El"), track.tpcInnerParam(), track.tofNSigmaEl());
+
+        registry.fill(HIST("h3TPCnSigmaEl_P_Eta_El"), track.p(),track.eta(), track.tpcNSigmaEl());
+        registry.fill(HIST("h3TPCnSigmaPi_P_Eta_El"), track.p(),track.eta(), track.tpcNSigmaPi());
+        registry.fill(HIST("h3TPCnSigmaPr_P_Eta_El"), track.p(),track.eta(), track.tpcNSigmaPr());
       }
       if (static_cast<bool>(track.pidbit() & (1 << v0selector::kK0S))) {
         registry.fill(HIST("h2TPCdEdx_Pin_Pi"), track.tpcInnerParam(), track.tpcSignal());
