@@ -39,6 +39,7 @@
 #include "TGeoGlobalMagField.h"
 #include "DetectorsBase/Propagator.h"
 #include "DetectorsBase/GeometryManager.h"
+#include "Framework/O2DatabasePDGPlugin.h"
 #include "ITSMFTBase/DPLAlpideParam.h"
 #include "Common/CCDB/EventSelectionParams.h"
 
@@ -76,6 +77,14 @@ DECLARE_SOA_COLUMN(TauxyBcandidate, tauxyBcandidate, float);
 DECLARE_SOA_COLUMN(TauzBcandidate, tauzBcandidate, float);
 DECLARE_SOA_COLUMN(CosPBcandidate, cosPBcandidate, float);
 DECLARE_SOA_COLUMN(Chi2Bcandidate, chi2Bcandidate, float);
+DECLARE_SOA_COLUMN(DCAxyzBetweenDileptonAndHadron, dCAxyzBetweenDileptonAndHadron, float);
+DECLARE_SOA_COLUMN(Chi2Dilepton, chi2Dilepton, float);
+DECLARE_SOA_COLUMN(MassDilepton, massDilepton, float);
+DECLARE_SOA_COLUMN(PtDilepton, ptDilepton, float);
+DECLARE_SOA_COLUMN(KFMassBplusWithMassConstraint, kfMassBplusWithMassConstraint, float);
+DECLARE_SOA_COLUMN(KFMassBplus, kfMassBplus, float);
+DECLARE_SOA_COLUMN(HadronTPCPID, hadronTPCPID, float);
+DECLARE_SOA_COLUMN(HadronTOFPID, hadronTOFPID, float);
 
 // Xcandidate columns
 DECLARE_SOA_COLUMN(massXcandidate, MXcandidate, float);
@@ -106,7 +115,7 @@ DECLARE_SOA_TABLE(MixingHashes, "AOD", "DQANAMIXHASH", dqanalysisflags::MixingHa
 DECLARE_SOA_TABLE(BarrelTrackCuts, "AOD", "DQANATRKCUTS", dqanalysisflags::IsBarrelSelected, dqanalysisflags::IsBarrelSelectedPrefilter);
 DECLARE_SOA_TABLE(MuonTrackCuts, "AOD", "DQANAMUONCUTS", dqanalysisflags::IsMuonSelected);
 DECLARE_SOA_TABLE(Prefilter, "AOD", "DQPREFILTER", dqanalysisflags::IsPrefilterVetoed);
-DECLARE_SOA_TABLE(BmesonCandidates, "AOD", "DQBMESONS", dqanalysisflags::massBcandidate, dqanalysisflags::pTBcandidate, dqanalysisflags::LxyBcandidate, dqanalysisflags::LxyzBcandidate, dqanalysisflags::LzBcandidate, dqanalysisflags::TauxyBcandidate, dqanalysisflags::TauzBcandidate, dqanalysisflags::CosPBcandidate, dqanalysisflags::Chi2Bcandidate);
+DECLARE_SOA_TABLE(BmesonCandidates, "AOD", "DQBMESONS", dqanalysisflags::massBcandidate, dqanalysisflags::pTBcandidate, dqanalysisflags::LxyBcandidate, dqanalysisflags::LxyzBcandidate, dqanalysisflags::LzBcandidate, dqanalysisflags::TauxyBcandidate, dqanalysisflags::TauzBcandidate, dqanalysisflags::CosPBcandidate, dqanalysisflags::Chi2Bcandidate, dqanalysisflags::DCAxyzBetweenDileptonAndHadron, dqanalysisflags::Chi2Dilepton, dqanalysisflags::KFMassBplusWithMassConstraint, dqanalysisflags::KFMassBplus, dqanalysisflags::HadronTPCPID, dqanalysisflags::HadronTOFPID, dqanalysisflags::MassDilepton, dqanalysisflags::PtDilepton);
 DECLARE_SOA_TABLE(XCandidates, "AOD", "DQX3872", dqanalysisflags::massXcandidate, dqanalysisflags::pTXcandidate, dqanalysisflags::rapidityXcandidate, dqanalysisflags::etaXcandidate, dqanalysisflags::massJpsicandidate, dqanalysisflags::massDipioncandidate, dqanalysisflags::pTJpsicandidate, dqanalysisflags::pTDipioncandidate, dqanalysisflags::massDiff, dqanalysisflags::angDistPion1, dqanalysisflags::angDistPion2, dqanalysisflags::cosDileptonDipion, dqanalysisflags::dcaxyPion1, dqanalysisflags::dcazPion1, dqanalysisflags::dcaxyPion2, dqanalysisflags::dcazPion2, dqanalysisflags::pTPion1, dqanalysisflags::pTPion2, dqanalysisflags::dileptonSign, dqanalysisflags::ditrackSign);
 } // namespace o2::aod
 
@@ -1605,6 +1614,8 @@ struct AnalysisDileptonHadron {
   o2::parameters::GRPMagField* grpmag = nullptr;
   int fCurrentRun; // needed to detect if the run changed and trigger update of calibrations etc.
 
+  Service<o2::framework::O2DatabasePDG> pdg;
+
   OutputObj<THashList> fOutputList{"output"};
   // TODO: For now this is only used to determine the position in the filter bit map for the hadron cut
   Configurable<string> fConfigTrackCuts{"cfgLeptonCuts", "jpsiO2MCdebugCuts2", "Comma separated list of barrel track cuts"};
@@ -1618,6 +1629,7 @@ struct AnalysisDileptonHadron {
   Configurable<bool> fUseRemoteField{"cfgUseRemoteField", false, "Chose whether to fetch the magnetic field from ccdb or set it manually"};
   Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"};
   Configurable<float> fConfigMagField{"cfgMagField", 5.0f, "Manually set magnetic field"};
+  Configurable<int> fConfigHadronPDG{"cfgHadronPDG", -1, "PDG code of the hadron"};
 
   Service<o2::ccdb::BasicCCDBManager> ccdb;
   Produces<aod::BmesonCandidates> BmesonsTable;
@@ -1630,6 +1642,7 @@ struct AnalysisDileptonHadron {
 
   // use two values array to avoid mixing up the quantities
   float* fValuesDilepton;
+  float* fValuesDileptonHadron;
   float* fValuesHadron;
   HistogramManager* fHistMan;
 
@@ -1644,6 +1657,7 @@ struct AnalysisDileptonHadron {
   {
     fCurrentRun = 0;
     fValuesDilepton = new float[VarManager::kNVars];
+    fValuesDileptonHadron = new float[VarManager::kNVars];
     fValuesHadron = new float[VarManager::kNVars];
     VarManager::SetDefaultVarNames();
     fHistMan = new HistogramManager("analysisHistos", "aa", VarManager::kNVars);
@@ -1652,7 +1666,7 @@ struct AnalysisDileptonHadron {
 
     // TODO: Create separate histogram directories for each selection used in the creation of the dileptons
     // TODO: Implement possibly multiple selections for the associated track ?
-    if (context.mOptions.get<bool>("processSkimmed")) {
+    if (context.mOptions.get<bool>("processSkimmedBtoJpsiEEK") || context.mOptions.get<bool>("processSkimmedPentaQuarkstoJpsiPr")) {
       DefineHistograms(fHistMan, "DileptonsSelected;DileptonHadronInvMass;DileptonHadronCorrelationSE", fConfigAddDileptonHadHistogram); // define all histograms
     }
     if (context.mOptions.get<bool>("processMixedEvent")) {
@@ -1700,8 +1714,10 @@ struct AnalysisDileptonHadron {
       fCurrentRun = event.runNumber();
     } // end: runNumber
 
+    VarManager::ResetValues(0, VarManager::kNVars, fValuesDileptonHadron);
     VarManager::ResetValues(0, VarManager::kNVars, fValuesHadron);
     VarManager::ResetValues(0, VarManager::kNVars, fValuesDilepton);
+    VarManager::FillEvent<TEventFillMap>(event, fValuesDileptonHadron);
     VarManager::FillEvent<TEventFillMap>(event, fValuesHadron);
     VarManager::FillEvent<TEventFillMap>(event, fValuesDilepton);
 
@@ -1756,19 +1772,25 @@ struct AnalysisDileptonHadron {
           continue;
         }
 
-        VarManager::FillDileptonHadron(dilepton, hadron, fValuesHadron);
+        VarManager::FillDileptonHadron(dilepton, hadron, fValuesDileptonHadron, float(pdg->Mass(fConfigHadronPDG.value)));
         // VarManager::FillDileptonTrackVertexing<TCandidateType, TEventFillMap, TTrackFillMap>(event, lepton1, lepton2, hadron, fValuesHadron);
-        fHistMan->FillHistClass("DileptonHadronInvMass", fValuesHadron);
-        fHistMan->FillHistClass("DileptonHadronCorrelationSE", fValuesHadron);
+        VarManager::FillDileptonTrackVertexing<TCandidateType, TEventFillMap, TTrackFillMap>(event, lepton1, lepton2, hadron, fValuesDileptonHadron);
+        fHistMan->FillHistClass("DileptonHadronInvMass", fValuesDileptonHadron);
+        fHistMan->FillHistClass("DileptonHadronCorrelationSE", fValuesDileptonHadron);
         // table to be written out for ML analysis
-        BmesonsTable(fValuesHadron[VarManager::kPairMass], fValuesHadron[VarManager::kPairPt], fValuesHadron[VarManager::kVertexingLxy], fValuesHadron[VarManager::kVertexingLxyz], fValuesHadron[VarManager::kVertexingLz], fValuesHadron[VarManager::kVertexingTauxy], fValuesHadron[VarManager::kVertexingTauz], fValuesHadron[VarManager::kCosPointingAngle], fValuesHadron[VarManager::kVertexingChi2PCA]);
+        BmesonsTable(fValuesDileptonHadron[VarManager::kPairMass], fValuesDileptonHadron[VarManager::kPairPt], fValuesDileptonHadron[VarManager::kVertexingLxy], fValuesDileptonHadron[VarManager::kVertexingLxyz], fValuesDileptonHadron[VarManager::kVertexingLz], fValuesDileptonHadron[VarManager::kVertexingTauxy], fValuesDileptonHadron[VarManager::kVertexingTauz], fValuesDileptonHadron[VarManager::kCosPointingAngle], fValuesDileptonHadron[VarManager::kKFChi2OverNDFGeoThreeProng], fValuesDileptonHadron[VarManager::kKFDCAxyzBetweenProngs], fValuesDileptonHadron[VarManager::kKFChi2OverNDFGeo], fValuesDileptonHadron[VarManager::kKFMassBplusWithMassConstraint], fValuesDileptonHadron[VarManager::kKFMass], fValuesDileptonHadron[VarManager::kTPCNsigmaKaDau], fValuesDileptonHadron[VarManager::kTOFNsigmaKaDau], fValuesDileptonHadron[VarManager::kPairMassDau], fValuesDileptonHadron[VarManager::kPairPtDau]);
+
       }
     }
   }
 
-  void processSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, MyBarrelTracksSelectedWithCov const& tracks, soa::Filtered<MyDielectronCandidates> const& dileptons)
+  void processSkimmedBtoJpsiEEK(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, MyBarrelTracksSelectedWithCov const& tracks, soa::Filtered<MyDielectronCandidates> const& dileptons)
   {
     runDileptonHadron<VarManager::kBtoJpsiEEK, gkEventFillMapWithCov, gkTrackFillMapWithCov>(event, tracks, dileptons);
+  }
+  void processSkimmedPentaQuarkstoJpsiPr(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, MyBarrelTracksSelectedWithCov const& tracks, soa::Filtered<MyDielectronCandidates> const& dileptons)
+  {
+    runDileptonHadron<VarManager::kPentaQuarkstoJpsiPr, gkEventFillMapWithCov, gkTrackFillMapWithCov>(event, tracks, dileptons);
   }
 
   Preslice<soa::Filtered<MyDielectronCandidates>> perEventPairs = aod::reducedpair::reducedeventId;
@@ -1796,7 +1818,7 @@ struct AnalysisDileptonHadron {
             continue;
           }
 
-          VarManager::FillDileptonHadron(dilepton, track, VarManager::fgValues);
+          VarManager::FillDileptonHadron(dilepton, track, VarManager::fgValues, float(pdg->Mass(fConfigHadronPDG.value)));
           fHistMan->FillHistClass("DileptonHadronInvMassME", VarManager::fgValues);
           fHistMan->FillHistClass("DileptonHadronCorrelationME", VarManager::fgValues);
         } // end for (track)
@@ -1810,7 +1832,8 @@ struct AnalysisDileptonHadron {
     // do nothing
   }
 
-  PROCESS_SWITCH(AnalysisDileptonHadron, processSkimmed, "Run dilepton-hadron pairing, using skimmed data", false);
+  PROCESS_SWITCH(AnalysisDileptonHadron, processSkimmedBtoJpsiEEK, "Run dilepton-hadron pairing, using skimmed data", false);
+  PROCESS_SWITCH(AnalysisDileptonHadron, processSkimmedPentaQuarkstoJpsiPr, "Run dilepton-hadron pairing, using skimmed data", false);
   PROCESS_SWITCH(AnalysisDileptonHadron, processMixedEvent, "Run dilepton-hadron mixed event pairing", false);
   PROCESS_SWITCH(AnalysisDileptonHadron, processDummy, "Dummy function", false);
 };

@@ -600,6 +600,13 @@ AnalysisCompositeCut* o2::aod::dqcuts::GetCompositeCut(const char* cutName)
     return cut;
   }
 
+
+  if (!nameStr.compare("kaon4Bplus_lupz")) {
+    cut->AddCut(GetAnalysisCut("PIDStandardKine3"));
+    cut->AddCut(GetAnalysisCut("electronStandardQualityForO2MCdebug3"));
+    return cut;
+  }
+
   if (!nameStr.compare("kaonPIDTPCTOForTPC")) {
     AnalysisCompositeCut* cut_tpctof_nSigma = new AnalysisCompositeCut("pid_TPCTOFnSigma", "pid_TPCTOFnSigma", kTRUE);
     cut_tpctof_nSigma->AddCut(GetAnalysisCut("kaonPID_TPCnTOF"));

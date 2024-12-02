@@ -138,6 +138,7 @@ class VarManager : public TObject
     kElectronMuon,              // e.g. Electron - muon correlations
     kBcToThreeMuons,            // e.g. Bc           -> mu+ mu- mu+
     kBtoJpsiEEK,                // e.g. B+           -> e+ e- K+
+    kPentaQuarkstoJpsiPr,       // e.g. Pentaquarks  -> e+ e- P
     kXtoJpsiPiPi,               // e.g. X(3872)      -> J/psi pi+ pi-
     kChictoJpsiEE,              // e.g. Chi_c1      -> J/psi e+ e-
     kDstarToD0KPiPi,            // e.g. D*+ -> D0 pi+ -> K- pi+ pi+
@@ -476,6 +477,11 @@ class VarManager : public TObject
     kTOFnSigmaPi,
     kTOFnSigmaKa,
     kTOFnSigmaPr,
+    kCombinednSigmaEl,
+    kCombinednSigmaMu,
+    kCombinednSigmaPi,
+    kCombinednSigmaKa,
+    kCombinednSigmaPr,
     kTrackTimeResIsRange, // Gaussian or range (see Framework/DataTypes)
     kPVContributor,       // This track has contributed to the collision vertex fit (see Framework/DataTypes)
     kOrphanTrack,         // Track has no association with any collision vertex (see Framework/DataTypes)
@@ -643,6 +649,8 @@ class VarManager : public TObject
     kKFChi2OverNDFGeo,
     kKFNContributorsPV,
     kKFCosPA,
+    kKFChi2OverNDFGeoThreeProng,
+    kKFMassBplusWithMassConstraint,
     kKFChi2OverNDFGeoTop,
     kKFJpsiDCAxyz,
     kKFJpsiDCAxy,
@@ -652,8 +660,16 @@ class VarManager : public TObject
 
     // Candidate-track correlation variables
     kPairMass,
+    kPairMassVector,
     kPairMassDau,
+    kPairMassDauKF,
+    kPairMassDauKF_2,
+    kHadronMomentumKF,
     kMassDau,
+    kTPCNsigmaKaDau,
+    kTOFNsigmaKaDau,
+    kTPCNsigmaPrDau,
+    kTOFNsigmaPrDau,
     kPairPt,
     kPairPtDau,
     kPairEta,
@@ -2162,6 +2178,34 @@ void VarManager::FillTrack(T const& track, float* values)
       values[kTRDsignal] = track.trdSignal();
       values[kTOFbeta] = track.beta();
     }
+
+    if (values[kTOFnSigmaEl] !=-999 && values[kTPCnSigmaEl] !=-999)
+      values[kCombinednSigmaEl] = 1.0/TMath::Sqrt(2.0)*TMath::Sqrt(values[kTOFnSigmaEl] * values[kTOFnSigmaEl] + values[kTPCnSigmaEl] * values[kTPCnSigmaEl]);
+    else if (values[kTPCnSigmaEl]!=-999)
+      values[kCombinednSigmaEl] = fabs(values[kTPCnSigmaEl]);
+    else if (values[kTOFnSigmaEl]!=-999)
+      values[kCombinednSigmaEl] = fabs(values[kTOFnSigmaEl]);
+      
+    if (values[kTOFnSigmaPi] !=-999 && values[kTPCnSigmaPi] !=-999)
+      values[kCombinednSigmaPi] = 1.0/TMath::Sqrt(2.0)*TMath::Sqrt(values[kTOFnSigmaPi] * values[kTOFnSigmaPi] + values[kTPCnSigmaPi] * values[kTPCnSigmaPi]);
+    else if (values[kTPCnSigmaPi]!=-999)
+      values[kCombinednSigmaPi] = fabs(values[kTPCnSigmaPi]);
+    else if (values[kTOFnSigmaPi]!=-999)
+      values[kCombinednSigmaPi] = fabs(values[kTOFnSigmaPi]);
+
+    if (values[kTOFnSigmaKa] !=-999 && values[kTPCnSigmaKa] !=-999)
+      values[kCombinednSigmaKa] = 1.0/TMath::Sqrt(2.0)*TMath::Sqrt(values[kTOFnSigmaKa] * values[kTOFnSigmaKa] + values[kTPCnSigmaKa] * values[kTPCnSigmaKa]);
+    else if (values[kTPCnSigmaKa]!=-999)
+      values[kCombinednSigmaKa] = fabs(values[kTPCnSigmaKa]);
+    else if (values[kTOFnSigmaKa]!=-999)
+      values[kCombinednSigmaKa] = fabs(values[kTOFnSigmaKa]);
+
+    if (values[kTOFnSigmaPr] !=-999 && values[kTPCnSigmaPr] !=-999)
+      values[kCombinednSigmaPr] = 1.0/TMath::Sqrt(2.0)*TMath::Sqrt(values[kTOFnSigmaPr] * values[kTOFnSigmaPr] + values[kTPCnSigmaPr] * values[kTPCnSigmaPr]);
+    else if (values[kTPCnSigmaPr]!=-999)
+      values[kCombinednSigmaPr] = fabs(values[kTPCnSigmaPr]);
+    else if (values[kTOFnSigmaPr]!=-999)
+      values[kCombinednSigmaPr] = fabs(values[kTOFnSigmaPr]);
   }
   if constexpr ((fillMap & TrackTPCPID) > 0) {
     values[kTPCnSigmaEl] = track.tpcNSigmaEl();
@@ -3541,33 +3585,58 @@ void VarManager::FillDileptonTrackVertexing(C const& collision, T1 const& lepton
     KFParticle KFGeoTwoLeptons;
     KFParticle KFGeoThreeProng;
 
-    if constexpr ((candidateType == kBtoJpsiEEK) && trackHasCov) {
+    // if constexpr ((candidateType == kBtoJpsiEEK) && trackHasCov) {
+    if constexpr (((candidateType == kBtoJpsiEEK) || (candidateType == kPentaQuarkstoJpsiPr)) && trackHasCov) {
       KFPTrack kfpTrack0 = createKFPTrackFromTrack(lepton1);
       lepton1KF = KFParticle(kfpTrack0, -11 * lepton1.sign());
       KFPTrack kfpTrack1 = createKFPTrackFromTrack(lepton2);
       lepton2KF = KFParticle(kfpTrack1, -11 * lepton2.sign());
       KFPTrack kfpTrack2 = createKFPTrackFromTrack(track);
+      if constexpr (candidateType == kBtoJpsiEEK) {
       hadronKF = KFParticle(kfpTrack2, 321 * track.sign()); // kaon mass
+      } else if constexpr (candidateType == kPentaQuarkstoJpsiPr) {
+      hadronKF = KFParticle(kfpTrack2, 2212 * track.sign()); // proton mass
+      }
 
       KFGeoTwoLeptons.SetConstructMethod(2);
       KFGeoTwoLeptons.AddDaughter(lepton1KF);
       KFGeoTwoLeptons.AddDaughter(lepton2KF);
 
-      if (fgUsedVars[kPairMassDau] || fgUsedVars[kPairPtDau]) {
+// if (fgUsedVars[kKFChi2OverNDFGeo])
+        values[kKFChi2OverNDFGeo] = KFGeoTwoLeptons.GetChi2() / KFGeoTwoLeptons.GetNDF();
+      // if (fgUsedVars[kPairMassDau] || fgUsedVars[kPairPtDau]) {
         values[VarManager::kPairMassDau] = KFGeoTwoLeptons.GetMass();
         values[VarManager::kPairPtDau] = KFGeoTwoLeptons.GetPt();
-      }
+      // }
 
       // Quantities between 3rd prong and candidate
-      if (fgUsedVars[kKFDCAxyzBetweenProngs])
+      // if (fgUsedVars[kKFDCAxyzBetweenProngs])
         values[kKFDCAxyzBetweenProngs] = KFGeoTwoLeptons.GetDistanceFromParticle(hadronKF);
 
       KFGeoThreeProng.SetConstructMethod(2);
       KFGeoThreeProng.AddDaughter(KFGeoTwoLeptons);
       KFGeoThreeProng.AddDaughter(hadronKF);
 
-      if (fgUsedVars[kKFMass])
+      // if (fgUsedVars[kKFMass])
         values[kKFMass] = KFGeoThreeProng.GetMass();
+        values[kPairMass] = KFGeoThreeProng.GetMass()-KFGeoTwoLeptons.GetMass()+3.096;
+        values[kPairPt] = KFGeoThreeProng.GetPt();
+        // if (fgUsedVars[kKFChi2OverNDFGeoThreeProng])
+        values[kKFChi2OverNDFGeoThreeProng] = KFGeoThreeProng.GetChi2() / KFGeoThreeProng.GetNDF();
+
+      KFParticle KFGeoMassTwoLeptons = KFGeoTwoLeptons;
+      KFGeoMassTwoLeptons.SetNonlinearMassConstraint(o2::constants::physics::MassJPsi);
+      values[VarManager::kPairMassDauKF_2] = KFGeoMassTwoLeptons.GetMass();
+
+      KFParticle KFGeoMassThreeProng;
+      KFGeoMassThreeProng.SetConstructMethod(2);
+      KFGeoMassThreeProng.AddDaughter(KFGeoMassTwoLeptons);
+      KFGeoMassThreeProng.AddDaughter(hadronKF);
+
+      values[VarManager::kHadronMomentumKF] = hadronKF.GetP();
+
+      // if (fgUsedVars[kKFMassBplusWithMassConstraint])
+        values[kKFMassBplusWithMassConstraint] = KFGeoMassThreeProng.GetMass();
 
       if constexpr (eventHasVtxCov) {
         KFPVertex kfpVertex = createKFPVertexFromCollision(collision);
@@ -3576,7 +3645,7 @@ void VarManager::FillDileptonTrackVertexing(C const& collision, T1 const& lepton
         double dyTriplet3PV = KFGeoThreeProng.GetY() - KFPV.GetY();
         double dzTriplet3PV = KFGeoThreeProng.GetZ() - KFPV.GetZ();
 
-        if (fgUsedVars[kVertexingLxy] || fgUsedVars[kVertexingLz] || fgUsedVars[kVertexingLxyz] || fgUsedVars[kVertexingLxyErr] || fgUsedVars[kVertexingLzErr] || fgUsedVars[kVertexingTauxy] || fgUsedVars[kVertexingLxyOverErr] || fgUsedVars[kVertexingLzOverErr] || fgUsedVars[kVertexingLxyzOverErr] || fgUsedVars[kCosPointingAngle]) {
+        // if (fgUsedVars[kVertexingLxy] || fgUsedVars[kVertexingLz] || fgUsedVars[kVertexingLxyz] || fgUsedVars[kVertexingLxyErr] || fgUsedVars[kVertexingLzErr] || fgUsedVars[kVertexingTauxy] || fgUsedVars[kVertexingLxyOverErr] || fgUsedVars[kVertexingLzOverErr] || fgUsedVars[kVertexingLxyzOverErr] || fgUsedVars[kCosPointingAngle]) {
           values[kVertexingLxy] = std::sqrt(dxTriplet3PV * dxTriplet3PV + dyTriplet3PV * dyTriplet3PV);
           values[kVertexingLz] = std::sqrt(dzTriplet3PV * dzTriplet3PV);
           values[kVertexingLxyz] = std::sqrt(dxTriplet3PV * dxTriplet3PV + dyTriplet3PV * dyTriplet3PV + dzTriplet3PV * dzTriplet3PV);
@@ -3593,17 +3662,27 @@ void VarManager::FillDileptonTrackVertexing(C const& collision, T1 const& lepton
             values[kVertexingLxyz] = 1.e-8f;
           values[kVertexingLxyzErr] = values[kVertexingLxyzErr] < 0. ? 1.e8f : std::sqrt(values[kVertexingLxyzErr]) / values[kVertexingLxyz];
 
-          if (fgUsedVars[kVertexingTauxy])
+          // if (fgUsedVars[kVertexingTauxy])
             values[kVertexingTauxy] = KFGeoThreeProng.GetPseudoProperDecayTime(KFPV, KFGeoThreeProng.GetMass()) / (o2::constants::physics::LightSpeedCm2NS);
-          if (fgUsedVars[kVertexingTauxyErr])
+          // if (fgUsedVars[kVertexingTauxyErr])
             values[kVertexingTauxyErr] = values[kVertexingLxyErr] * KFGeoThreeProng.GetMass() / (KFGeoThreeProng.GetPt() * o2::constants::physics::LightSpeedCm2NS);
+      values[kVertexingTauz] = (collision.posZ() - KFGeoThreeProng.GetZ()) * KFGeoThreeProng.GetMass() / (TMath::Abs(KFGeoThreeProng.GetPz()) * o2::constants::physics::LightSpeedCm2NS);
 
-          if (fgUsedVars[kCosPointingAngle])
+
+          // if (fgUsedVars[kCosPointingAngle])
             values[VarManager::kCosPointingAngle] = (dxTriplet3PV * KFGeoThreeProng.GetPx() +
                                                      dyTriplet3PV * KFGeoThreeProng.GetPy() +
                                                      dzTriplet3PV * KFGeoThreeProng.GetPz()) /
                                                     (KFGeoThreeProng.GetP() * values[VarManager::kVertexingLxyz]);
-        } // end calculate vertex variables
+                                                    if (fgUsedVars[kKFCosPA])
+            values[kKFCosPA] = calculateCosPA(KFGeoThreeProng, KFPV);
+        // } // end calculate vertex variables
+        if constexpr ((fillMap & TrackPID) > 0 || (fillMap & ReducedTrackBarrelPID) > 0) {
+              values[kTPCNsigmaKaDau] = track.tpcNSigmaKa();
+              values[kTOFNsigmaKaDau] = track.tofNSigmaKa();
+              values[kTPCNsigmaPrDau] = track.tpcNSigmaPr();
+              values[kTOFNsigmaPrDau] = track.tofNSigmaPr();
+        }
 
         // As defined in Run 2 (projected onto momentum)
         if (fgUsedVars[kVertexingLxyProjected] || fgUsedVars[kVertexingLxyzProjected] || fgUsedVars[kVertexingLzProjected]) {
@@ -4039,7 +4118,8 @@ void VarManager::FillDileptonHadron(T1 const& dilepton, T2 const& hadron, float*
     ROOT::Math::PtEtaPhiMVector v1(dilepton.pt(), dilepton.eta(), dilepton.phi(), dilepton.mass());
     ROOT::Math::PtEtaPhiMVector v2(hadron.pt(), hadron.eta(), hadron.phi(), hadronMass);
     ROOT::Math::PtEtaPhiMVector v12 = v1 + v2;
-    values[kPairMass] = v12.M();
+    values[kPairMass] = v12.M()-v1.M()+3.0969;
+    values[kPairMassVector] = v12.M(); // original
     values[kPairPt] = v12.Pt();
     values[kPairEta] = v12.Eta();
     values[kPairPhi] = v12.Phi();
