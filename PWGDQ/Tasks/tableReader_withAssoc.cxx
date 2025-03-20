@@ -880,8 +880,8 @@ struct AnalysisSameEventPairing {
 
   void init(o2::framework::InitContext& context)
   {
-    fEnableBarrelHistos = context.mOptions.get<bool>("processAllSkimmed") || context.mOptions.get<bool>("processBarrelOnlySkimmed");
-    fEnableBarrelMixingHistos = context.mOptions.get<bool>("processMixingAllSkimmed");
+    fEnableBarrelHistos = context.mOptions.get<bool>("processAllSkimmed") || context.mOptions.get<bool>("processBarrelOnlySkimmed") || context.mOptions.get<bool>("processBarrelOnlySkimmedNoCov");
+    fEnableBarrelMixingHistos = context.mOptions.get<bool>("processMixingAllSkimmed") || context.mOptions.get<bool>("processMixingBarrelSkimmed");
     fEnableMuonHistos = context.mOptions.get<bool>("processAllSkimmed") || context.mOptions.get<bool>("processMuonOnlySkimmed");
     fEnableMuonMixingHistos = context.mOptions.get<bool>("processMixingAllSkimmed");
     bool isDummy = context.mOptions.get<bool>("processDummy");
@@ -951,6 +951,15 @@ struct AnalysisSameEventPairing {
             names.push_back(Form("PairsBarrelSEMM_ambiguousOutOfBunch_%s", objArray->At(icut)->GetName()));
             histNames += Form("%s;%s;%s;", names[(fEnableBarrelMixingHistos ? 6 : 3)].Data(), names[(fEnableBarrelMixingHistos ? 7 : 4)].Data(), names[(fEnableBarrelMixingHistos ? 8 : 5)].Data());
             histNames += Form("%s;%s;%s;", names[(fEnableBarrelMixingHistos ? 9 : 6)].Data(), names[(fEnableBarrelMixingHistos ? 10 : 7)].Data(), names[(fEnableBarrelMixingHistos ? 11 : 8)].Data());
+	    if (fEnableBarrelMixingHistos) {
+	      names.push_back(Form("PairsBarrelMEPM_ambiguousInBunch_%s", objArray->At(icut)->GetName()));
+              names.push_back(Form("PairsBarrelMEPP_ambiguousInBunch_%s", objArray->At(icut)->GetName()));
+              names.push_back(Form("PairsBarrelMEMM_ambiguousInBunch_%s", objArray->At(icut)->GetName()));
+	      names.push_back(Form("PairsBarrelMEPM_ambiguousOutOfBunch_%s", objArray->At(icut)->GetName()));
+              names.push_back(Form("PairsBarrelMEPP_ambiguousOutOfBunch_%s", objArray->At(icut)->GetName()));
+              names.push_back(Form("PairsBarrelMEMM_ambiguousOutOfBunch_%s", objArray->At(icut)->GetName()));
+              histNames += Form("%s;%s;%s;%s;%s;%s;", names[12].Data(), names[13].Data(), names[14].Data(), names[15].Data(), names[16].Data(), names[17].Data());
+            }
             fTrackHistNames[icut] = names;
 
             TString cutNamesStr = fConfigPairCuts.value;
@@ -1115,6 +1124,7 @@ struct AnalysisSameEventPairing {
   template <bool TTwoProngFitter, int TPairType, uint32_t TEventFillMap, uint32_t TTrackFillMap, typename TEvents, typename TTrackAssocs, typename TTracks>
   void runSameEventPairing(TEvents const& events, Preslice<TTrackAssocs>& preslice, TTrackAssocs const& assocs, TTracks const& /*tracks*/)
   {
+	  LOGF(info, "Start process yzhang");
     if (events.size() > 0) { // Additional protection to avoid crashing of events.begin().runNumber()
       if (fCurrentRun != events.begin().runNumber()) {
         initParamsFromCCDB(events.begin().timestamp(), TTwoProngFitter);
@@ -1160,6 +1170,8 @@ struct AnalysisSameEventPairing {
     constexpr bool eventHasQvectorCentr = ((TEventFillMap & VarManager::ObjTypes::CollisionQvect) > 0);
     constexpr bool trackHasCov = ((TTrackFillMap & VarManager::ObjTypes::TrackCov) > 0 || (TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelCov) > 0);
 
+
+    //LOGF(info, "Start loop yzhang");
     for (auto& event : events) {
       if (!event.isEventSelected_bit(0)) {
         continue;
@@ -1376,17 +1388,36 @@ struct AnalysisSameEventPairing {
     for (auto& a1 : assocs1) {
       for (auto& a2 : assocs2) {
         if constexpr (TPairType == VarManager::kDecayToEE) {
-          twoTrackFilter = a1.isBarrelSelected_raw() & a2.isBarrelSelected_raw() & a1.isBarrelSelectedPrefilter_raw() & a2.isBarrelSelectedPrefilter_raw() & fTrackFilterMask;
+          //twoTrackFilter = a1.isBarrelSelected_raw() & a2.isBarrelSelected_raw() & a1.isBarrelSelectedPrefilter_raw() & a2.isBarrelSelectedPrefilter_raw() & fTrackFilterMask;
+          twoTrackFilter = a1.isBarrelSelected_raw() & a2.isBarrelSelected_raw() & fTrackFilterMask;
           if (!twoTrackFilter) { // the tracks must have at least one filter bit in common to continue
             continue;
           }
-          auto t1 = a1.template reducedtrack_as<TTracks1>();
-          auto t2 = a1.template reducedtrack_as<TTracks2>();
+          auto t1 = a1.template reducedtrack_as<MyBarrelTracksWithAmbiguities>();//temp yzhang
+          auto t2 = a2.template reducedtrack_as<MyBarrelTracksWithAmbiguities>();
           VarManager::FillPairME<TPairType>(t1, t2);
           if constexpr ((TEventFillMap & VarManager::ObjTypes::ReducedEventQvector) > 0) {
             VarManager::FillPairVn<TPairType>(t1, t2);
           }
           pairSign = t1.sign() + t2.sign();
+
+	  if (t1.barrelAmbiguityInBunch() > 1) {
+            twoTrackFilter |= (static_cast<uint32_t>(1) << 28);
+          }
+          if (t2.barrelAmbiguityInBunch() > 1) {
+            twoTrackFilter |= (static_cast<uint32_t>(1) << 29);
+          }
+          if (t1.barrelAmbiguityOutOfBunch() > 1) {
+            twoTrackFilter |= (static_cast<uint32_t>(1) << 30);
+          }
+          if (t2.barrelAmbiguityOutOfBunch() > 1) {
+            twoTrackFilter |= (static_cast<uint32_t>(1) << 31);
+          }
+	  //LOGF(info, Form("Start %d yzhang",pairSign));
+	  //ROOT::Math::PtEtaPhiMVector v1(t1.pt(), t1.eta(), t1.phi(), 0.511);
+	  //ROOT::Math::PtEtaPhiMVector v2(t2.pt(), t2.eta(), t2.phi(), 0.511);
+	  //ROOT::Math::PtEtaPhiMVector v12 = v1 + v2;
+	  //VarManager::fgValues[VarManager::kMass]=v12.M();
           ncuts = fNCutsBarrel;
         }
         if constexpr (TPairType == VarManager::kDecayToMuMu) {
@@ -1407,17 +1438,43 @@ struct AnalysisSameEventPairing {
           twoTrackFilter = a1.isBarrelSelected_raw() & a1.isBarrelSelectedPrefilter_raw() & a2.isMuonSelected_raw() & fTrackFilterMask;
         }*/
 
+
+	bool isAmbiInBunch = false;
+        bool isAmbiOutOfBunch = false;
+
         for (int icut = 0; icut < ncuts; icut++) {
           if (!(twoTrackFilter & (uint32_t(1) << icut))) {
             continue; // cut not passed
           }
+
+	  isAmbiInBunch = (twoTrackFilter & (static_cast<uint32_t>(1) << 28)) || (twoTrackFilter & (static_cast<uint32_t>(1) << 29));
+          isAmbiOutOfBunch = (twoTrackFilter & (static_cast<uint32_t>(1) << 30)) || (twoTrackFilter & (static_cast<uint32_t>(1) << 31));
+
           if (pairSign == 0) {
             fHistMan->FillHistClass(histNames[icut][3].Data(), VarManager::fgValues);
+	    if (isAmbiInBunch) {
+              fHistMan->FillHistClass(histNames[icut][12].Data(), VarManager::fgValues);
+            }
+            if (isAmbiOutOfBunch) {
+              fHistMan->FillHistClass(histNames[icut][15].Data(), VarManager::fgValues);
+            }
           } else {
             if (pairSign > 0) {
               fHistMan->FillHistClass(histNames[icut][4].Data(), VarManager::fgValues);
+	      if (isAmbiInBunch) {
+                fHistMan->FillHistClass(histNames[icut][13].Data(), VarManager::fgValues);
+              }
+              if (isAmbiOutOfBunch) {
+                fHistMan->FillHistClass(histNames[icut][16].Data(), VarManager::fgValues);
+              }
             } else {
               fHistMan->FillHistClass(histNames[icut][5].Data(), VarManager::fgValues);
+	      if (isAmbiInBunch) {
+                fHistMan->FillHistClass(histNames[icut][14].Data(), VarManager::fgValues);
+              }
+              if (isAmbiOutOfBunch) {
+                fHistMan->FillHistClass(histNames[icut][17].Data(), VarManager::fgValues);
+              }
             }
           }
         } // end for (cuts)
@@ -1429,6 +1486,7 @@ struct AnalysisSameEventPairing {
   template <int TPairType, uint32_t TEventFillMap, typename TEvents, typename TAssocs, typename TTracks>
   void runSameSideMixing(TEvents& events, TAssocs const& assocs, TTracks const& tracks, Preslice<TAssocs>& preSlice)
   {
+	  LOGF(info, "Start process yzhang");
     events.bindExternalIndices(&assocs);
     int mixingDepth = fConfigMixingDepth.value;
     for (auto& [event1, event2] : selfCombinations(hashBin, mixingDepth, -1, events, events)) {
@@ -1461,6 +1519,14 @@ struct AnalysisSameEventPairing {
     runSameEventPairing<true, VarManager::kDecayToEE, gkEventFillMapWithCov, gkTrackFillMapWithCov>(events, trackAssocsPerCollision, barrelAssocs, barrelTracks);
   }
 
+  void processBarrelOnlySkimmedNoCov(MyEventsSelected const& events,
+                                     soa::Join<aod::ReducedTracksAssoc, aod::BarrelTrackCuts, aod::Prefilter> const& barrelAssocs,
+                                     MyBarrelTracksWithAmbiguities const& barrelTracks)
+  {
+	  LOGF(info, "Start processBarrelOnlySkimmedNoCov");
+    runSameEventPairing<false, VarManager::kDecayToEE, gkEventFillMap, gkTrackFillMap>(events, trackAssocsPerCollision, barrelAssocs, barrelTracks);
+  }
+
   void processMuonOnlySkimmed(MyEventsVtxCovSelected const& events,
                               soa::Join<aod::ReducedMuonsAssoc, aod::MuonTrackCuts> const& muonAssocs, MyMuonTracksWithCov const& muons)
   {
@@ -1475,6 +1541,13 @@ struct AnalysisSameEventPairing {
     runSameSideMixing<pairTypeMuMu, gkEventFillMap>(events, muonAssocs, muons, muonAssocsPerCollision);
   }
 
+  void processMixingBarrelSkimmed(soa::Filtered<MyEventsHashSelected>& events,
+                               soa::Join<aod::ReducedTracksAssoc, aod::BarrelTrackCuts, aod::Prefilter> const& trackAssocs, MyBarrelTracksWithAmbiguities const& tracks)
+  {
+	  LOGF(info, "Start mixingprocess yzhang");
+    runSameSideMixing<pairTypeEE, gkEventFillMap>(events, trackAssocs, tracks, trackAssocsPerCollision);
+  }
+
   void processDummy(MyEvents&)
   {
     // do nothing
@@ -1482,8 +1555,10 @@ struct AnalysisSameEventPairing {
 
   PROCESS_SWITCH(AnalysisSameEventPairing, processAllSkimmed, "Run all types of pairing, with skimmed tracks/muons", false);
   PROCESS_SWITCH(AnalysisSameEventPairing, processBarrelOnlySkimmed, "Run barrel only pairing, with skimmed tracks", false);
+  PROCESS_SWITCH(AnalysisSameEventPairing, processBarrelOnlySkimmedNoCov, "Run barrel only pairing (no covariances), with skimmed tracks and with collision information", false);
   PROCESS_SWITCH(AnalysisSameEventPairing, processMuonOnlySkimmed, "Run muon only pairing, with skimmed tracks", false);
   PROCESS_SWITCH(AnalysisSameEventPairing, processMixingAllSkimmed, "Run all types of mixed pairing, with skimmed tracks/muons", false);
+  PROCESS_SWITCH(AnalysisSameEventPairing, processMixingBarrelSkimmed, "Run barrel mixed pairing, with skimmed tracks/muons", false);
   PROCESS_SWITCH(AnalysisSameEventPairing, processDummy, "Dummy function, enabled only if none of the others are enabled", false);
 };
 
@@ -2619,3 +2694,4 @@ void DefineHistograms(HistogramManager* histMan, TString histClasses, const char
     }
   } // end loop over histogram classes
 }
+

@@ -364,6 +364,7 @@ class VarManager : public TObject
     kY,
     kZ,
     kPt,
+    kSign,
     kSignedPt,
     kInvPt,
     kEta,
@@ -397,6 +398,10 @@ class VarManager : public TObject
     kTrackTime,
     kTrackTimeRes,
     kTrackTimeResRelative,
+    kTrackTimeAssoc,
+    kBCoffsetAssoc,
+    kBCcollassoc,
+    kBCtrackassoc,
     kDetectorMap,
     kHasITS,
     kHasTRD,
@@ -526,11 +531,21 @@ class VarManager : public TObject
     kMCPhi,
     kMCEta,
     kMCY,
+    kMCSign,
     kMCParticleGeneratorId,
     kNMCParticleVariables,
 
     // MC mother particle variables
     kMCMotherPdgCode,
+
+    // MC daughter particle variables
+    kMCPtDaughter1,
+    kMCEtaDaughter1,
+    kMCPdgCodeDaughter1,
+    kMCPtDaughter2,
+    kMCEtaDaughter2,
+    kMCPdgCodeDaughter2, 
+    kIsinaccDaughters,
 
     // Pair variables
     kCandidateId,
@@ -879,6 +894,10 @@ class VarManager : public TObject
   static void FillPhoton(T const& photon, float* values = nullptr);
   template <uint32_t fillMap, typename T, typename C>
   static void FillTrackCollision(T const& track, C const& collision, float* values = nullptr);
+  template <uint32_t fillMap, typename T, typename C, typename U>
+  static void FillTrackCollisionAssoc(T const& track, C const& collision, U const& collisions, float* values = nullptr);
+  template <uint32_t fillMap, typename T, typename C>
+  static void FillTrackCollisionAssoc(T const& track, C const& collision, float* values = nullptr);
   template <uint32_t fillMap, typename T, typename C, typename M, typename P>
   static void FillTrackCollisionMatCorr(T const& track, C const& collision, M const& materialCorr, P const& propagator, float* values = nullptr);
   template <typename U, typename T>
@@ -1726,6 +1745,7 @@ void VarManager::FillTrack(T const& track, float* values)
   if constexpr ((fillMap & Track) > 0 || (fillMap & Muon) > 0 || (fillMap & ReducedTrack) > 0 || (fillMap & ReducedMuon) > 0) {
     values[kPt] = track.pt();
     values[kSignedPt] = track.pt() * track.sign();
+    values[kSign] = track.sign();
     if (fgUsedVars[kP]) {
       values[kP] = track.p();
     }
@@ -2162,6 +2182,9 @@ void VarManager::FillTrackCollision(T const& track, C const& collision, float* v
       }
     }
   }
+
+
+
   if constexpr ((fillMap & MuonCov) > 0 || (fillMap & ReducedMuonCov) > 0) {
 
     o2::dataformats::GlobalFwdTrack propmuon = PropagateMuon(track, collision);
@@ -2173,6 +2196,69 @@ void VarManager::FillTrackCollision(T const& track, C const& collision, float* v
     values[kMuonPDca] = track.p() * dcaXY;
     values[kMuonDCAx] = dcaX;
     values[kMuonDCAy] = dcaY;
+  }
+}
+
+template <uint32_t fillMap, typename T, typename C, typename U>
+void VarManager::FillTrackCollisionAssoc(T const& track, C const& collision, U const& collisions, float* values)
+{
+  if (!values) {
+    values = fgValues;
+  }
+
+  values[kTrackTimeAssoc] = -59000;
+  if constexpr ((fillMap & ReducedTrackBarrel) > 0 || (fillMap & TrackExtra) > 0) {
+    int64_t trackBC = -1;
+    int64_t collBC = -1;
+
+    if (!track.has_reducedMCTrack()) {
+      values[kTrackTimeAssoc] = -58000;
+    }
+    else {
+
+      
+
+        auto coll_track = collisions.rawIteratorAt(track.reducedeventId());
+        trackBC = coll_track.globalBC();
+
+        auto coll_coll = collisions.rawIteratorAt(collision.globalIndex());
+        collBC = coll_coll.globalBC();
+
+
+        int64_t bcOffset = trackBC - (int64_t)collBC;
+
+        values[kTrackTimeAssoc] = track.trackTime() - collision.collisionTime() + bcOffset * o2::constants::lhc::LHCBunchSpacingNS;
+        values[kBCoffsetAssoc] = bcOffset + track.trackTime() / o2::constants::lhc::LHCBunchSpacingNS;
+        values[kBCcollassoc] = collBC;
+        values[kBCtrackassoc] = trackBC;
+        if (values[kTrackTimeAssoc] > 60000 || values[kTrackTimeAssoc] < -60000) {
+          values[kTrackTimeAssoc] = -57000;
+        }
+      
+    }
+
+  }
+}
+
+template <uint32_t fillMap, typename T, typename C>
+void VarManager::FillTrackCollisionAssoc(T const& track, C const& collision, float* values)
+{
+  if (!values) {
+    values = fgValues;
+  }
+
+  values[kTrackTimeAssoc] = -59000;
+  if constexpr ((fillMap & ReducedTrackBarrel) > 0 || (fillMap & TrackExtra) > 0) {
+    if (track.has_reducedMCTrack()) {
+      values[kTrackTimeAssoc] = track.trackTime() - collision.collisionTime();
+    }
+    else {
+      values[kTrackTimeAssoc] = -58000;
+    }
+
+    if (values[kTrackTimeAssoc] > 60000 || values[kTrackTimeAssoc] < -60000) {
+      values[kTrackTimeAssoc] = -57000;
+    }
   }
 }
 
@@ -2246,6 +2332,12 @@ void VarManager::FillTrackMC(const U& mcStack, T const& track, float* values)
   // Quantities based on the mc particle table
   values[kMCPdgCode] = track.pdgCode();
   values[kMCParticleWeight] = track.weight();
+  if (track.pdgCode() > 0) {
+    values[kMCSign] = 1;
+  }
+  else {
+    values[kMCSign] = -1;
+  }
   values[kMCPx] = track.px();
   values[kMCPy] = track.py();
   values[kMCPz] = track.pz();
@@ -2263,6 +2355,32 @@ void VarManager::FillTrackMC(const U& mcStack, T const& track, float* values)
       auto motherId = track.mothersIds()[0];
       auto mother = mcStack.rawIteratorAt(motherId);
       values[kMCMotherPdgCode] = mother.pdgCode();
+    }
+  }
+
+  if (track.has_daughters()) {
+    auto daughterId1 = track.daughtersIds()[0];
+    auto daughterId2 = track.daughtersIds()[1];
+    auto daughter1 = mcStack.rawIteratorAt(daughterId1);
+    auto daughter2 = mcStack.rawIteratorAt(daughterId2);
+    values[kMCPtDaughter1] = daughter1.pt();
+    values[kMCPtDaughter2] = daughter2.pt();
+    values[kMCEtaDaughter1] = daughter1.eta();
+    values[kMCEtaDaughter2] = daughter2.eta();
+    values[kMCPdgCodeDaughter1] = daughter1.pdgCode();
+    values[kMCPdgCodeDaughter2] = daughter2.pdgCode();
+
+    if (daughter1.pt() > 1 && daughter2.pt() > 1) {
+      if (daughter1.eta() > -0.9 && daughter1.eta() < 0.9 && daughter2.eta() > -0.9 && daughter2.eta() < 0.9) {
+        values[kIsinaccDaughters] = 1;
+      }
+      else {
+        values[kIsinaccDaughters] = 0;
+      
+      }
+    }
+    else {
+      values[kIsinaccDaughters] = 0;
     }
   }
 
