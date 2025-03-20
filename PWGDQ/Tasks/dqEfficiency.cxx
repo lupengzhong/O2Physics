@@ -240,6 +240,7 @@ struct AnalysisTrackSelection {
       filterMap = 0;
 
       VarManager::FillTrack<TTrackFillMap>(track); // compute track quantities
+      VarManager::FillTrackCollisionAssoc<TTrackFillMap>(track, event);
       // compute MC matched quantities
       if constexpr (TTrackMCFillMap & VarManager::ObjTypes::ReducedTrack) {
         VarManager::FillTrack<gkParticleMCFillMap>(track.reducedMCTrack());
@@ -1310,7 +1311,7 @@ void DefineHistograms(HistogramManager* histMan, TString histClasses)
 
     if (classStr.Contains("Track") && !classStr.Contains("Pairs")) {
       if (classStr.Contains("Barrel")) {
-        dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "track", "its,tpcpid,dca,tofpid,mc,mcMother");
+        dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "track", "dca,timeassoc");
       }
       if (classStr.Contains("Muon")) {
         dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "track", "muon");
@@ -1319,7 +1320,7 @@ void DefineHistograms(HistogramManager* histMan, TString histClasses)
 
     if (classStr.Contains("Pairs")) {
       if (classStr.Contains("Barrel")) {
-        dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "pair", "barrel,vertexing-barrel,kalman-filter");
+        dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "pair", "barrel");
       }
       if (classStr.Contains("Muon")) {
         dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "pair", "dimuon,dimuon-multi-diff,vertexing-forward");
@@ -1334,8 +1335,8 @@ void DefineHistograms(HistogramManager* histMan, TString histClasses)
       histMan->AddHistogram(objArray->At(iclass)->GetName(), "Phi", "MC generator #varphi distribution", false, 50, 0.0, 2. * TMath::Pi(), VarManager::kMCPhi);
     }
     if (classStr.Contains("MCTruthGen")) {
-      dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth");
-      histMan->AddHistogram(objArray->At(iclass)->GetName(), "Pt_Rapidity", "MC generator p_{T}, y distribution", false, 120, 0.0, 30.0, VarManager::kMCPt, 150, 2.5, 4.0, VarManager::kMCY);
+      dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth_track");
+      histMan->AddHistogram(objArray->At(iclass)->GetName(), "Pt_Rapidity", "MC generator p_{T}, y distribution", false, 300, 0.0, 30.0, VarManager::kMCPt, 800, -4.0, 4.0, VarManager::kMCY);
       histMan->AddHistogram(objArray->At(iclass)->GetName(), "Eta", "MC generator #eta distribution", false, 200, 2.5, 4.0, VarManager::kMCEta);
       // histMan->AddHistogram(objArray->At(iclass)->GetName(), "Rapidity", "MC generator y distribution", false, 150, 2.5, 4.0, VarManager::kMCY);
       histMan->AddHistogram(objArray->At(iclass)->GetName(), "Phi", "MC generator #varphi distribution", false, 50, 0.0, 2. * TMath::Pi(), VarManager::kMCPhi);

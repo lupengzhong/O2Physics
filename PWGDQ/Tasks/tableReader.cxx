@@ -273,6 +273,7 @@ struct AnalysisEventSelection {
 
 struct AnalysisTrackSelection {
   Produces<aod::BarrelTrackCuts> trackSel;
+  Produces<RTBarrelPIDinfo> trackPIDinfo;
   OutputObj<THashList> fOutputList{"output"};
   // The list of cuts should contain all the track cuts needed later in analysis, including
   //  for candidate electron selection (+ eventual prefilter cuts) and other needs like quarkonium - hadron correlations
@@ -289,6 +290,7 @@ struct AnalysisTrackSelection {
   Configurable<std::string> fConfigRunPeriods{"cfgRunPeriods", "LHC22f", "run periods for used data"};
   Configurable<bool> fConfigDummyRunlist{"cfgDummyRunlist", false, "If true, use dummy runlist"};
   Configurable<int> fConfigInitRunNumber{"cfgInitRunNumber", 543215, "Initial run number used in run by run checks"};
+  Configurable<bool> fConfigIsSavePIDinfo{"cfgSavePIDinfo", false, "If true, save PID info"};
 
   Service<o2::ccdb::BasicCCDBManager> fCCDB;
 
@@ -363,6 +365,9 @@ struct AnalysisTrackSelection {
     }
 
     trackSel.reserve(tracks.size());
+    if (fConfigIsSavePIDinfo) {
+      trackPIDinfo.reserve(1);
+    }
     uint32_t filterMap = 0;
     bool prefilterSelected = false;
     int iCut = 0;
@@ -390,6 +395,13 @@ struct AnalysisTrackSelection {
       }
 
       trackSel(static_cast<int>(filterMap), static_cast<int>(prefilterSelected));
+      if (fConfigIsSavePIDinfo) {
+        if (filterMap != 0) {
+          trackPIDinfo(track.pt(), track.eta(), track.phi(), track.sign(),
+                       track.tpcNClsFindable(), track.tpcSignal(), filterMap,
+                       track.tpcNSigmaEl(), track.tpcNSigmaPi(), track.tpcNSigmaPr());
+        }
+      }
     } // end loop over tracks
   }
 
@@ -497,9 +509,11 @@ struct AnalysisPrefilterSelection {
   SliceCache cache;
   Produces<aod::Prefilter> prefilter;
   Preslice<MyBarrelTracks> perCollision = aod::reducedtrack::reducedeventId;
-
+  OutputObj<THashList> fOutputList{"output"};
   // Configurables
   Configurable<std::string> fConfigPrefilterPairCut{"cfgPrefilterPairCut", "", "Prefilter pair cut"};
+  Configurable<bool> fConfigQA{"cfgQA", false, "Run tag and probe analysis"};
+  Configurable<std::string> fConfigAddTrackHistogram{"cfgAddTrackHistogram", "", "Comma separated list of histograms"};
   Configurable<std::string> ccdburl{"ccdburl", "http://alice-ccdb.cern.ch", "url of the ccdb repository"};
   Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"};
 
@@ -511,6 +525,9 @@ struct AnalysisPrefilterSelection {
   Filter barrelTracksSelectedPrefilter = aod::dqanalysisflags::isBarrelSelectedPrefilter > 0;
 
   Partition<soa::Filtered<MyBarrelTracksSelected>> barrelTracksSelected = aod::dqanalysisflags::isBarrelSelected > 0;
+
+  float* fTrackVars;
+  HistogramManager* fHistMan;
 
   std::map<int, bool> fPrefiltermap;
   AnalysisCompositeCut* fPairCut;
@@ -532,6 +549,19 @@ struct AnalysisPrefilterSelection {
     VarManager::SetUseVars(AnalysisCut::fgUsedVars); // provide the list of required variables so that VarManager knows what to fill
     VarManager::SetDefaultVarNames();
 
+    if (fConfigQA) {
+      fTrackVars = new float[VarManager::kNVars];
+
+      fHistMan = new HistogramManager("analysisHistos", "aa", VarManager::kNVars);
+      fHistMan->SetUseDefaultVariableNames(kTRUE);
+      fHistMan->SetDefaultVarNames(VarManager::fgVariableNames, VarManager::fgVariableUnits);
+
+      //define histograms for tag and probe
+      DefineHistograms(fHistMan, "TrackBarrel_inPairCut", fConfigAddTrackHistogram);
+      VarManager::SetUseVars(fHistMan->GetUsedVars()); // provide the list of required variables so that VarManager knows what to fill
+      fOutputList.setObject(fHistMan->GetMainHistogramList());
+    }
+
     // Do we need this ?
     VarManager::SetupTwoProngDCAFitter(5.0f, true, 200.0f, 4.0f, 1.0e-3f, 0.9f, true); // TODO: get these parameters from Configurables
     VarManager::SetupTwoProngFwdDCAFitter(5.0f, true, 200.0f, 1.0e-3f, 0.9f, true);
@@ -551,6 +581,12 @@ struct AnalysisPrefilterSelection {
       if (fPairCut->IsSelected(VarManager::fgValues)) {
         fPrefiltermap[track1.globalIndex()] = true;
         fPrefiltermap[track2.globalIndex()] = true;
+        if (fConfigQA) {
+          // fill tag and probe information
+          VarManager::ResetValues(0, VarManager::kNVars, fTrackVars);
+          VarManager::FillTrack<TTrackFillMap>(track2, fTrackVars);
+          fHistMan->FillHistClass("TrackBarrel_inPairCut", fTrackVars);
+        }
       }
     }
   }
@@ -605,8 +641,10 @@ struct AnalysisEventMixing {
   Configurable<std::string> ccdburl{"ccdburl", "http://alice-ccdb.cern.ch", "url of the ccdb repository"};
   Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"};
   Configurable<bool> fConfigAmbiguousHist{"cfgAmbiHist", false, "Enable Ambiguous histograms for time association studies"};
+  Configurable<bool> fConfigSaveTable{"cfgSaveTable", false, "Save the table of pairs"};
 
   Service<o2::ccdb::BasicCCDBManager> ccdb;
+  Produces<aod::DielectronTuneMix> dielectronTuneMixList;
 
   o2::parameters::GRPMagField* grpmag = nullptr;
   int fCurrentRun; // needed to detect if the run changed and trigger update of calibrations etc.
@@ -704,6 +742,10 @@ struct AnalysisEventMixing {
   void runMixedPairing(TTracks1 const& tracks1, TTracks2 const& tracks2)
   {
 
+    if (fConfigSaveTable.value) {
+      dielectronTuneMixList.reserve(1);
+    }
+
     unsigned int ncuts = fTrackHistNames.size();
     std::vector<std::vector<TString>> histNames = fTrackHistNames;
     if constexpr (TPairType == pairTypeMuMu) {
@@ -740,6 +782,24 @@ struct AnalysisEventMixing {
         constexpr bool eventHasQvectorCentr = (VarManager::ObjTypes::CollisionQvect > 0);
         if constexpr (eventHasQvectorCentr) {
           VarManager::FillPairVn<TEventFillMap, TPairType>(track1, track2);
+        }
+
+        if constexpr (TPairType == VarManager::kDecayToEE)
+        {
+          if (fConfigSaveTable.value) {
+            if (track1.sign() * track2.sign() < 0) {
+              if (twoTrackFilter > 0) {
+                bool isTPCRefit1 = ((track1.flags() & o2::aod::track::TPCrefit) > 0);
+                bool isTPCRefit2 = ((track2.flags() & o2::aod::track::TPCrefit) > 0);
+                //bool isITSRefit1 = ((t1.flags() & o2::aod::track::ITSrefit) > 0);
+                //bool isITSRefit2 = ((t2.flags() & o2::aod::track::ITSrefit) > 0);
+                dielectronTuneMixList(VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], track1.sign() + track2.sign(),
+                                       track1.pt(), track1.eta(), track1.phi(), track1.tpcNClsCrossedRows(), track1.tpcNClsFound(), track1.tpcChi2NCl(), track1.dcaXY(), track1.dcaZ(), isTPCRefit1, track1.tpcNSigmaEl(), track1.tpcNSigmaPi(), track1.tpcNSigmaPr(), track1.itsClusterMap(), track1.itsChi2NCl(), ((track1.flags() & o2::aod::track::ITSrefit) > 0),
+                                       track2.pt(), track2.eta(), track2.phi(), track2.tpcNClsCrossedRows(), track2.tpcNClsFound(), track2.tpcChi2NCl(), track2.dcaXY(), track2.dcaZ(), isTPCRefit2, track2.tpcNSigmaEl(), track2.tpcNSigmaPi(), track2.tpcNSigmaPr(), track2.itsClusterMap(), track2.itsChi2NCl(), ((track2.flags() & o2::aod::track::ITSrefit) > 0)
+                                       );
+              }
+            }
+          }
         }
 
         for (unsigned int icut = 0; icut < ncuts; icut++) {
@@ -880,6 +940,7 @@ struct AnalysisSameEventPairing {
   Produces<aod::DielectronsInfo> dielectronInfoList;
   Produces<aod::DimuonsExtra> dimuonExtraList;
   Produces<aod::DielectronsAll> dielectronAllList;
+  Produces<aod::DielectronTuneCuts> dielectronTuneCutsList;
   Produces<aod::DimuonsAll> dimuonAllList;
   Produces<aod::DileptonFlow> dileptonFlowList;
   Produces<aod::DileptonsInfo> dileptonInfoList;
@@ -912,6 +973,7 @@ struct AnalysisSameEventPairing {
   Configurable<std::string> geoPath{"geoPath", "GLO/Config/GeometryAligned", "Path of the geometry file"};
   Configurable<std::string> fCollisionSystem{"syst", "pp", "Collision system, pp or PbPb"};
   Configurable<float> fCenterMassEnergy{"energy", 13600, "Center of mass energy in GeV"};
+  Configurable<bool> fConfigFillTuneCuts{"cfgFillTuneCuts", false, "Fill tune cuts histograms"};
 
   Service<o2::ccdb::BasicCCDBManager> ccdb;
   Filter filterEventSelected = aod::dqanalysisflags::isEventSelected == 1;
@@ -1145,6 +1207,9 @@ struct AnalysisSameEventPairing {
       dielectronAllList.reserve(1);
       dimuonAllList.reserve(1);
     }
+    if (fConfigFillTuneCuts.value) {
+      dielectronTuneCutsList.reserve(1);
+    }
 
     if (fConfigMultDimuons.value) {
 
@@ -1212,6 +1277,16 @@ struct AnalysisSameEventPairing {
                             VarManager::fgValues[VarManager::kKFMass], VarManager::fgValues[VarManager::kKFChi2OverNDFGeo], VarManager::fgValues[VarManager::kVertexingLxyz], VarManager::fgValues[VarManager::kVertexingLxyzOverErr], VarManager::fgValues[VarManager::kVertexingLxy], VarManager::fgValues[VarManager::kVertexingLxyOverErr], VarManager::fgValues[VarManager::kVertexingTauxy], VarManager::fgValues[VarManager::kVertexingTauxyErr], VarManager::fgValues[VarManager::kKFCosPA], VarManager::fgValues[VarManager::kKFJpsiDCAxyz], VarManager::fgValues[VarManager::kKFJpsiDCAxy],
                             VarManager::fgValues[VarManager::kKFPairDeviationFromPV], VarManager::fgValues[VarManager::kKFPairDeviationxyFromPV],
                             VarManager::fgValues[VarManager::kKFMassGeoTop], VarManager::fgValues[VarManager::kKFChi2OverNDFGeoTop]);
+        }
+        if (fConfigFillTuneCuts.value) {
+          bool isTPCRefit1 = ((t1.flags() & o2::aod::track::TPCrefit) > 0);
+          bool isTPCRefit2 = ((t2.flags() & o2::aod::track::TPCrefit) > 0);
+          //bool isITSRefit1 = ((t1.flags() & o2::aod::track::ITSrefit) > 0);
+          //bool isITSRefit2 = ((t2.flags() & o2::aod::track::ITSrefit) > 0);
+          dielectronTuneCutsList(VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(),
+                                 t1.pt(), t1.eta(), t1.phi(), t1.tpcNClsCrossedRows(), t1.tpcNClsFound(), t1.tpcChi2NCl(), t1.dcaXY(), t1.dcaZ(), isTPCRefit1, t1.tpcNSigmaEl(), t1.tpcNSigmaPi(), t1.tpcNSigmaPr(), t1.itsClusterMap(), t1.itsChi2NCl(), ((t1.flags() & o2::aod::track::ITSrefit) > 0),
+                                 t2.pt(), t2.eta(), t2.phi(), t2.tpcNClsCrossedRows(), t2.tpcNClsFound(), t2.tpcChi2NCl(), t2.dcaXY(), t2.dcaZ(), isTPCRefit2, t2.tpcNSigmaEl(), t2.tpcNSigmaPi(), t2.tpcNSigmaPr(), t2.itsClusterMap(), t2.itsChi2NCl(), ((t2.flags() & o2::aod::track::ITSrefit) > 0),
+                                 VarManager::fgValues[VarManager::kKFJpsiDCAxy], VarManager::fgValues[VarManager::kKFChi2OverNDFGeo]);
         }
       }
       if constexpr (TPairType == pairTypeMuMu) {
@@ -1949,7 +2024,7 @@ struct AnalysisDileptonTrackTrack {
   }
 
   PROCESS_SWITCH(AnalysisDileptonTrackTrack, processJpsiPiPi, "Run dilepton-dihadron pairing to study X(3872), using skimmed data", false);
-  PROCESS_SWITCH(AnalysisDileptonTrackTrack, processDummy, "Dummy function", false);
+  PROCESS_SWITCH(AnalysisDileptonTrackTrack, processDummy, "Dummy function", true);
 };
 
 WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
