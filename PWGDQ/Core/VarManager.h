@@ -133,7 +133,8 @@ class VarManager : public TObject
     ReducedTrackCollInfo = BIT(24), // TODO: remove it once new reduced data tables are produced for dielectron with ReducedTracksBarrelInfo
     ReducedMuonCollInfo = BIT(25),  // TODO: remove it once new reduced data tables are produced for dielectron with ReducedTracksBarrelInfo
     MuonRealign = BIT(26),
-    MuonCovRealign = BIT(27)
+    MuonCovRealign = BIT(27),
+    V0sBits = BIT(28)
   };
 
   enum PairCandidateType {
@@ -991,6 +992,12 @@ class VarManager : public TObject
     KFParticle::SetField(magField);
     fgUsedKF = true;
   }
+  // // Set the flag to use V0s as tracks
+  // static void SetTrkIsV0s(bool isV0s, int v0sMapIndex)
+  // {
+  //   fgTrkIsV0s = isV0s;
+  //   V0sMapIndex = v0sMapIndex; // 0 for gamma, 1 for K0S, 2 for Lambda, 3 for AntiLambda, 4 for Omega
+  // }
 
   // Setup the 3 prong DCAFitterN
   static void SetupThreeProngDCAFitter(float magField, bool propagateToPCA, float maxR, float /*maxDZIni*/, float minParamChange, float minRelChi2Change, bool useAbsDCA)
@@ -1185,6 +1192,8 @@ class VarManager : public TObject
  private:
   static bool fgUsedVars[kNVars]; // holds flags for when the corresponding variable is needed (e.g., in the histogram manager, in cuts, mixing handler, etc.)
   static bool fgUsedKF;
+  // static bool fgTrkIsV0s;
+  // static int V0sMapIndex;
   static void SetVariableDependencies(); // toggle those variables on which other used variables might depend
 
   static float fgMagField;
@@ -4960,6 +4969,11 @@ void VarManager::FillDileptonHadron(T1 const& dilepton, T2 const& hadron, float*
   if (!values) {
     values = fgValues;
   }
+  // if (fgTrkIsV0s) {
+  //   if (hadron.v0MapID() != V0sMapIndex) {
+  //     return;
+  //   }
+  // }
 
   if (fgUsedVars[kPairMass] || fgUsedVars[kPairPt] || fgUsedVars[kPairEta] || fgUsedVars[kPairPhi] || fgUsedVars[kPairMassDau] || fgUsedVars[kPairPtDau] || fgUsedVars[kDileptonHadronKstar]) {
     ROOT::Math::PtEtaPhiMVector v1(dilepton.pt(), dilepton.eta(), dilepton.phi(), dilepton.mass());

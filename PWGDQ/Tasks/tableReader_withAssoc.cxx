@@ -638,7 +638,8 @@ struct AnalysisTrackSelection {
       if (grpmag != nullptr) {
         VarManager::SetMagneticField(grpmag->getNominalL3Field());
       } else {
-        LOGF(fatal, "GRP object is not available in CCDB at timestamp=%llu", events.begin().timestamp());
+        // LOGF(fatal, "GRP object is not available in CCDB at timestamp=%llu", events.begin().timestamp());
+        VarManager::SetMagneticField(5.0f);
       }
 
       std::map<string, string> metadataRCT, header;

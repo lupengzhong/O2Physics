@@ -28,6 +28,7 @@
 #include "Framework/AnalysisTask.h"
 #include "Framework/AnalysisDataModel.h"
 #include "Framework/ASoAHelpers.h"
+#include "PWGLF/DataModel/LFStrangenessTables.h"
 #include "PWGDQ/DataModel/ReducedInfoTables.h"
 #include "PWGDQ/Core/VarManager.h"
 #include "PWGDQ/Core/HistogramManager.h"
@@ -124,6 +125,7 @@ using MyMuonTracksWithCov = soa::Join<aod::ReducedMuons, aod::ReducedMuonsExtra,
 using MyMuonTracksSelectedWithCov = soa::Join<aod::ReducedMuons, aod::ReducedMuonsExtra, aod::ReducedMuonsCov, aod::MuonTrackCuts>;
 using MyMuonTracksSelectedWithColl = soa::Join<aod::ReducedMuons, aod::ReducedMuonsExtra, aod::ReducedMuonsInfo, aod::MuonTrackCuts>;
 using MyMftTracks = soa::Join<aod::ReducedMFTs, aod::ReducedMFTsExtra>;
+using MyV0s = soa::Join<aod::V0Datas, aod::V0MapID>;
 
 // bit maps used for the Fill functions of the VarManager
 constexpr static uint32_t gkEventFillMap = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended;
@@ -140,6 +142,7 @@ constexpr static uint32_t gkEventFillMapWithCovQvectorCentr = VarManager::ObjTyp
 constexpr static uint32_t gkTrackFillMap = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelPID;
 constexpr static uint32_t gkTrackFillMapWithCov = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelCov | VarManager::ObjTypes::ReducedTrackBarrelPID;
 constexpr static uint32_t gkTrackFillMapWithColl = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::ReducedTrackBarrel | VarManager::ObjTypes::ReducedTrackBarrelPID | VarManager::ObjTypes::ReducedTrackCollInfo;
+constexpr static uint32_t gkV0s = VarManager::ObjTypes::V0sBits;
 
 constexpr static uint32_t gkMuonFillMap = VarManager::ObjTypes::ReducedMuon | VarManager::ObjTypes::ReducedMuonExtra;
 constexpr static uint32_t gkMuonFillMapWithCov = VarManager::ObjTypes::ReducedMuon | VarManager::ObjTypes::ReducedMuonExtra | VarManager::ObjTypes::ReducedMuonCov;
@@ -1750,6 +1753,7 @@ struct AnalysisDileptonHadron {
   Configurable<bool> fUseRemoteField{"cfgUseRemoteField", false, "Chose whether to fetch the magnetic field from ccdb or set it manually"};
   Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"};
   Configurable<float> fConfigMagField{"cfgMagField", 5.0f, "Manually set magnetic field"};
+  Configurable<int> fConfigV0sMapIndex{"cfgV0sMapIndex", 0, "V0s map index"};
 
   Service<o2::ccdb::BasicCCDBManager> ccdb;
   Produces<aod::BmesonCandidates> BmesonsTable;
@@ -1757,6 +1761,7 @@ struct AnalysisDileptonHadron {
   Filter eventFilter = aod::dqanalysisflags::isEventSelected == 1;
   Filter dileptonFilter = aod::reducedpair::pt > fConfigDileptonpTCut&& aod::reducedpair::mass > fConfigDileptonLowMass&& aod::reducedpair::mass < fConfigDileptonHighMass&& aod::reducedpair::sign == 0;
   Filter filterBarrelTrackSelected = aod::dqanalysisflags::isBarrelSelected > 0;
+  Filter filterV0sSelected = aod::v0mapID::v0addid == fConfigV0sMapIndex;
 
   constexpr static uint32_t fgDileptonFillMap = VarManager::ObjTypes::ReducedTrack | VarManager::ObjTypes::Pair; // fill map
 
@@ -1791,8 +1796,11 @@ struct AnalysisDileptonHadron {
     if (context.mOptions.get<bool>("processSkimmed")) {
       DefineHistograms(fHistMan, "DileptonsSelected;DileptonHadronInvMass;DileptonHadronCorrelationSE", fConfigAddDileptonHadHistogram); // define all histograms
     }
+    if (context.mOptions.get<bool>("processSkimmedWithV0s")) {
+      DefineHistograms(fHistMan, "DileptonsSelected;HadronSelected;DileptonV0Femto", fConfigAddDileptonHadHistogram); // define all histograms
+    }
     if (context.mOptions.get<bool>("processMixedEvent")) {
-      DefineHistograms(fHistMan, "DileptonHadronInvMassME;DileptonHadronCorrelationME", fConfigAddDileptonHadHistogram); // define all histograms
+      DefineHistograms(fHistMan, "DileptonHadronInvMassME;HadronSelected;DileptonV0Femto;DileptonHadronCorrelationME", fConfigAddDileptonHadHistogram); // define all histograms
     }
 
     VarManager::SetUseVars(fHistMan->GetUsedVars());
@@ -1860,6 +1868,7 @@ struct AnalysisDileptonHadron {
       // get the index of the electron legs
       int indexLepton1 = dilepton.index0Id();
       int indexLepton2 = dilepton.index1Id();
+      if constexpr((TTrackFillMap & gkTrackFillMapWithCov) > 0) {
 
       if (indexOffset == -999) {
         indexOffset = trackGlobalIndexes.at(0);
@@ -1870,31 +1879,42 @@ struct AnalysisDileptonHadron {
       auto lepton1 = tracks.iteratorAt(indexLepton1 - indexOffset);
       auto lepton2 = tracks.iteratorAt(indexLepton2 - indexOffset);
 
+      // Check that the leptons are opposite sign
+      if (lepton1.sign() * lepton2.sign() > 0) {
+        continue;
+      }
+      }
+
       // Check that the dilepton has zero charge
       if (dilepton.sign() != 0) {
         continue;
       }
 
-      // Check that the leptons are opposite sign
-      if (lepton1.sign() * lepton2.sign() > 0) {
-        continue;
-      }
-
       // loop over hadrons
       for (auto& hadron : tracks) {
+        if constexpr((TTrackFillMap & gkTrackFillMapWithCov) > 0) {
         if (!(static_cast<uint32_t>(hadron.isBarrelSelected()) & (static_cast<uint32_t>(1) << fNHadronCutBit))) {
           continue;
         }
-
         // if the hadron is either of the electron legs, continue
         int index = hadron.globalIndex();
         if (index == indexLepton1 || index == indexLepton2) {
           continue;
         }
+        }
+
+        // if constexpr((TTrackFillMap & VarManager::ObjTypes::V0sBits) > 0) {
+        //   // VarManager::SetTrkIsV0s(true, fConfigV0sMapIndex.value);
+        //   if (hadron.v0addid() != fConfigV0sMapIndex.value) {
+        //     continue;
+        //   }
+        // }
 
         VarManager::FillDileptonHadron(dilepton, hadron, fValuesHadron);
         // VarManager::FillDileptonTrackVertexing<TCandidateType, TEventFillMap, TTrackFillMap>(event, lepton1, lepton2, hadron, fValuesHadron);
         fHistMan->FillHistClass("DileptonHadronInvMass", fValuesHadron);
+        fHistMan->FillHistClass("DileptonV0Femto", fValuesHadron);
+        fHistMan->FillHistClass("HadronSelected", fValuesHadron);
         fHistMan->FillHistClass("DileptonHadronCorrelationSE", fValuesHadron);
         // table to be written out for ML analysis
         BmesonsTable(fValuesHadron[VarManager::kPairMass], fValuesHadron[VarManager::kPairPt], fValuesHadron[VarManager::kVertexingLxy], fValuesHadron[VarManager::kVertexingLxyz], fValuesHadron[VarManager::kVertexingLz], fValuesHadron[VarManager::kVertexingTauxy], fValuesHadron[VarManager::kVertexingTauz], fValuesHadron[VarManager::kCosPointingAngle], fValuesHadron[VarManager::kVertexingChi2PCA]);
@@ -1905,6 +1925,11 @@ struct AnalysisDileptonHadron {
   void processSkimmed(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, MyBarrelTracksSelectedWithCov const& tracks, soa::Filtered<MyDielectronCandidates> const& dileptons)
   {
     runDileptonHadron<VarManager::kBtoJpsiEEK, gkEventFillMapWithCov, gkTrackFillMapWithCov>(event, tracks, dileptons);
+  }
+
+  void processSkimmedWithV0s(soa::Filtered<MyEventsVtxCovSelected>::iterator const& event, soa::Filtered<MyV0s> const& V0s, soa::Filtered<MyDielectronCandidates> const& dileptons)
+  {
+    runDileptonHadron<VarManager::kBtoJpsiEEK, gkEventFillMapWithCov, gkV0s>(event, V0s, dileptons);
   }
 
   Preslice<soa::Filtered<MyDielectronCandidates>> perEventPairs = aod::reducedpair::reducedeventId;
@@ -1941,13 +1966,46 @@ struct AnalysisDileptonHadron {
     } // end event loop
   }
 
+  void processMixedEventV0s(soa::Filtered<MyEventsHashSelected>& events, soa::Filtered<MyDielectronCandidates> const& dileptons, soa::Filtered<MyBarrelTracksSelected> const& tracks)
+  {
+    events.bindExternalIndices(&dileptons);
+    events.bindExternalIndices(&tracks);
+
+    for (auto& [event1, event2] : selfCombinations(hashBin, fConfigMixingDepth.value, -1, events, events)) {
+      VarManager::ResetValues(0, VarManager::kNVars);
+      VarManager::FillEvent<gkEventFillMap>(event1, VarManager::fgValues);
+
+      auto evDileptons = dileptons.sliceBy(perEventPairs, event1.globalIndex());
+      evDileptons.bindExternalIndices(&events);
+
+      auto evTracks = tracks.sliceBy(perEventTracks, event2.globalIndex());
+      evTracks.bindExternalIndices(&events);
+
+      for (auto dilepton : evDileptons) {
+        for (auto& track : evTracks) {
+
+          if (!(static_cast<uint32_t>(track.isBarrelSelected()) & (static_cast<uint32_t>(1) << fNHadronCutBit))) {
+            continue;
+          }
+
+          VarManager::FillDileptonHadron(dilepton, track, VarManager::fgValues);
+          fHistMan->FillHistClass("DileptonHadronInvMassME", VarManager::fgValues);
+          fHistMan->FillHistClass("DileptonHadronCorrelationME", VarManager::fgValues);
+        } // end for (track)
+      } // end for (dilepton)
+
+    } // end event loop
+  }
+
   void processDummy(MyEvents&)
   {
     // do nothing
   }
 
   PROCESS_SWITCH(AnalysisDileptonHadron, processSkimmed, "Run dilepton-hadron pairing, using skimmed data", false);
+  PROCESS_SWITCH(AnalysisDileptonHadron, processSkimmedWithV0s, "Run dilepton-V0 pairing, using skimmed data", false);
   PROCESS_SWITCH(AnalysisDileptonHadron, processMixedEvent, "Run dilepton-hadron mixed event pairing", false);
+  PROCESS_SWITCH(AnalysisDileptonHadron, processMixedEventV0s, "Run dilepton-V0 mixed event pairing", false);
   PROCESS_SWITCH(AnalysisDileptonHadron, processDummy, "Dummy function", false);
 };
 
@@ -2213,8 +2271,12 @@ void DefineHistograms(HistogramManager* histMan, TString histClasses, Configurab
       dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "pair", "barrel");
     }
 
-    if (classStr.Contains("HadronsSelected")) {
-      dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "track", histName);
+    if (classStr.Contains("DileptonV0Femto")) {
+      dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "dilepton-track", "dilepton-hadron-femto");
+    }
+
+    if (classStr.Contains("HadronSelected")) {
+      dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "dilepton-track", "invmass");
     }
 
     if (classStr.Contains("DileptonHadronInvMass")) {
