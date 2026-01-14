@@ -195,7 +195,9 @@ using MyEventsVtxCovZdcSelected = soa::Join<aod::ReducedEvents, aod::ReducedEven
 using MyEventsVtxCovZdcSelectedMultExtra = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::ReducedEventsVtxCov, aod::ReducedZdcs, aod::EventCuts, aod::ReducedEventsMultPV, aod::ReducedEventsMultAll>;
 using MyEventsQvector = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::ReducedEventsQvector>;
 using MyEventsHashSelectedQvector = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::EventCuts, aod::MixingHashes, aod::ReducedEventsQvector>;
+using MyEventsQvectorCentr_my = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::ReducedEventsQvectorCentr, aod::ReducedEventsMultPV>;
 using MyEventsQvectorCentr = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::ReducedEventsQvectorCentr, aod::ReducedEventsMultPV, aod::ReducedEventsMultAll>;
+using MyEventsQvectorCentrSelected_my = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::ReducedEventsQvectorCentr, aod::ReducedEventsMultPV, aod::EventCuts>;
 using MyEventsQvectorCentrSelected = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::ReducedEventsQvectorCentr, aod::ReducedEventsMultPV, aod::ReducedEventsMultAll, aod::EventCuts>;
 
 using MyBarrelTracks = soa::Join<aod::ReducedTracks, aod::ReducedTracksBarrel, aod::ReducedTracksBarrelPID>;
@@ -222,6 +224,7 @@ constexpr static uint32_t gkEventFillMapWithMultExtra = VarManager::ObjTypes::Re
 constexpr static uint32_t gkEventFillMapWithMultExtraWithQVector = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::ReducedEventMultExtra | VarManager::ObjTypes::CollisionQvect;
 constexpr static uint32_t gkEventFillMapWithMultExtraZdc = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::ReducedEventMultExtra | VarManager::ReducedZdc;
 constexpr static uint32_t gkEventFillMapWithCovZdcMultExtra = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::ReducedEventVtxCov | VarManager::ReducedZdc | VarManager::ReducedEventMultExtra;
+constexpr static uint32_t gkEventFillMapWithQvectorCentr_my = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::CollisionQvect;
 constexpr static uint32_t gkEventFillMapWithQvectorCentr = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::CollisionQvect | VarManager::ObjTypes::ReducedEventMultExtra;
 // constexpr static uint32_t gkEventFillMapWithQvector = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::ReducedEventQvector;
 // constexpr static uint32_t gkEventFillMapWithCovQvector = VarManager::ObjTypes::ReducedEvent | VarManager::ObjTypes::ReducedEventExtended | VarManager::ObjTypes::ReducedEventVtxCov | VarManager::ObjTypes::ReducedEventQvector;
@@ -526,10 +529,10 @@ struct AnalysisEventSelection {
     runEventSelection<gkEventFillMapWithMultExtraZdc>(events);
     publishSelections<gkEventFillMapWithMultExtraZdc>(events);
   }
-  void processSkimmedWithQvectorCentr(MyEventsQvectorCentr const& events)
+  void processSkimmedWithQvectorCentr(MyEventsQvectorCentr_my const& events)
   {
-    runEventSelection<gkEventFillMapWithQvectorCentr>(events);
-    publishSelections<gkEventFillMapWithQvectorCentr>(events);
+    runEventSelection<gkEventFillMapWithQvectorCentr_my>(events);
+    publishSelections<gkEventFillMapWithQvectorCentr_my>(events);
   }
   void processDummy(MyEvents&)
   {
@@ -563,6 +566,7 @@ struct AnalysisTrackSelection {
   Configurable<int64_t> fConfigNoLaterThan{"ccdb-no-later-than", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(), "latest acceptable timestamp of creation for the object"};
 
   Configurable<bool> fConfigComputeTPCpostCalib{"cfgTPCpostCalib", false, "If true, compute TPC post-calibrated n-sigmas"};
+  Configurable<bool> fConfigUseRemoteField{"cfgUseRemoteField", false, "Chose whether to fetch the magnetic field from ccdb or set it manually"};
   Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"};
   // Track related options
   Configurable<bool> fPropTrack{"cfgPropTrack", true, "Propgate tracks to associated collision to recalculate DCA and momentum vector"};
@@ -650,11 +654,14 @@ struct AnalysisTrackSelection {
         VarManager::SetCalibrationObject(VarManager::kTPCProtonSigma, calibList->FindObject("sigma_map_proton"));
       }
 
+      if (fConfigUseRemoteField.value) {
       o2::parameters::GRPMagField* grpmag = fCCDB->getForTimeStamp<o2::parameters::GRPMagField>(grpmagPath, events.begin().timestamp());
       if (grpmag != nullptr) {
         VarManager::SetMagneticField(grpmag->getNominalL3Field());
       } else {
-        LOGF(fatal, "GRP object is not available in CCDB at timestamp=%llu", events.begin().timestamp());
+          VarManager::SetMagneticField(5.0);
+          // LOGF(fatal, "GRP object is not available in CCDB at timestamp=%llu", events.begin().timestamp());
+        }
       }
 
       std::map<std::string, std::string> metadataRCT, header;
@@ -1211,6 +1218,8 @@ struct AnalysisSameEventPairing {
   Produces<aod::DileptonPolarization> dileptonPolarList;
 
   o2::base::MatLayerCylSet* fLUT = nullptr;
+  TH1D* ResoFlowSP = nullptr; // Resolution factors for flow analysis, this will be loaded from CCDB
+  TH1D* ResoFlowEP = nullptr; // Resolution factors for flow analysis, this will be loaded from CCDB
   int fCurrentRun; // needed to detect if the run changed and trigger update of calibrations etc.
 
   OutputObj<THashList> fOutputList{"output"};
@@ -1235,6 +1244,7 @@ struct AnalysisSameEventPairing {
     Configurable<std::string> lutPath{"lutPath", "GLO/Param/MatLUT", "Path of the Lut parametrization"};
     Configurable<std::string> geoPath{"geoPath", "GLO/Config/GeometryAligned", "Path of the geometry file"};
     Configurable<std::string> GrpLhcIfPath{"grplhcif", "GLO/Config/GRPLHCIF", "Path on the CCDB for the GRPLHCIF object"};
+    Configurable<std::string> ccdbPathFlow{"ccdb-path-flow", "Users/p/pelu/FlowResolution", "path to the ccdb object for flow resolution factors"};
   } fConfigCCDB;
 
   struct : ConfigurableGroup {
@@ -1251,6 +1261,7 @@ struct AnalysisSameEventPairing {
     Configurable<float> centerMassEnergy{"energy", 13600, "Center of mass energy in GeV"};
     Configurable<bool> propTrack{"cfgPropTrack", true, "Propgate tracks to associated collision to recalculate DCA and momentum vector"};
     Configurable<bool> useRemoteCollisionInfo{"cfgUseRemoteCollisionInfo", false, "Use remote collision information from CCDB"};
+    Configurable<bool> useFlowReso{"cfgFlowReso", false, "Enable loading of flow resolution factors from CCDB"};
   } fConfigOptions;
   struct : ConfigurableGroup {
     Configurable<bool> applyBDT{"applyBDT", false, "Flag to apply ML selections"};
@@ -1298,7 +1309,7 @@ struct AnalysisSameEventPairing {
   void init(o2::framework::InitContext& context)
   {
     LOG(info) << "Starting initialization of AnalysisSameEventPairing (idstoreh)";
-    fEnableBarrelHistos = context.mOptions.get<bool>("processAllSkimmed") || context.mOptions.get<bool>("processBarrelOnlySkimmed") || context.mOptions.get<bool>("processBarrelOnlyWithCollSkimmed") || context.mOptions.get<bool>("processBarrelOnlySkimmedNoCov") || context.mOptions.get<bool>("processBarrelOnlySkimmedNoCovWithMultExtra") || context.mOptions.get<bool>("processBarrelOnlyWithQvectorCentrSkimmedNoCov");
+    fEnableBarrelHistos = context.mOptions.get<bool>("processAllSkimmed") || context.mOptions.get<bool>("processBarrelOnlySkimmed") || context.mOptions.get<bool>("processBarrelOnlyWithCollSkimmed") || context.mOptions.get<bool>("processBarrelOnlySkimmedNoCov") || context.mOptions.get<bool>("processBarrelOnlySkimmedNoCovWithMultExtra") || context.mOptions.get<bool>("processBarrelOnlyWithQvectorCentrSkimmedNoCov") || context.mOptions.get<bool>("processBarrelOnlySkimmedFlow");
     fEnableBarrelMixingHistos = context.mOptions.get<bool>("processMixingAllSkimmed") || context.mOptions.get<bool>("processMixingBarrelSkimmed") || context.mOptions.get<bool>("processMixingBarrelSkimmedFlow");
     fEnableMuonHistos = context.mOptions.get<bool>("processAllSkimmed") || context.mOptions.get<bool>("processMuonOnlySkimmed") || context.mOptions.get<bool>("processMuonOnlySkimmedMultExtra") || context.mOptions.get<bool>("processMixingMuonSkimmed");
     fEnableMuonMixingHistos = context.mOptions.get<bool>("processMixingAllSkimmed") || context.mOptions.get<bool>("processMixingMuonSkimmed");
@@ -1648,6 +1659,7 @@ struct AnalysisSameEventPairing {
       }
     }
 
+
     TString cutNames = fConfigCuts.track.value;
     std::map<int, std::vector<TString>> histNames = fTrackHistNames;
     int ncuts = fNCutsBarrel;
@@ -1712,6 +1724,20 @@ struct AnalysisSameEventPairing {
         continue;
       }
 
+    if (fConfigOptions.useFlowReso) {
+      TString PathFlow = fConfigCCDB.ccdbPathFlow.value;
+      TString ccdbPathFlowSP = Form("%s/ScalarProduct", PathFlow.Data());
+      TString ccdbPathFlowEP = Form("%s/EventPlane", PathFlow.Data());
+      ResoFlowSP = fCCDB->getForTimeStamp<TH1D>(ccdbPathFlowSP.Data(), event.timestamp());
+      ResoFlowEP = fCCDB->getForTimeStamp<TH1D>(ccdbPathFlowEP.Data(), event.timestamp());
+      if (ResoFlowSP == nullptr || ResoFlowEP == nullptr) {
+        LOGF(fatal, "Resolution factor is not available in CCDB at timestamp=%llu", event.timestamp());
+      }
+      else {
+        VarManager::FillEventFlowResoFactor(ResoFlowSP, ResoFlowEP);
+      }
+    }
+
       bool isFirst = true;
       for (auto& [a1, a2] : o2::soa::combinations(groupedAssocs, groupedAssocs)) {
         if constexpr (TPairType == VarManager::kDecayToEE) {
@@ -1769,6 +1795,26 @@ struct AnalysisSameEventPairing {
                               VarManager::fgValues[VarManager::kCosThetaPP], VarManager::fgValues[VarManager::kPhiPP], VarManager::fgValues[VarManager::kPhiTildePP],
                               VarManager::fgValues[VarManager::kCosThetaRM],
                               VarManager::fgValues[VarManager::kCosThetaStarTPC], VarManager::fgValues[VarManager::kCosThetaStarFT0A], VarManager::fgValues[VarManager::kCosThetaStarFT0C]);
+          }
+          if constexpr (eventHasQvector == true || eventHasQvectorCentr == true) {
+          //   dileptonFlowList(event.globalIndex(), VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kCentFT0C],
+          //                    VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), isFirst,
+          //                    VarManager::fgValues[VarManager::kU2Q2], VarManager::fgValues[VarManager::kR2SP_AB], VarManager::fgValues[VarManager::kR2SP_AC], VarManager::fgValues[VarManager::kR2SP_BC],
+          //                    VarManager::fgValues[VarManager::kU3Q3], VarManager::fgValues[VarManager::kR3SP],
+          //                    VarManager::fgValues[VarManager::kCos2DeltaPhi], VarManager::fgValues[VarManager::kR2EP_AB], VarManager::fgValues[VarManager::kR2EP_AC], VarManager::fgValues[VarManager::kR2EP_BC],
+          //                    VarManager::fgValues[VarManager::kCos3DeltaPhi], VarManager::fgValues[VarManager::kR3EP],
+          //                    VarManager::fgValues[VarManager::kCORR2POI], VarManager::fgValues[VarManager::kCORR4POI], VarManager::fgValues[VarManager::kM01POI], VarManager::fgValues[VarManager::kM0111POI],
+          //                    VarManager::fgValues[VarManager::kCORR2REF], VarManager::fgValues[VarManager::kCORR4REF], VarManager::fgValues[VarManager::kM11REF], VarManager::fgValues[VarManager::kM1111REF],
+          //                    VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA]);
+          dileptonFlowList(event.globalIndex(), VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kCentFT0C],
+                           VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), isFirst,
+                           VarManager::fgValues[VarManager::kU2Q2], VarManager::fgValues[VarManager::kU2Q2_FT0A], VarManager::fgValues[VarManager::kU2Q2_FT0C], VarManager::fgValues[VarManager::kU2Q2_FV0A], VarManager::fgValues[VarManager::kR2SP_AB], VarManager::fgValues[VarManager::kR2SP_AC], VarManager::fgValues[VarManager::kR2SP_BC],
+                           VarManager::fgValues[VarManager::kU3Q3], VarManager::fgValues[VarManager::kR3SP],
+                           VarManager::fgValues[VarManager::kCos2DeltaPhi], VarManager::fgValues[VarManager::kR2EP_AB], VarManager::fgValues[VarManager::kR2EP_AC], VarManager::fgValues[VarManager::kR2EP_BC],
+                           VarManager::fgValues[VarManager::kCos3DeltaPhi], VarManager::fgValues[VarManager::kR3EP],
+                           VarManager::fgValues[VarManager::kCORR2POI], VarManager::fgValues[VarManager::kCORR4POI], VarManager::fgValues[VarManager::kM01POI], VarManager::fgValues[VarManager::kM0111POI],
+                           VarManager::fgValues[VarManager::kCORR2REF], VarManager::fgValues[VarManager::kCORR4REF], VarManager::fgValues[VarManager::kM11REF], VarManager::fgValues[VarManager::kM1111REF],
+                           VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA], VarManager::fgValues[VarManager::kMultB], VarManager::fgValues[VarManager::kMultC], VarManager::fgValues[VarManager::kMultUsedForQVecFV0A], VarManager::fgValues[VarManager::kPsi2A], VarManager::fgValues[VarManager::kPsi2B], VarManager::fgValues[VarManager::kPsi2C], VarManager::fgValues[VarManager::kPsiFV0a]);
           }
           if constexpr (trackHasCov && TTwoProngFitter) {
             dielectronsExtraList(t1.globalIndex(), t2.globalIndex(), VarManager::fgValues[VarManager::kVertexingTauzProjected], VarManager::fgValues[VarManager::kVertexingLzProjected], VarManager::fgValues[VarManager::kVertexingLxyProjected]);
@@ -1906,15 +1952,24 @@ struct AnalysisSameEventPairing {
             }
             if constexpr ((TTrackFillMap & VarManager::ObjTypes::ReducedMuonCollInfo) > 0) {
               if constexpr (eventHasQvector == true || eventHasQvectorCentr == true) {
+                // dileptonFlowList(t1.collisionId(), VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kCentFT0C],
+                //                  VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), isFirst,
+                //                  VarManager::fgValues[VarManager::kU2Q2], VarManager::fgValues[VarManager::kR2SP_AB], VarManager::fgValues[VarManager::kR2SP_AC], VarManager::fgValues[VarManager::kR2SP_BC],
+                //                  VarManager::fgValues[VarManager::kU3Q3], VarManager::fgValues[VarManager::kR3SP],
+                //                  VarManager::fgValues[VarManager::kCos2DeltaPhi], VarManager::fgValues[VarManager::kR2EP_AB], VarManager::fgValues[VarManager::kR2EP_AC], VarManager::fgValues[VarManager::kR2EP_BC],
+                //                  VarManager::fgValues[VarManager::kCos3DeltaPhi], VarManager::fgValues[VarManager::kR3EP],
+                //                  VarManager::fgValues[VarManager::kCORR2POI], VarManager::fgValues[VarManager::kCORR4POI], VarManager::fgValues[VarManager::kM01POI], VarManager::fgValues[VarManager::kM0111POI],
+                //                  VarManager::fgValues[VarManager::kCORR2REF], VarManager::fgValues[VarManager::kCORR4REF], VarManager::fgValues[VarManager::kM11REF], VarManager::fgValues[VarManager::kM1111REF],
+                //                  VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA]);
                 dileptonFlowList(t1.collisionId(), VarManager::fgValues[VarManager::kMass], VarManager::fgValues[VarManager::kCentFT0C],
-                                 VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), isFirst,
-                                 VarManager::fgValues[VarManager::kU2Q2], VarManager::fgValues[VarManager::kR2SP_AB], VarManager::fgValues[VarManager::kR2SP_AC], VarManager::fgValues[VarManager::kR2SP_BC],
-                                 VarManager::fgValues[VarManager::kU3Q3], VarManager::fgValues[VarManager::kR3SP],
-                                 VarManager::fgValues[VarManager::kCos2DeltaPhi], VarManager::fgValues[VarManager::kR2EP_AB], VarManager::fgValues[VarManager::kR2EP_AC], VarManager::fgValues[VarManager::kR2EP_BC],
-                                 VarManager::fgValues[VarManager::kCos3DeltaPhi], VarManager::fgValues[VarManager::kR3EP],
-                                 VarManager::fgValues[VarManager::kCORR2POI], VarManager::fgValues[VarManager::kCORR4POI], VarManager::fgValues[VarManager::kM01POI], VarManager::fgValues[VarManager::kM0111POI],
-                                 VarManager::fgValues[VarManager::kCORR2REF], VarManager::fgValues[VarManager::kCORR4REF], VarManager::fgValues[VarManager::kM11REF], VarManager::fgValues[VarManager::kM1111REF],
-                                 VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA]);
+                           VarManager::fgValues[VarManager::kPt], VarManager::fgValues[VarManager::kEta], VarManager::fgValues[VarManager::kPhi], t1.sign() + t2.sign(), isFirst,
+                           VarManager::fgValues[VarManager::kU2Q2], VarManager::fgValues[VarManager::kU2Q2_FT0A], VarManager::fgValues[VarManager::kU2Q2_FT0C], VarManager::fgValues[VarManager::kU2Q2_FV0A], VarManager::fgValues[VarManager::kR2SP_AB], VarManager::fgValues[VarManager::kR2SP_AC], VarManager::fgValues[VarManager::kR2SP_BC],
+                           VarManager::fgValues[VarManager::kU3Q3], VarManager::fgValues[VarManager::kR3SP],
+                           VarManager::fgValues[VarManager::kCos2DeltaPhi], VarManager::fgValues[VarManager::kR2EP_AB], VarManager::fgValues[VarManager::kR2EP_AC], VarManager::fgValues[VarManager::kR2EP_BC],
+                           VarManager::fgValues[VarManager::kCos3DeltaPhi], VarManager::fgValues[VarManager::kR3EP],
+                           VarManager::fgValues[VarManager::kCORR2POI], VarManager::fgValues[VarManager::kCORR4POI], VarManager::fgValues[VarManager::kM01POI], VarManager::fgValues[VarManager::kM0111POI],
+                           VarManager::fgValues[VarManager::kCORR2REF], VarManager::fgValues[VarManager::kCORR4REF], VarManager::fgValues[VarManager::kM11REF], VarManager::fgValues[VarManager::kM1111REF],
+                           VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA], VarManager::fgValues[VarManager::kMultB], VarManager::fgValues[VarManager::kMultC], VarManager::fgValues[VarManager::kMultUsedForQVecFV0A], VarManager::fgValues[VarManager::kPsi2A], VarManager::fgValues[VarManager::kPsi2B], VarManager::fgValues[VarManager::kPsi2C], VarManager::fgValues[VarManager::kPsiFV0a]);
               }
             }
           }
@@ -2057,7 +2112,7 @@ struct AnalysisSameEventPairing {
           auto t1 = a1.template reducedtrack_as<TTracks1>();
           auto t2 = a2.template reducedtrack_as<TTracks2>();
           VarManager::FillPairME<TEventFillMap, TPairType>(t1, t2);
-          if constexpr ((TEventFillMap & VarManager::ObjTypes::ReducedEventQvector) > 0) {
+          if constexpr ((TEventFillMap & VarManager::ObjTypes::CollisionQvect) > 0) {
             VarManager::FillPairVn<TEventFillMap, TPairType>(t1, t2);
           }
           pairSign = t1.sign() + t2.sign();
@@ -2205,11 +2260,31 @@ struct AnalysisSameEventPairing {
       VarManager::ResetValues(0, VarManager::kNVars);
       VarManager::FillEvent<TEventFillMap>(event1, VarManager::fgValues);
 
-      auto assocs1 = assocs.sliceBy(preSlice, event1.globalIndex());
-      assocs1.bindExternalIndices(&events);
 
-      auto assocs2 = assocs.sliceBy(preSlice, event2.globalIndex());
-      assocs2.bindExternalIndices(&events);
+    if (fConfigOptions.useFlowReso) {
+      TString PathFlow = fConfigCCDB.ccdbPathFlow.value;
+      TString ccdbPathFlowSP = Form("%s/ScalarProduct", PathFlow.Data());
+      TString ccdbPathFlowEP = Form("%s/EventPlane", PathFlow.Data());
+      ResoFlowSP = fCCDB->getForTimeStamp<TH1D>(ccdbPathFlowSP.Data(), event1.timestamp());
+      ResoFlowEP = fCCDB->getForTimeStamp<TH1D>(ccdbPathFlowEP.Data(), event1.timestamp());
+      if (ResoFlowSP == nullptr || ResoFlowEP == nullptr) {
+        LOGF(fatal, "Resolution factor is not available in CCDB at timestamp=%llu", event1.timestamp());
+      }
+      else {
+        VarManager::FillEventFlowResoFactor(ResoFlowSP, ResoFlowEP);
+      }
+    }
+    
+    auto assocs1 = assocs.sliceBy(preSlice, event1.globalIndex());
+    assocs1.bindExternalIndices(&events);
+    
+    auto assocs2 = assocs.sliceBy(preSlice, event2.globalIndex());
+    assocs2.bindExternalIndices(&events);
+    
+    VarManager::FillTwoMixEvents<TEventFillMap>(event1, event2, assocs1, assocs2);
+    if (fConfigOptions.useFlowReso) {
+      VarManager::FillTwoMixEventsFlowResoFactor(ResoFlowSP, ResoFlowEP);
+    }
 
       runMixedPairing<TPairType, TEventFillMap>(assocs1, assocs2, tracks, tracks);
     } // end event loop
@@ -2259,11 +2334,11 @@ struct AnalysisSameEventPairing {
     runSameEventPairing<true, VarManager::kDecayToEE, gkEventFillMapWithCov, gkTrackFillMapWithCovWithColl>(events, trackAssocsPerCollision, barrelAssocs, barrelTracks);
   }
 
-  void processBarrelOnlyWithQvectorCentrSkimmedNoCov(MyEventsQvectorCentrSelected const& events,
+  void processBarrelOnlyWithQvectorCentrSkimmedNoCov(MyEventsQvectorCentrSelected_my const& events,
                                                      soa::Join<aod::ReducedTracksAssoc, aod::BarrelTrackCuts, aod::Prefilter> const& barrelAssocs,
                                                      MyBarrelTracksWithAmbiguities const& barrelTracks)
   {
-    runSameEventPairing<false, VarManager::kDecayToEE, gkEventFillMapWithQvectorCentr, gkTrackFillMap>(events, trackAssocsPerCollision, barrelAssocs, barrelTracks);
+    runSameEventPairing<true, VarManager::kDecayToEE, gkEventFillMapWithQvectorCentr_my, gkTrackFillMap>(events, trackAssocsPerCollision, barrelAssocs, barrelTracks);
   }
 
   void processMuonOnlySkimmed(MyEventsVtxCovSelected const& events,

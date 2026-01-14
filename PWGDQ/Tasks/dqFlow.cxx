@@ -330,6 +330,7 @@ struct DQEventQvector {
     VarManager::FillQVectorFromCentralFW(collision);
 
     if (fConfigQA) {
+    // if (fConfigQA && (VarManager::fgValues[VarManager::kMultA] * VarManager::fgValues[VarManager::kMultB] * VarManager::fgValues[VarManager::kMultC] != 0.0)) {
       fHistMan->FillHistClass("Event_BeforeCuts_centralFW", VarManager::fgValues);
       if (fEventCut->IsSelected(VarManager::fgValues)) {
         fHistMan->FillHistClass("Event_AfterCuts_centralFW", VarManager::fgValues);

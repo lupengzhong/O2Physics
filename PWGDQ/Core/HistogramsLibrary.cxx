@@ -308,6 +308,9 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "Psi2ANEG", "", false, 100, -2.0, 2.0, VarManager::kPsi2ANEG);
       hm->AddHistogram(histClass, "Psi2B", "", false, 100, -2.0, 2.0, VarManager::kPsi2B);
       hm->AddHistogram(histClass, "Psi2C", "", false, 100, -2.0, 2.0, VarManager::kPsi2C);
+      hm->AddHistogram(histClass, "Psi2A_MultA", "", false, 4001, -1, 4000, VarManager::kMultA, 100, -2.0, 2.0, VarManager::kPsi2A);
+      hm->AddHistogram(histClass, "Psi2A_MultB", "", false, 4001, -1, 4000, VarManager::kMultB, 100, -2.0, 2.0, VarManager::kPsi2A);
+      hm->AddHistogram(histClass, "Psi2A_MultC", "", false, 4001, -1, 4000, VarManager::kMultB, 100, -2.0, 2.0, VarManager::kPsi2A);
       hm->AddHistogram(histClass, "Psi2A_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 100, -2.0, 2.0, VarManager::kPsi2A);
       hm->AddHistogram(histClass, "Psi2B_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 100, -2.0, 2.0, VarManager::kPsi2B);
       hm->AddHistogram(histClass, "Psi2C_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 100, -2.0, 2.0, VarManager::kPsi2C);
@@ -1166,8 +1169,12 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
 
       if (subGroupStr.Contains("flow")) {
         hm->AddHistogram(histClass, "Mass_u2q2", "u_{2}Q_{2}^{A} vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kU2Q2);
+        hm->AddHistogram(histClass, "Mass_u2q2", "u_{2}Q_{2}^{A} vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kU2Q2_FT0C);
+        hm->AddHistogram(histClass, "Mass_u2q2", "u_{2}Q_{2}^{A} vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kU2Q2_FT0A);
         hm->AddHistogram(histClass, "Mass_u3q3", "u_{3}Q_{3}^{A} vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kU3Q3);
         hm->AddHistogram(histClass, "Mass_cos2DeltaPhi", "cos 2(#varphi-#Psi_{2}^{A}) vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kCos2DeltaPhi);
+        hm->AddHistogram(histClass, "Mass_cos2DeltaPhi", "cos 2(#varphi-#Psi_{2}^{A}) vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kCos2DeltaPhi_FT0C);
+        hm->AddHistogram(histClass, "Mass_cos2DeltaPhi", "cos 2(#varphi-#Psi_{2}^{A}) vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kCos2DeltaPhi_FT0A);
         hm->AddHistogram(histClass, "Mass_cos3DeltaPhi", "cos 3(#varphi-#Psi_{3}^{A}) vs m", true, 125, 0.0, 5.0, VarManager::kMass, 100, -1.0, 1.0, VarManager::kCos3DeltaPhi);
       }
     } else if (subGroupStr.Contains("dimuon")) {
@@ -1777,6 +1784,11 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
     if (subGroupStr.Contains("invmass")) {
       hm->AddHistogram(histClass, "Mass_Dilepton", "", false, 125, 0.0, 5.0, VarManager::kPairMassDau);
       hm->AddHistogram(histClass, "Mass_Hadron", "", false, 125, 0.0, 5.0, VarManager::kMassDau);
+      hm->AddHistogram(histClass, "Mass_Gamma", "", false, 1250, 0.0, 5.0, VarManager::kGammaMass);
+      hm->AddHistogram(histClass, "Mass_K0s", "", false, 1250, 0.0, 5.0, VarManager::kK0sMass);
+      hm->AddHistogram(histClass, "Mass_Lambda", "", false, 1250, 0.0, 5.0, VarManager::kLambdaMass);
+      hm->AddHistogram(histClass, "Mass_AntiLambda", "", false, 1250, 0.0, 5.0, VarManager::kAntiLambdaMass);
+      hm->AddHistogram(histClass, "hV0APplotSelected", "", false, 200, -1.0, 1.0, VarManager::kV0Alpha, 250, 0.0, 0.25, VarManager::kV0Qtarm);
       hm->AddHistogram(histClass, "Delta_Mass", "", false, 125, 0.0, 5.0, VarManager::kDeltaMass);
       hm->AddHistogram(histClass, "Mass_Dilepton_Mass_Hadron", "", false, 125, 0.0, 5.0, VarManager::kPairMassDau, 125, 0.0, 5.0, VarManager::kMassDau);
       hm->AddHistogram(histClass, "Pt_Dilepton", "", false, 120, 0.0, 30.0, VarManager::kPairPtDau);

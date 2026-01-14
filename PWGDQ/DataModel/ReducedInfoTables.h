@@ -111,9 +111,14 @@ DECLARE_SOA_COLUMN(Q2X0B, q2x0b, float);                   //!  Q-vector x compo
 DECLARE_SOA_COLUMN(Q2Y0B, q2y0b, float);                   //!  Q-vector y component, with event eta gap B (harmonic 2 and power 1)
 DECLARE_SOA_COLUMN(Q2X0C, q2x0c, float);                   //!  Q-vector x component, with event eta gap C (harmonic 2 and power 1)
 DECLARE_SOA_COLUMN(Q2Y0C, q2y0c, float);                   //!  Q-vector y component, with event eta gap C (harmonic 2 and power 1)
+DECLARE_SOA_COLUMN(Psi2_TPC, psi2_tpc, float);                   
+DECLARE_SOA_COLUMN(Psi2_FT0A, psi2_ft0a, float);                   
+DECLARE_SOA_COLUMN(Psi2_FT0C, psi2_ft0c, float);                   
+DECLARE_SOA_COLUMN(Psi2_FV0A, psi2_fv0a, float);                   
 DECLARE_SOA_COLUMN(MultA, multa, float);                   //!  Event multiplicity eta gap A
 DECLARE_SOA_COLUMN(MultB, multb, float);                   //!  Event multiplicity eta gap B
 DECLARE_SOA_COLUMN(MultC, multc, float);                   //!  Event multiplicity eta gap C
+DECLARE_SOA_COLUMN(MultFV0AUsedForQVec, multfv0ausedforqvec, float);                   //!  Event multiplicity eta gap C
 DECLARE_SOA_COLUMN(Q3X0A, q3x0a, float);                   //!  Q-vector x component, with event eta gap A (harmonic 3 and power 1)
 DECLARE_SOA_COLUMN(Q3Y0A, q3y0a, float);                   //!  Q-vector y component, with event eta gap A (harmonic 3 and power 1)
 DECLARE_SOA_COLUMN(Q3X0B, q3x0b, float);                   //!  Q-vector x component, with event eta gap B (harmonic 3 and power 1)
@@ -701,6 +706,9 @@ DECLARE_SOA_COLUMN(Lxy, lxy, float);                                            
 DECLARE_SOA_COLUMN(Chi2pca, chi2pca, float);                                             //! Chi2 for PCA of the dilepton
 DECLARE_SOA_COLUMN(CosPointingAngle, cosPointingAngle, float);                           //! Cosine of the pointing angle
 DECLARE_SOA_COLUMN(U2Q2, u2q2, float);                                                   //! Scalar product between unitary vector with event flow vector (harmonic 2)
+DECLARE_SOA_COLUMN(U2Q2_FT0A, u2q2_ft0a, float);                                         
+DECLARE_SOA_COLUMN(U2Q2_FT0C, u2q2_ft0c, float);                                         
+DECLARE_SOA_COLUMN(U2Q2_FV0A, u2q2_fv0a, float);                                         
 DECLARE_SOA_COLUMN(U3Q3, u3q3, float);                                                   //! Scalar product between unitary vector with event flow vector (harmonic 3)
 DECLARE_SOA_COLUMN(Cos2DeltaPhi, cos2deltaphi, float);                                   //! Cosinus term using event plane angle (harmonic 2)
 DECLARE_SOA_COLUMN(Cos3DeltaPhi, cos3deltaphi, float);                                   //! Cosinus term using event plane angle (harmonic 3)
@@ -809,13 +817,13 @@ DECLARE_SOA_TABLE(DileptonsFlow, "AOD", "RTDILEPTONFLOW", //!
                   reducedpair::CentFT0C,
                   reducedpair::Pt, reducedpair::Eta, reducedpair::Phi, reducedpair::Sign,
                   reducedpair::IsFirst,
-                  reducedpair::U2Q2, reducedpair::R2SP_AB, reducedpair::R2SP_AC, reducedpair::R2SP_BC,
+                  reducedpair::U2Q2, reducedpair::U2Q2_FT0A, reducedpair::U2Q2_FT0C, reducedpair::U2Q2_FV0A, reducedpair::R2SP_AB, reducedpair::R2SP_AC, reducedpair::R2SP_BC,
                   reducedpair::U3Q3, reducedpair::R3SP,
                   reducedpair::Cos2DeltaPhi, reducedpair::R2EP_AB, reducedpair::R2EP_AC, reducedpair::R2EP_BC,
                   reducedpair::Cos3DeltaPhi, reducedpair::R3EP,
                   reducedpair::CORR2POI, reducedpair::CORR4POI, reducedpair::M01POI, reducedpair::M0111POI,
                   reducedevent::CORR2REF, reducedevent::CORR4REF, reducedevent::M11REF, reducedevent::M1111REF,
-                  reducedpair::MultDimuons, reducedevent::MultA);
+                  reducedpair::MultDimuons, reducedevent::MultA, reducedevent::MultB, reducedevent::MultC, reducedevent::MultFV0AUsedForQVec, reducedevent::Psi2_TPC, reducedevent::Psi2_FT0A, reducedevent::Psi2_FT0C, reducedevent::Psi2_FV0A);
 
 // Dilepton collision information (joined with DileptonsExtra) allowing to connect different tables (cross PWGs)
 DECLARE_SOA_TABLE(DileptonsInfo, "AOD", "RTDILEPTONINFO",

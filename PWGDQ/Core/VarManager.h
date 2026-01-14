@@ -133,7 +133,8 @@ class VarManager : public TObject
     ReducedTrackCollInfo = BIT(24), // TODO: remove it once new reduced data tables are produced for dielectron with ReducedTracksBarrelInfo
     ReducedMuonCollInfo = BIT(25),  // TODO: remove it once new reduced data tables are produced for dielectron with ReducedTracksBarrelInfo
     MuonRealign = BIT(26),
-    MuonCovRealign = BIT(27)
+    MuonCovRealign = BIT(27),
+    V0sBits = BIT(28)
   };
 
   enum PairCandidateType {
@@ -305,6 +306,8 @@ class VarManager : public TObject
     kQ2Y0B,
     kQ2X0C,
     kQ2Y0C,
+    kQ2X0FV0a,
+    kQ2Y0FV0a,
     kQ2YYAB,
     kQ2XXAB,
     kQ2XYAB,
@@ -322,6 +325,7 @@ class VarManager : public TObject
     kMultANEG, // Multiplicity of the sub-event A
     kMultB,
     kMultC,
+    kMultUsedForQVecFV0A,
     kQ3X0A, // q-vector (e.g. from TPC) with x component (harmonic 3 and power 0), sub-event A
     kQ3Y0A, // q-vector (e.g. from TPC) with y component (harmonic 3 and power 0), sub-event A
     kQ3X0B,
@@ -413,17 +417,43 @@ class VarManager : public TObject
     kQ2X0A2,
     kQ2Y0A1,
     kQ2Y0A2,
+    kQ2X0B1,
+    kQ2Y0B1,
+    kQ2X0C1,
+    kQ2Y0C1,
+    kQ2X0B2,
+    kQ2Y0B2,
+    kQ2X0C2,
+    kQ2Y0C2,
     kU2Q2Ev1,
     kU2Q2Ev2,
+    kU2Q2Ev1_FT0A,
+    kU2Q2Ev2_FT0A,
+    kU2Q2Ev1_FT0C,
+    kU2Q2Ev2_FT0C,
     kCos2DeltaPhiEv1,
     kCos2DeltaPhiEv2,
+    kCos2DeltaPhiEv1_FT0A,
+    kCos2DeltaPhiEv2_FT0A,
+    kCos2DeltaPhiEv1_FT0C,
+    kCos2DeltaPhiEv2_FT0C,
     kV2SP1,
     kV2SP2,
+    kV2SP1_FT0A,
+    kV2SP2_FT0A,
+    kV2SP1_FT0C,
+    kV2SP2_FT0C,
     kV2EP1,
     kV2EP2,
     kV2ME_SP,
     kV2ME_EP,
+    kV2ME_SP_FT0A,
+    kV2ME_SP_FT0C,
+    kV2ME_EP_FT0A,
+    kV2ME_EP_FT0C,
     kWV2ME_SP,
+    kWV2ME_SP_FT0A,
+    kWV2ME_SP_FT0C,
     kWV2ME_EP,
     kTwoR2SP1, // Scalar product resolution of event1 for ME technique
     kTwoR2SP2, // Scalar product resolution of event2 for ME technique
@@ -462,6 +492,12 @@ class VarManager : public TObject
     kUsedKF,
     kKFMass,
     kKFMassGeoTop,
+    kGammaMass,
+    kK0sMass,
+    kLambdaMass,
+    kAntiLambdaMass,
+    kV0Alpha,
+    kV0Qtarm,
 
     kPt1,
     kEta1,
@@ -692,10 +728,19 @@ class VarManager : public TObject
     kDCATrackProd,
     kDCATrackVtxProd,
     kV2SP,
+    kV2SP_FT0A,
+    kV2SP_FT0C,
+    kV2SP_FV0A,
     kV2EP,
+    kV2EP_FT0A,
+    kV2EP_FT0C,
+    kV2EP_FV0A,
     kWV2SP,
     kWV2EP,
     kU2Q2,
+    kU2Q2_FT0A,
+    kU2Q2_FT0C,
+    kU2Q2_FV0A,
     kU3Q3,
     kQ42XA,
     kQ42YA,
@@ -778,7 +823,12 @@ class VarManager : public TObject
     kPsi2ANEG,
     kPsi2B,
     kPsi2C,
+    kPsiFV0a,
     kCos2DeltaPhi,
+    kCos2DeltaPhi_TPC,
+    kCos2DeltaPhi_FT0A,
+    kCos2DeltaPhi_FT0C,
+    kCos2DeltaPhi_FV0A,
     kCos2DeltaPhiMu1, // cos(phi - phi1) for muon1
     kCos2DeltaPhiMu2, ////cos(phi - phi2) for muon2
     kCos3DeltaPhi,
@@ -1106,7 +1156,7 @@ class VarManager : public TObject
   static void FillTripletVertexing(C const& collision, T const& t1, T const& t2, T const& t3, PairCandidateType tripletType, float* values = nullptr);
   template <int candidateType, uint32_t collFillMap, uint32_t fillMap, typename C, typename T1>
   static void FillDileptonTrackVertexing(C const& collision, T1 const& lepton1, T1 const& lepton2, T1 const& track, float* values);
-  template <typename T1, typename T2>
+  template <uint32_t fillHadronMap = 0u, typename T1, typename T2>
   static void FillDileptonHadron(T1 const& dilepton, T2 const& hadron, float* values = nullptr, float hadronMass = 0.0f);
   template <typename T1, typename T2>
   static void FillDileptonPhoton(T1 const& dilepton, T2 const& photon, float* values = nullptr);
@@ -1836,36 +1886,41 @@ void VarManager::FillEvent(T const& event, float* values)
     values[kQ2Y0B] = event.qvecFT0AIm();
     values[kQ2X0C] = event.qvecFT0CRe();
     values[kQ2Y0C] = event.qvecFT0CIm();
-    values[kMultA] = event.nTrkBPos() + event.nTrkBNeg();
-    values[kMultAPOS] = event.nTrkBPos();
-    values[kMultANEG] = event.nTrkBNeg();
-    values[kMultB] = event.sumAmplFT0A();
-    values[kMultC] = event.sumAmplFT0C();
-    values[kQ3X0A] = -999;
-    values[kQ3Y0A] = -999;
-    values[kQ3X0B] = -999;
-    values[kQ3Y0B] = -999;
-    values[kQ3X0C] = -999;
-    values[kQ3Y0C] = -999;
-    values[kQ4X0A] = -999;
-    values[kQ4Y0A] = -999;
-    values[kQ4X0B] = -999;
-    values[kQ4Y0B] = -999;
-    values[kQ4X0C] = -999;
-    values[kQ4Y0C] = -999;
-
-    EventPlaneHelper epHelper;
-    float Psi2A = epHelper.GetEventPlane(values[kQ2X0A], values[kQ2Y0A], 2);
-    float Psi2APOS = epHelper.GetEventPlane(values[kQ2X0APOS], values[kQ2Y0APOS], 2);
-    float Psi2ANEG = epHelper.GetEventPlane(values[kQ2X0ANEG], values[kQ2Y0ANEG], 2);
-    float Psi2B = epHelper.GetEventPlane(values[kQ2X0B], values[kQ2Y0B], 2);
-    float Psi2C = epHelper.GetEventPlane(values[kQ2X0C], values[kQ2Y0C], 2);
+    values[kQ2X0FV0a] = event.qvecFV0ARe();   // already normalised
+    values[kQ2Y0FV0a] = event.qvecFV0AIm();   // already normalised
+  values[kMultA] = event.nTrkBPos() + event.nTrkBNeg();
+  values[kMultAPOS] = event.nTrkBPos();
+  values[kMultANEG] = event.nTrkBNeg();
+  values[kMultB] = event.sumAmplFT0A();
+  values[kMultC] = event.sumAmplFT0C();
+  values[kMultUsedForQVecFV0A] = event.sumAmplFV0A();
+  values[kQ3X0A] = -999;
+  values[kQ3Y0A] = -999;
+  values[kQ3X0B] = -999;
+  values[kQ3Y0B] = -999;
+  values[kQ3X0C] = -999;
+  values[kQ3Y0C] = -999;
+  values[kQ4X0A] = -999;
+  values[kQ4Y0A] = -999;
+  values[kQ4X0B] = -999;
+  values[kQ4Y0B] = -999;
+  values[kQ4X0C] = -999;
+  values[kQ4Y0C] = -999;
+  
+  EventPlaneHelper epHelper;
+  float Psi2A = epHelper.GetEventPlane(values[kQ2X0A], values[kQ2Y0A], 2);
+  float Psi2APOS = epHelper.GetEventPlane(values[kQ2X0APOS], values[kQ2Y0APOS], 2);
+  float Psi2ANEG = epHelper.GetEventPlane(values[kQ2X0ANEG], values[kQ2Y0ANEG], 2);
+  float Psi2B = epHelper.GetEventPlane(values[kQ2X0B], values[kQ2Y0B], 2);
+  float Psi2C = epHelper.GetEventPlane(values[kQ2X0C], values[kQ2Y0C], 2);
+  float epFV0a = epHelper.GetEventPlane(values[kQ2X0FV0a], values[kQ2Y0FV0a], 2);
 
     values[kPsi2A] = Psi2A;
     values[kPsi2APOS] = Psi2APOS;
     values[kPsi2ANEG] = Psi2ANEG;
     values[kPsi2B] = Psi2B;
     values[kPsi2C] = Psi2C;
+    values[kPsiFV0a] = epFV0a;
 
     float R2SP_AB = (values[kQ2X0A] * values[kQ2X0B] + values[kQ2Y0A] * values[kQ2Y0B]);
     float R2SP_AC = (values[kQ2X0A] * values[kQ2X0C] + values[kQ2Y0A] * values[kQ2Y0C]);
@@ -2135,6 +2190,14 @@ void VarManager::FillTwoMixEvents(T1 const& ev1, T1 const& ev2, T2 const& /*trac
     values[kQ2X0A2] = ev2.q2x0a();
     values[kQ2Y0A1] = ev1.q2y0a();
     values[kQ2Y0A2] = ev2.q2y0a();
+    values[kQ2X0B1] = ev1.q2x0b();
+    values[kQ2X0B2] = ev2.q2x0b();
+    values[kQ2Y0B1] = ev1.q2y0b();
+    values[kQ2Y0B2] = ev2.q2y0b();
+    values[kQ2X0C1] = ev1.q2x0c();
+    values[kQ2X0C2] = ev2.q2x0c();
+    values[kQ2Y0C1] = ev1.q2y0c();
+    values[kQ2Y0C2] = ev2.q2y0c();
   }
   if constexpr ((fillMap & CollisionQvect) > 0) {
     // Tobe used for the calculation of u1q1 and u2q2
@@ -2142,6 +2205,14 @@ void VarManager::FillTwoMixEvents(T1 const& ev1, T1 const& ev2, T2 const& /*trac
     values[kQ2X0A2] = (ev2.qvecBPosRe() * ev2.nTrkBPos() + ev2.qvecBNegRe() * ev2.nTrkBNeg()) / (ev2.nTrkBPos() + ev2.nTrkBNeg());
     values[kQ2Y0A1] = (ev1.qvecBPosIm() * ev1.nTrkBPos() + ev1.qvecBNegIm() * ev1.nTrkBNeg()) / (ev1.nTrkBPos() + ev1.nTrkBNeg());
     values[kQ2Y0A2] = (ev2.qvecBPosIm() * ev2.nTrkBPos() + ev2.qvecBNegIm() * ev2.nTrkBNeg()) / (ev2.nTrkBPos() + ev2.nTrkBNeg());
+    values[kQ2X0B1] = ev1.qvecFT0ARe();
+    values[kQ2X0B2] = ev2.qvecFT0ARe();
+    values[kQ2Y0B1] = ev1.qvecFT0AIm();
+    values[kQ2Y0B2] = ev2.qvecFT0AIm();
+    values[kQ2X0C1] = ev1.qvecFT0CRe();
+    values[kQ2X0C2] = ev2.qvecFT0CRe();
+    values[kQ2Y0C1] = ev1.qvecFT0CIm();
+    values[kQ2Y0C2] = ev2.qvecFT0CIm();
   }
 }
 
@@ -3267,25 +3338,48 @@ void VarManager::FillPairME(T1 const& t1, T2 const& t2, float* values)
     // Compute the scalar product UQ for two muon from different event using Q-vector from A, for second and third harmonic
     float Psi2A1 = getEventPlane(2, values[kQ2X0A1], values[kQ2Y0A1]);
     float Psi2A2 = getEventPlane(2, values[kQ2X0A2], values[kQ2Y0A2]);
+    float Psi2B1 = getEventPlane(2, values[kQ2X0B1], values[kQ2Y0B1]);
+    float Psi2B2 = getEventPlane(2, values[kQ2X0B2], values[kQ2Y0B2]);
+    float Psi2C1 = getEventPlane(2, values[kQ2X0C1], values[kQ2Y0C1]);
+    float Psi2C2 = getEventPlane(2, values[kQ2X0C2], values[kQ2Y0C2]);
     values[kCos2DeltaPhi] = TMath::Cos(2 * (v12.Phi() - Psi2A1)); // WARNING: using the first event EP
     values[kCos2DeltaPhiEv1] = TMath::Cos(2 * (v1.Phi() - Psi2A1));
     values[kCos2DeltaPhiEv2] = TMath::Cos(2 * (v2.Phi() - Psi2A2));
+    values[kCos2DeltaPhiEv1_FT0A] = TMath::Cos(2 * (v1.Phi() - Psi2B1));
+    values[kCos2DeltaPhiEv2_FT0A] = TMath::Cos(2 * (v2.Phi() - Psi2B2));
+    values[kCos2DeltaPhiEv1_FT0C] = TMath::Cos(2 * (v1.Phi() - Psi2C1));
+    values[kCos2DeltaPhiEv2_FT0C] = TMath::Cos(2 * (v2.Phi() - Psi2C2));
     values[kU2Q2] = values[kQ2X0A1] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0A1] * TMath::Sin(2 * v12.Phi()); // WARNING: using the first event EP
     values[kU2Q2Ev1] = values[kQ2X0A1] * TMath::Cos(2 * v1.Phi()) + values[kQ2Y0A1] * TMath::Sin(2 * v1.Phi());
     values[kU2Q2Ev2] = values[kQ2X0A2] * TMath::Cos(2 * v2.Phi()) + values[kQ2Y0A2] * TMath::Sin(2 * v2.Phi());
+    values[kU2Q2Ev1_FT0A] = values[kQ2X0B1] * TMath::Cos(2 * v1.Phi()) + values[kQ2Y0B1] * TMath::Sin(2 * v1.Phi());
+    values[kU2Q2Ev2_FT0A] = values[kQ2X0B2] * TMath::Cos(2 * v2.Phi()) + values[kQ2Y0B2] * TMath::Sin(2 * v2.Phi());
+    values[kU2Q2Ev1_FT0C] = values[kQ2X0C1] * TMath::Cos(2 * v1.Phi()) + values[kQ2Y0C1] * TMath::Sin(2 * v1.Phi());
+    values[kU2Q2Ev2_FT0C] = values[kQ2X0C2] * TMath::Cos(2 * v2.Phi()) + values[kQ2Y0C2] * TMath::Sin(2 * v2.Phi());
 
     values[kCos2DeltaPhiMu1] = TMath::Cos(2 * (v1.Phi() - v12.Phi()));
     values[kCos2DeltaPhiMu2] = TMath::Cos(2 * (v2.Phi() - v12.Phi()));
 
     values[kV2SP1] = values[kU2Q2Ev1] / values[kTwoR2SP1];
     values[kV2SP2] = values[kU2Q2Ev2] / values[kTwoR2SP2];
+    values[kV2SP1_FT0A] = values[kU2Q2Ev1_FT0A] / values[kTwoR2SP1];
+    values[kV2SP2_FT0A] = values[kU2Q2Ev2_FT0A] / values[kTwoR2SP2];
+    values[kV2SP1_FT0C] = values[kU2Q2Ev1_FT0C] / values[kTwoR2SP1];
+    values[kV2SP2_FT0C] = values[kU2Q2Ev2_FT0C] / values[kTwoR2SP2];
     values[kV2EP1] = values[kCos2DeltaPhiEv1] / values[kTwoR2EP1];
     values[kV2EP2] = values[kCos2DeltaPhiEv2] / values[kTwoR2EP2];
 
     float V2ME_SP = values[kV2SP1] * values[kCos2DeltaPhiMu1] + values[kV2SP2] * values[kCos2DeltaPhiMu2];
-    float V2ME_EP = values[kV2EP1] * values[kCos2DeltaPhiMu1] + values[kV2EP2] * values[kCos2DeltaPhiMu2];
+    float V2ME_SP_FT0A = values[kV2SP1_FT0A] * values[kCos2DeltaPhiMu1] + values[kV2SP2_FT0A] * values[kCos2DeltaPhiMu2];
+    float V2ME_SP_FT0C = values[kV2SP1_FT0C] * values[kCos2DeltaPhiMu1] + values[kV2SP2_FT0C] * values[kCos2DeltaPhiMu2];
     values[kV2ME_SP] = std::isnan(V2ME_SP) || std::isinf(V2ME_SP) ? 0. : V2ME_SP;
     values[kWV2ME_SP] = std::isnan(V2ME_SP) || std::isinf(V2ME_SP) ? 0. : 1.0;
+    values[kV2ME_SP_FT0A] = std::isnan(V2ME_SP_FT0A) || std::isinf(V2ME_SP_FT0A) ? 0. : V2ME_SP_FT0A;
+    values[kWV2ME_SP_FT0A] = std::isnan(V2ME_SP_FT0A) || std::isinf(V2ME_SP_FT0A) ? 0. : 1.0;
+    values[kV2ME_SP_FT0C] = std::isnan(V2ME_SP_FT0C) || std::isinf(V2ME_SP_FT0C) ? 0. : V2ME_SP_FT0C;
+    values[kWV2ME_SP_FT0C] = std::isnan(V2ME_SP_FT0C) || std::isinf(V2ME_SP_FT0C) ? 0. : 1.0;
+
+    float V2ME_EP = values[kV2EP1] * values[kCos2DeltaPhiMu1] + values[kV2EP2] * values[kCos2DeltaPhiMu2];
     values[kV2ME_EP] = std::isnan(V2ME_EP) || std::isinf(V2ME_EP) ? 0. : V2ME_EP;
     values[kWV2ME_EP] = std::isnan(V2ME_EP) || std::isinf(V2ME_EP) ? 0. : 1.0;
 
@@ -4586,6 +4680,7 @@ void VarManager::FillQVectorFromCentralFW(C const& collision, float* values)
   values[kMultANEG] = collision.nTrkTPCneg();
   values[kMultB] = collision.sumAmplFT0A(); // Be careful, this is weighted sum of multiplicity
   values[kMultC] = collision.sumAmplFT0C(); // Be careful, this is weighted sum of multiplicity
+  values[kMultUsedForQVecFV0A] = collision.sumAmplFV0A(); // Be careful, this is weighted sum of multiplicity
 
   // Q-vectors components correlation (A, B, C)
   values[kQ2YYAB] = values[kQ2Y0A] * values[kQ2Y0B];
@@ -4789,6 +4884,9 @@ void VarManager::FillPairVn(T1 const& t1, T2 const& t2, float* values)
   // Compute the scalar product UQ using Q-vector from A, for second and third harmonic
   // Dilepton vn could be accessible after dividing this product with the R factor
   values[kU2Q2] = values[kQ2X0A] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0A] * TMath::Sin(2 * v12.Phi());
+  values[kU2Q2_FT0A] = values[kQ2X0B] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0B] * TMath::Sin(2 * v12.Phi());
+  values[kU2Q2_FT0C] = values[kQ2X0C] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0C] * TMath::Sin(2 * v12.Phi());
+  values[kU2Q2_FV0A] = values[kQ2X0FV0a] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0FV0a] * TMath::Sin(2 * v12.Phi());
   values[kU3Q3] = values[kQ3X0A] * TMath::Cos(3 * v12.Phi()) + values[kQ3Y0A] * TMath::Sin(3 * v12.Phi());
   values[kR2SP_AB] = (values[kQ2X0A] * values[kQ2X0B] + values[kQ2Y0A] * values[kQ2Y0B]);
   values[kR2SP_AC] = (values[kQ2X0A] * values[kQ2X0C] + values[kQ2Y0A] * values[kQ2Y0C]);
@@ -4802,6 +4900,10 @@ void VarManager::FillPairVn(T1 const& t1, T2 const& t2, float* values)
   float Psi2C = getEventPlane(2, values[kQ2X0C], values[kQ2Y0C]);
   float Psi3C = getEventPlane(3, values[kQ3X0C], values[kQ3Y0C]);
   values[kCos2DeltaPhi] = TMath::Cos(2 * (v12.Phi() - Psi2A));
+  values[kCos2DeltaPhi_TPC] = TMath::Cos(2 * (v12.Phi() - Psi2A));
+  values[kCos2DeltaPhi_FT0A] = TMath::Cos(2 * (v12.Phi() - Psi2B));
+  values[kCos2DeltaPhi_FT0C] = TMath::Cos(2 * (v12.Phi() - Psi2C));
+  values[kCos2DeltaPhi_FV0A] = TMath::Cos(2 * (v12.Phi() - values[kPsiFV0a]));
   values[kCos3DeltaPhi] = TMath::Cos(3 * (v12.Phi() - Psi3A));
   values[kR2EP_AB] = TMath::Cos(2 * (Psi2A - Psi2B));
   values[kR2EP_AC] = TMath::Cos(2 * (Psi2A - Psi2C));
@@ -4814,16 +4916,32 @@ void VarManager::FillPairVn(T1 const& t1, T2 const& t2, float* values)
   values[kWV2SP] = std::isnan(V2SP) || std::isinf(V2SP) ? 0. : 1.0;
   values[kV2EP] = std::isnan(V2EP) || std::isinf(V2EP) ? 0. : V2EP;
   values[kWV2EP] = std::isnan(V2EP) || std::isinf(V2EP) ? 0. : 1.0;
+  float V2SP_FT0A = values[kU2Q2_FT0A] / values[kR2SP];
+  float V2SP_FT0C = values[kU2Q2_FT0C] / values[kR2SP];
+  float V2SP_FV0A = values[kU2Q2_FV0A] / values[kR2SP];
+  values[kV2SP_FT0A] = std::isnan(V2SP_FT0A) || std::isinf(V2SP_FT0A) ? 0. : V2SP_FT0A;
+  values[kV2SP_FT0C] = std::isnan(V2SP_FT0C) || std::isinf(V2SP_FT0C) ? 0. : V2SP_FT0C;
+  values[kV2SP_FV0A] = std::isnan(V2SP_FV0A) || std::isinf(V2SP_FV0A) ? 0. : V2SP_FV0A;
+  float V2EP_FT0A = values[kCos2DeltaPhi_FT0A] / values[kR2EP];
+  float V2EP_FT0C = values[kCos2DeltaPhi_FT0C] / values[kR2EP];
+  float V2EP_FV0A = values[kCos2DeltaPhi_FV0A] / values[kR2EP];
+  values[kV2EP_FT0A] = std::isnan(V2EP_FT0A) || std::isinf(V2EP_FT0A) ? 0. : V2EP_FT0A;
+  values[kV2EP_FT0C] = std::isnan(V2EP_FT0C) || std::isinf(V2EP_FT0C) ? 0. : V2EP_FT0C;
+  values[kV2EP_FV0A] = std::isnan(V2EP_FV0A) || std::isinf(V2EP_FV0A) ? 0. : V2EP_FV0A;
 
   if (std::isnan(VarManager::fgValues[VarManager::kU2Q2]) == true) {
     values[kU2Q2] = -999.;
     values[kR2SP_AB] = -999.;
     values[kR2SP_AC] = -999.;
     values[kR2SP_BC] = -999.;
+    values[kU2Q2_FT0C] = -999.;
   }
   if (std::isnan(VarManager::fgValues[VarManager::kU3Q3]) == true) {
     values[kU3Q3] = -999.;
     values[kR3SP] = -999.;
+  }
+  if (std::isnan(VarManager::fgValues[VarManager::kCos2DeltaPhi_FT0C]) == true) {
+    values[kCos2DeltaPhi_FT0C] = -999.;
   }
   if (std::isnan(VarManager::fgValues[VarManager::kCos2DeltaPhi]) == true) {
     values[kCos2DeltaPhi] = -999.;
@@ -4942,11 +5060,20 @@ void VarManager::FillZDC(T const& zdc, float* values)
   values[kTimeZPC] = zdc.timeZPC();
 }
 
-template <typename T1, typename T2>
+template <uint32_t fillHadronMap, typename T1, typename T2>
 void VarManager::FillDileptonHadron(T1 const& dilepton, T2 const& hadron, float* values, float hadronMass)
 {
   if (!values) {
     values = fgValues;
+  }
+
+  if constexpr ((fillHadronMap & V0sBits) > 0) {
+    values[kGammaMass] = hadron.mGamma();
+    values[kK0sMass] = hadron.mK0Short();
+    values[kLambdaMass] = hadron.mLambda();
+    values[kAntiLambdaMass] = hadron.mAntiLambda();
+    values[kV0Alpha] = hadron.alpha();
+    values[kV0Qtarm] = hadron.qtarm();
   }
 
   if (fgUsedVars[kPairMass] || fgUsedVars[kPairPt] || fgUsedVars[kPairEta] || fgUsedVars[kPairPhi] || fgUsedVars[kPairMassDau] || fgUsedVars[kPairPtDau] || fgUsedVars[kDileptonHadronKstar]) {
