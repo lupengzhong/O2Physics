@@ -111,6 +111,8 @@ DECLARE_SOA_COLUMN(Q2X0B, q2x0b, float);                   //!  Q-vector x compo
 DECLARE_SOA_COLUMN(Q2Y0B, q2y0b, float);                   //!  Q-vector y component, with event eta gap B (harmonic 2 and power 1)
 DECLARE_SOA_COLUMN(Q2X0C, q2x0c, float);                   //!  Q-vector x component, with event eta gap C (harmonic 2 and power 1)
 DECLARE_SOA_COLUMN(Q2Y0C, q2y0c, float);                   //!  Q-vector y component, with event eta gap C (harmonic 2 and power 1)
+DECLARE_SOA_COLUMN(Q2X0D, q2x0d, float);                   //!  Q-vector x component, with event eta gap C (harmonic 2 and power 1)
+DECLARE_SOA_COLUMN(Q2Y0D, q2y0d, float);                   //!  Q-vector y component, with event eta gap C (harmonic 2 and power 1)
 DECLARE_SOA_COLUMN(Psi2_TPC, psi2_tpc, float);                   
 DECLARE_SOA_COLUMN(Psi2_FT0A, psi2_ft0a, float);                   
 DECLARE_SOA_COLUMN(Psi2_FT0C, psi2_ft0c, float);                   
@@ -194,7 +196,7 @@ DECLARE_SOA_TABLE(ReducedEventsVtxCov, "AOD", "REVTXCOV", //!    Event vertex co
 
 DECLARE_SOA_TABLE(ReducedEventsQvector, "AOD", "REQVECTOR", //!    Event Q-vector information
                   reducedevent::Q1X0A, reducedevent::Q1Y0A, reducedevent::Q1X0B, reducedevent::Q1Y0B, reducedevent::Q1X0C, reducedevent::Q1Y0C,
-                  reducedevent::Q2X0A, reducedevent::Q2Y0A, reducedevent::Q2X0B, reducedevent::Q2Y0B, reducedevent::Q2X0C, reducedevent::Q2Y0C,
+                  reducedevent::Q2X0A, reducedevent::Q2Y0A, reducedevent::Q2X0B, reducedevent::Q2Y0B, reducedevent::Q2X0C, reducedevent::Q2Y0C,reducedevent::Q2X0D, reducedevent::Q2Y0D,
                   reducedevent::MultA, reducedevent::MultB, reducedevent::MultC,
                   reducedevent::Q3X0A, reducedevent::Q3Y0A, reducedevent::Q3X0B, reducedevent::Q3Y0B, reducedevent::Q3X0C, reducedevent::Q3Y0C,
                   reducedevent::Q4X0A, reducedevent::Q4Y0A, reducedevent::Q4X0B, reducedevent::Q4Y0B, reducedevent::Q4X0C, reducedevent::Q4Y0C);

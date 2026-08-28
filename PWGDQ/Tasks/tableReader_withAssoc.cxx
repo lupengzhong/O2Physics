@@ -1814,7 +1814,7 @@ struct AnalysisSameEventPairing {
                            VarManager::fgValues[VarManager::kCos3DeltaPhi], VarManager::fgValues[VarManager::kR3EP],
                            VarManager::fgValues[VarManager::kCORR2POI], VarManager::fgValues[VarManager::kCORR4POI], VarManager::fgValues[VarManager::kM01POI], VarManager::fgValues[VarManager::kM0111POI],
                            VarManager::fgValues[VarManager::kCORR2REF], VarManager::fgValues[VarManager::kCORR4REF], VarManager::fgValues[VarManager::kM11REF], VarManager::fgValues[VarManager::kM1111REF],
-                           VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA], VarManager::fgValues[VarManager::kMultB], VarManager::fgValues[VarManager::kMultC], VarManager::fgValues[VarManager::kMultUsedForQVecFV0A], VarManager::fgValues[VarManager::kPsi2A], VarManager::fgValues[VarManager::kPsi2B], VarManager::fgValues[VarManager::kPsi2C], VarManager::fgValues[VarManager::kPsiFV0a]);
+                           VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA], VarManager::fgValues[VarManager::kMultB], VarManager::fgValues[VarManager::kMultC], VarManager::fgValues[VarManager::kMultUsedForQVecFV0A], VarManager::fgValues[VarManager::kPsi2A], VarManager::fgValues[VarManager::kPsi2B], VarManager::fgValues[VarManager::kPsi2C], VarManager::fgValues[VarManager::kPsi2D]);
           }
           if constexpr (trackHasCov && TTwoProngFitter) {
             dielectronsExtraList(t1.globalIndex(), t2.globalIndex(), VarManager::fgValues[VarManager::kVertexingTauzProjected], VarManager::fgValues[VarManager::kVertexingLzProjected], VarManager::fgValues[VarManager::kVertexingLxyProjected]);
@@ -1969,7 +1969,7 @@ struct AnalysisSameEventPairing {
                            VarManager::fgValues[VarManager::kCos3DeltaPhi], VarManager::fgValues[VarManager::kR3EP],
                            VarManager::fgValues[VarManager::kCORR2POI], VarManager::fgValues[VarManager::kCORR4POI], VarManager::fgValues[VarManager::kM01POI], VarManager::fgValues[VarManager::kM0111POI],
                            VarManager::fgValues[VarManager::kCORR2REF], VarManager::fgValues[VarManager::kCORR4REF], VarManager::fgValues[VarManager::kM11REF], VarManager::fgValues[VarManager::kM1111REF],
-                           VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA], VarManager::fgValues[VarManager::kMultB], VarManager::fgValues[VarManager::kMultC], VarManager::fgValues[VarManager::kMultUsedForQVecFV0A], VarManager::fgValues[VarManager::kPsi2A], VarManager::fgValues[VarManager::kPsi2B], VarManager::fgValues[VarManager::kPsi2C], VarManager::fgValues[VarManager::kPsiFV0a]);
+                           VarManager::fgValues[VarManager::kMultDimuons], VarManager::fgValues[VarManager::kMultA], VarManager::fgValues[VarManager::kMultB], VarManager::fgValues[VarManager::kMultC], VarManager::fgValues[VarManager::kMultUsedForQVecFV0A], VarManager::fgValues[VarManager::kPsi2A], VarManager::fgValues[VarManager::kPsi2B], VarManager::fgValues[VarManager::kPsi2C], VarManager::fgValues[VarManager::kPsi2D]);
               }
             }
           }

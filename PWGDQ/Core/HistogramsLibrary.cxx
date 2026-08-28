@@ -262,21 +262,28 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "Q2Y0B", "", false, 500, -10.0, 10.0, VarManager::kQ2Y0B);
       hm->AddHistogram(histClass, "Q2X0C", "", false, 500, -10.0, 10.0, VarManager::kQ2X0C);
       hm->AddHistogram(histClass, "Q2Y0C", "", false, 500, -10.0, 10.0, VarManager::kQ2Y0C);
+      hm->AddHistogram(histClass, "Q2X0D", "", false, 500, -10.0, 10.0, VarManager::kQ2X0D);
+      hm->AddHistogram(histClass, "Q2Y0D", "", false, 500, -10.0, 10.0, VarManager::kQ2Y0D);
       hm->AddHistogram(histClass, "Q2X0A_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2X0A);
       hm->AddHistogram(histClass, "Q2Y0A_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2Y0A);
       hm->AddHistogram(histClass, "Q2X0B_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2X0B);
       hm->AddHistogram(histClass, "Q2Y0B_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2Y0B);
       hm->AddHistogram(histClass, "Q2X0C_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2X0C);
       hm->AddHistogram(histClass, "Q2Y0C_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2Y0C);
+      hm->AddHistogram(histClass, "Q2X0D_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2X0D);
+      hm->AddHistogram(histClass, "Q2Y0D_VtxZ", "", true, 60, -15.0, 15.0, VarManager::kVtxZ, 500, -10.0, 10.0, VarManager::kQ2Y0D);
       hm->AddHistogram(histClass, "Q2X0A_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2X0A);
       hm->AddHistogram(histClass, "Q2Y0A_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2Y0A);
       hm->AddHistogram(histClass, "Q2X0B_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2X0B);
       hm->AddHistogram(histClass, "Q2Y0B_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2Y0B);
       hm->AddHistogram(histClass, "Q2X0C_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2X0C);
       hm->AddHistogram(histClass, "Q2Y0C_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2Y0C);
+      hm->AddHistogram(histClass, "Q2X0D_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2X0D);
+      hm->AddHistogram(histClass, "Q2Y0D_Cent", "", true, 18, 0.0, 90.0, VarManager::kCentVZERO, 500, -10.0, 10.0, VarManager::kQ2Y0D);
       hm->AddHistogram(histClass, "Q2X0A_Q2Y0A_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2X0A, 500, -10.0, 10.0, VarManager::kQ2Y0A);
       hm->AddHistogram(histClass, "Q2X0B_Q2Y0B_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2X0B, 500, -10.0, 10.0, VarManager::kQ2Y0B);
       hm->AddHistogram(histClass, "Q2X0C_Q2Y0C_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2X0C, 500, -10.0, 10.0, VarManager::kQ2Y0C);
+      hm->AddHistogram(histClass, "Q2X0D_Q2Y0D_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2X0D, 500, -10.0, 10.0, VarManager::kQ2Y0D);
       hm->AddHistogram(histClass, "Q3X0A", "", false, 500, -10.0, 10.0, VarManager::kQ3X0A);
       hm->AddHistogram(histClass, "Q3Y0A", "", false, 500, -10.0, 10.0, VarManager::kQ3Y0A);
       hm->AddHistogram(histClass, "Q3X0B", "", false, 500, -10.0, 10.0, VarManager::kQ3X0B);
@@ -301,6 +308,8 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "Q2Y0B_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2Y0B);
       hm->AddHistogram(histClass, "Q2X0C_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2X0C);
       hm->AddHistogram(histClass, "Q2Y0C_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2Y0C);
+      hm->AddHistogram(histClass, "Q2X0D_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2X0D);
+      hm->AddHistogram(histClass, "Q2Y0D_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ2Y0D);
       hm->AddHistogram(histClass, "Q3X0A_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ3X0A);
       hm->AddHistogram(histClass, "Q3Y0A_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kQ3Y0A);
       hm->AddHistogram(histClass, "Psi2A", "", false, 100, -2.0, 2.0, VarManager::kPsi2A);
@@ -376,6 +385,8 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "R2SP_TPCFT0A_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_AB);
       hm->AddHistogram(histClass, "R2SP_TPCFT0C_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_AC);
       hm->AddHistogram(histClass, "R2SP_FT0AFT0C_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_BC);
+      hm->AddHistogram(histClass, "R2SP_TPCFV0A_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_AD);
+      hm->AddHistogram(histClass, "R2SP_FV0AFT0C_CentFT0C", "", false, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_CD);
       hm->AddHistogram(histClass, "R2SP_FT0CTPCPOS_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_FT0CTPCPOS);
       hm->AddHistogram(histClass, "R2SP_FT0CTPCNEG_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_FT0CTPCNEG);
       hm->AddHistogram(histClass, "R2SP_FT0ATPCPOS_CentFT0C", "", false, 18, 0.0, 90.0, VarManager::kCentFT0C, 500, -10.0, 10.0, VarManager::kR2SP_FT0ATPCPOS);
@@ -403,6 +414,20 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "Profile_R2EP_Im_TPCFT0A_CentFT0C", "Profile_R2EP_Im_TPCFT0A_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_AB_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_AB_Im);
       hm->AddHistogram(histClass, "Profile_R2EP_Im_TPCFT0C_CentFT0C", "Profile_R2EP_Im_TPCFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_AC_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_AC_Im);
       hm->AddHistogram(histClass, "Profile_R2EP_Im_FT0AFT0C_CentFT0C", "Profile_R2EP_Im_FT0AFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_BC_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_BC_Im);
+    }
+    if (subGroupStr.Contains("reso-profile-2")) {
+      hm->AddHistogram(histClass, "Profile_R2SP_TPCFV0A_CentFT0C", "Profile_R2SP_TPCFV0A_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2SP_AD, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2SP_AD);
+      hm->AddHistogram(histClass, "Profile_R2SP_TPCFT0C_CentFT0C", "Profile_R2SP_TPCFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2SP_AC, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2SP_AC);
+      hm->AddHistogram(histClass, "Profile_R2SP_FV0AFT0C_CentFT0C", "Profile_R2SP_FV0AFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2SP_CD, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2SP_CD);
+      hm->AddHistogram(histClass, "Profile_R2EP_TPCFV0A_CentFT0C", "Profile_R2EP_TPCFV0A_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_AD, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_AD);
+      hm->AddHistogram(histClass, "Profile_R2EP_TPCFT0C_CentFT0C", "Profile_R2EP_TPCFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_AC, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_AC);
+      hm->AddHistogram(histClass, "Profile_R2EP_FV0AFT0C_CentFT0C", "Profile_R2EP_FV0AFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_CD, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_CD);
+      hm->AddHistogram(histClass, "Profile_R2SP_Im_TPCFV0A_CentFT0C", "Profile_R2SP_Im_TPCFV0A_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2SP_AD_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2SP_AD_Im);
+      hm->AddHistogram(histClass, "Profile_R2SP_Im_TPCFT0C_CentFT0C", "Profile_R2SP_Im_TPCFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2SP_AC_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2SP_AC_Im);
+      hm->AddHistogram(histClass, "Profile_R2SP_Im_FV0AFT0C_CentFT0C", "Profile_R2SP_Im_FV0AFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2SP_CD_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2SP_CD_Im);
+      hm->AddHistogram(histClass, "Profile_R2EP_Im_TPCFV0A_CentFT0C", "Profile_R2EP_Im_TPCFV0A_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_AD_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_AD_Im);
+      hm->AddHistogram(histClass, "Profile_R2EP_Im_TPCFT0C_CentFT0C", "Profile_R2EP_Im_TPCFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_AC_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_AC_Im);
+      hm->AddHistogram(histClass, "Profile_R2EP_Im_FV0AFT0C_CentFT0C", "Profile_R2EP_Im_FV0AFT0C_CentFT0C", true, 90, 0.0, 90.0, VarManager::kCentFT0C, 500, 0.0, 5.0, VarManager::kR2EP_CD_Im, 0, 0, 0, -1, "", "", "", -1, VarManager::kWR2EP_CD_Im);
     }
     if (subGroupStr.Contains("filter")) {
       hm->AddHistogram(histClass, "IsDoubleGap", "Is double gap", false, 2, -0.5, 1.5, VarManager::kIsDoubleGap);

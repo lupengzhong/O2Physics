@@ -809,6 +809,8 @@ void VarManager::SetDefaultVarNames()
   fgVariableUnits[kU2Q2_FT0A] = "";
   fgVariableNames[kU2Q2_FT0C] = "u_{2}Q_{2}^{FT0C}";
   fgVariableUnits[kU2Q2_FT0C] = "";
+  fgVariableNames[kU2Q2_FV0A] = "u_{2}Q_{2}^{FV0A}";
+  fgVariableUnits[kU2Q2_FV0A] = "";
   fgVariableNames[kV2SP_FT0A] = "V_{2}^{SP, FT0A}";
   fgVariableUnits[kV2SP_FT0A] = "";
   fgVariableNames[kV2SP_FT0C] = "V_{2}^{SP, FT0C}";
@@ -976,6 +978,12 @@ void VarManager::SetDefaultVarNames()
   fgVariableUnits[kR2SP_AC] = "";
   fgVariableNames[kR2SP_BC] = "R_{2}^{SP} (BC) ";
   fgVariableUnits[kR2SP_BC] = "";
+  fgVariableNames[kR2SP_AD] = "R_{2}^{SP} (AD) ";
+  fgVariableUnits[kR2SP_AD] = "";
+  fgVariableNames[kR2SP_BD] = "R_{2}^{SP} (BD) ";
+  fgVariableUnits[kR2SP_BD] = "";
+  fgVariableNames[kR2SP_CD] = "R_{2}^{SP} (CD) ";
+  fgVariableUnits[kR2SP_CD] = "";
   fgVariableNames[kR2SP_FT0CTPCPOS] = "R_{2}^{SP} (FT0C-TPCpos) ";
   fgVariableUnits[kR2SP_FT0CTPCPOS] = "";
   fgVariableNames[kR2SP_FT0CTPCNEG] = "R_{2}^{SP}  (FT0C-TPCneg) ";
@@ -990,6 +998,12 @@ void VarManager::SetDefaultVarNames()
   fgVariableUnits[kR2EP_AC] = "";
   fgVariableNames[kR2EP_BC] = "R_{2}^{EP} (FT0C-FT0A) ";
   fgVariableUnits[kR2EP_BC] = "";
+  fgVariableNames[kR2EP_AD] = "R_{2}^{EP} (TPC-FV0A) ";
+  fgVariableUnits[kR2EP_AD] = "";
+  fgVariableNames[kR2EP_BD] = "R_{2}^{EP} (FT0A-FV0A) ";
+  fgVariableUnits[kR2EP_BD] = "";
+  fgVariableNames[kR2EP_CD] = "R_{2}^{EP} (FT0C-FV0A) ";
+  fgVariableUnits[kR2EP_CD] = "";
   fgVariableNames[kR2EP_FT0CTPCPOS] = "R_{2}^{EP} (FT0C-TPCpos) ";
   fgVariableUnits[kR2EP_FT0CTPCPOS] = "";
   fgVariableNames[kR2EP_FT0CTPCNEG] = "R_{2}^{EP}  (FT0C-TPCneg) ";

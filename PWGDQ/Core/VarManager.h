@@ -306,8 +306,8 @@ class VarManager : public TObject
     kQ2Y0B,
     kQ2X0C,
     kQ2Y0C,
-    kQ2X0FV0a,
-    kQ2Y0FV0a,
+    kQ2X0D,
+    kQ2Y0D,
     kQ2YYAB,
     kQ2XXAB,
     kQ2XYAB,
@@ -341,15 +341,27 @@ class VarManager : public TObject
     kR2SP_AB,
     kR2SP_AC,
     kR2SP_BC,
+    kR2SP_AD,
+    kR2SP_BD,
+    kR2SP_CD,
     kWR2SP_AB,
     kWR2SP_AC,
     kWR2SP_BC,
+    kWR2SP_AD,
+    kWR2SP_BD,
+    kWR2SP_CD,
     kR2SP_AB_Im,
     kR2SP_AC_Im,
     kR2SP_BC_Im,
+    kR2SP_AD_Im,
+    kR2SP_BD_Im,
+    kR2SP_CD_Im,
     kWR2SP_AB_Im,
     kWR2SP_AC_Im,
     kWR2SP_BC_Im,
+    kWR2SP_AD_Im,
+    kWR2SP_BD_Im,
+    kWR2SP_CD_Im,
     kR2SP_FT0CTPCPOS,
     kR2SP_FT0CTPCNEG,
     kR2SP_FT0ATPCPOS,
@@ -362,15 +374,27 @@ class VarManager : public TObject
     kR2EP_AB,
     kR2EP_AC,
     kR2EP_BC,
+    kR2EP_AD,
+    kR2EP_BD,
+    kR2EP_CD,
     kWR2EP_AB,
     kWR2EP_AC,
     kWR2EP_BC,
+    kWR2EP_AD,
+    kWR2EP_BD,
+    kWR2EP_CD,
     kR2EP_AB_Im,
     kR2EP_AC_Im,
     kR2EP_BC_Im,
+    kR2EP_AD_Im,
+    kR2EP_BD_Im,
+    kR2EP_CD_Im,
     kWR2EP_AB_Im,
     kWR2EP_AC_Im,
     kWR2EP_BC_Im,
+    kWR2EP_AD_Im,
+    kWR2EP_BD_Im,
+    kWR2EP_CD_Im,
     kR2EP_FT0CTPCPOS,
     kR2EP_FT0CTPCNEG,
     kR2EP_FT0ATPCPOS,
@@ -823,7 +847,7 @@ class VarManager : public TObject
     kPsi2ANEG,
     kPsi2B,
     kPsi2C,
-    kPsiFV0a,
+    kPsi2D,
     kCos2DeltaPhi,
     kCos2DeltaPhi_TPC,
     kCos2DeltaPhi_FT0A,
@@ -1820,6 +1844,8 @@ void VarManager::FillEvent(T const& event, float* values)
     values[kQ2Y0B] = event.q2y0b();
     values[kQ2X0C] = event.q2x0c();
     values[kQ2Y0C] = event.q2y0c();
+    values[kQ2X0D] = event.q2x0d();
+    values[kQ2Y0D] = event.q2y0d();
     values[kMultA] = event.multa();
     values[kMultB] = event.multb();
     values[kMultC] = event.multc();
@@ -1840,10 +1866,12 @@ void VarManager::FillEvent(T const& event, float* values)
     float Psi2A = epHelper.GetEventPlane(values[kQ2X0A], values[kQ2Y0A], 2);
     float Psi2B = epHelper.GetEventPlane(values[kQ2X0B], values[kQ2Y0B], 2);
     float Psi2C = epHelper.GetEventPlane(values[kQ2X0C], values[kQ2Y0C], 2);
+    float Psi2D = epHelper.GetEventPlane(values[kQ2X0D], values[kQ2Y0D], 2);
 
     values[VarManager::kPsi2A] = Psi2A;
     values[VarManager::kPsi2B] = Psi2B;
     values[VarManager::kPsi2C] = Psi2C;
+    values[VarManager::kPsi2D] = Psi2D;
 
     if constexpr ((fillMap & ReducedEventQvectorExtra) > 0) {
       values[kQ42XA] = event.q42xa();
@@ -1886,8 +1914,8 @@ void VarManager::FillEvent(T const& event, float* values)
     values[kQ2Y0B] = event.qvecFT0AIm();
     values[kQ2X0C] = event.qvecFT0CRe();
     values[kQ2Y0C] = event.qvecFT0CIm();
-    values[kQ2X0FV0a] = event.qvecFV0ARe();   // already normalised
-    values[kQ2Y0FV0a] = event.qvecFV0AIm();   // already normalised
+    values[kQ2X0D] = event.qvecFV0ARe();   // already normalised
+    values[kQ2Y0D] = event.qvecFV0AIm();   // already normalised
   values[kMultA] = event.nTrkBPos() + event.nTrkBNeg();
   values[kMultAPOS] = event.nTrkBPos();
   values[kMultANEG] = event.nTrkBNeg();
@@ -1913,52 +1941,88 @@ void VarManager::FillEvent(T const& event, float* values)
   float Psi2ANEG = epHelper.GetEventPlane(values[kQ2X0ANEG], values[kQ2Y0ANEG], 2);
   float Psi2B = epHelper.GetEventPlane(values[kQ2X0B], values[kQ2Y0B], 2);
   float Psi2C = epHelper.GetEventPlane(values[kQ2X0C], values[kQ2Y0C], 2);
-  float epFV0a = epHelper.GetEventPlane(values[kQ2X0FV0a], values[kQ2Y0FV0a], 2);
+  float Psi2D = epHelper.GetEventPlane(values[kQ2X0D], values[kQ2Y0D], 2);
 
     values[kPsi2A] = Psi2A;
     values[kPsi2APOS] = Psi2APOS;
     values[kPsi2ANEG] = Psi2ANEG;
     values[kPsi2B] = Psi2B;
     values[kPsi2C] = Psi2C;
-    values[kPsiFV0a] = epFV0a;
+    values[kPsi2D] = Psi2D;
 
     float R2SP_AB = (values[kQ2X0A] * values[kQ2X0B] + values[kQ2Y0A] * values[kQ2Y0B]);
     float R2SP_AC = (values[kQ2X0A] * values[kQ2X0C] + values[kQ2Y0A] * values[kQ2Y0C]);
     float R2SP_BC = (values[kQ2X0B] * values[kQ2X0C] + values[kQ2Y0B] * values[kQ2Y0C]);
+    float R2SP_AD = (values[kQ2X0A] * values[kQ2X0D] + values[kQ2Y0A] * values[kQ2Y0D]);
+    float R2SP_BD = (values[kQ2X0B] * values[kQ2X0D] + values[kQ2Y0B] * values[kQ2Y0D]);
+    float R2SP_CD = (values[kQ2X0C] * values[kQ2X0D] + values[kQ2Y0C] * values[kQ2Y0D]);
     float R2SP_AB_Im = (values[kQ2Y0A] * values[kQ2X0B] - values[kQ2X0A] * values[kQ2Y0B]);
     float R2SP_AC_Im = (values[kQ2Y0A] * values[kQ2X0C] - values[kQ2X0A] * values[kQ2Y0C]);
     float R2SP_BC_Im = (values[kQ2Y0B] * values[kQ2X0C] - values[kQ2X0B] * values[kQ2Y0C]);
+    float R2SP_AD_Im = (values[kQ2Y0A] * values[kQ2X0D] - values[kQ2X0A] * values[kQ2Y0D]);
+    float R2SP_BD_Im = (values[kQ2Y0B] * values[kQ2X0D] - values[kQ2X0B] * values[kQ2Y0D]);
+    float R2SP_CD_Im = (values[kQ2Y0C] * values[kQ2X0D] - values[kQ2X0C] * values[kQ2Y0D]);
     values[kR2SP_AB] = std::isnan(R2SP_AB) || std::isinf(R2SP_AB) ? 0. : R2SP_AB;
     values[kWR2SP_AB] = std::isnan(R2SP_AB) || std::isinf(R2SP_AB) ? 0. : 1.0;
     values[kR2SP_AC] = std::isnan(R2SP_AC) || std::isinf(R2SP_AC) ? 0. : R2SP_AC;
     values[kWR2SP_AC] = std::isnan(R2SP_AC) || std::isinf(R2SP_AC) ? 0. : 1.0;
     values[kR2SP_BC] = std::isnan(R2SP_BC) || std::isinf(R2SP_BC) ? 0. : R2SP_BC;
     values[kWR2SP_BC] = std::isnan(R2SP_BC) || std::isinf(R2SP_BC) ? 0. : 1.0;
+    values[kR2SP_AD] = std::isnan(R2SP_AD) || std::isinf(R2SP_AD) ? 0. : R2SP_AD;
+    values[kWR2SP_AD] = std::isnan(R2SP_AD) || std::isinf(R2SP_AD) ? 0. : 1.0;
+    values[kR2SP_BD] = std::isnan(R2SP_BD) || std::isinf(R2SP_BD) ? 0. : R2SP_BD;
+    values[kWR2SP_BD] = std::isnan(R2SP_BD) || std::isinf(R2SP_BD) ? 0. : 1.0;
+    values[kR2SP_CD] = std::isnan(R2SP_CD) || std::isinf(R2SP_CD) ? 0. : R2SP_CD;
+    values[kWR2SP_CD] = std::isnan(R2SP_CD) || std::isinf(R2SP_CD) ? 0. : 1.0;
     values[kR2SP_AB_Im] = std::isnan(R2SP_AB_Im) || std::isinf(R2SP_AB_Im) ? 0. : R2SP_AB_Im;
     values[kWR2SP_AB_Im] = std::isnan(R2SP_AB_Im) || std::isinf(R2SP_AB_Im) ? 0. : 1.0;
     values[kR2SP_AC_Im] = std::isnan(R2SP_AC_Im) || std::isinf(R2SP_AC_Im) ? 0. : R2SP_AC_Im;
     values[kWR2SP_AC_Im] = std::isnan(R2SP_AC_Im) || std::isinf(R2SP_AC_Im) ? 0. : 1.0;
     values[kR2SP_BC_Im] = std::isnan(R2SP_BC_Im) || std::isinf(R2SP_BC_Im) ? 0. : R2SP_BC_Im;
     values[kWR2SP_BC_Im] = std::isnan(R2SP_BC_Im) || std::isinf(R2SP_BC_Im) ? 0. : 1.0;
+    values[kR2SP_AD_Im] = std::isnan(R2SP_AD_Im) || std::isinf(R2SP_AD_Im) ? 0. : R2SP_AD_Im;
+    values[kWR2SP_AD_Im] = std::isnan(R2SP_AD_Im) || std::isinf(R2SP_AD_Im) ? 0. : 1.0;
+    values[kR2SP_BD_Im] = std::isnan(R2SP_BD_Im) || std::isinf(R2SP_BD_Im) ? 0. : R2SP_BD_Im;
+    values[kWR2SP_BD_Im] = std::isnan(R2SP_BD_Im) || std::isinf(R2SP_BD_Im) ? 0. : 1.0;
+    values[kR2SP_CD_Im] = std::isnan(R2SP_CD_Im) || std::isinf(R2SP_CD_Im) ? 0. : R2SP_CD_Im;
+    values[kWR2SP_CD_Im] = std::isnan(R2SP_CD_Im) || std::isinf(R2SP_CD_Im) ? 0. : 1.0;
 
     float R2EP_AB = std::isnan(Psi2A) || std::isinf(Psi2A) || std::isnan(Psi2B) || std::isinf(Psi2B) ? 0. : TMath::Cos(2 * (Psi2A - Psi2B));
     float R2EP_AC = std::isnan(Psi2A) || std::isinf(Psi2A) || std::isnan(Psi2C) || std::isinf(Psi2C) ? 0. : TMath::Cos(2 * (Psi2A - Psi2C));
     float R2EP_BC = std::isnan(Psi2B) || std::isinf(Psi2B) || std::isnan(Psi2C) || std::isinf(Psi2C) ? 0. : TMath::Cos(2 * (Psi2B - Psi2C));
+    float R2EP_AD = std::isnan(Psi2A) || std::isinf(Psi2A) || std::isnan(Psi2D) || std::isinf(Psi2D) ? 0. : TMath::Cos(2 * (Psi2A - Psi2D));
+    float R2EP_BD = std::isnan(Psi2B) || std::isinf(Psi2B) || std::isnan(Psi2D) || std::isinf(Psi2D) ? 0. : TMath::Cos(2 * (Psi2B - Psi2D));
+    float R2EP_CD = std::isnan(Psi2C) || std::isinf(Psi2C) || std::isnan(Psi2D) || std::isinf(Psi2D) ? 0. : TMath::Cos(2 * (Psi2C - Psi2D));
     float R2EP_AB_Im = std::isnan(Psi2A) || std::isinf(Psi2A) || std::isnan(Psi2B) || std::isinf(Psi2B) ? 0. : TMath::Sin(2 * (Psi2A - Psi2B));
     float R2EP_AC_Im = std::isnan(Psi2A) || std::isinf(Psi2A) || std::isnan(Psi2C) || std::isinf(Psi2C) ? 0. : TMath::Sin(2 * (Psi2A - Psi2C));
     float R2EP_BC_Im = std::isnan(Psi2B) || std::isinf(Psi2B) || std::isnan(Psi2C) || std::isinf(Psi2C) ? 0. : TMath::Sin(2 * (Psi2B - Psi2C));
+    float R2EP_AD_Im = std::isnan(Psi2A) || std::isinf(Psi2A) || std::isnan(Psi2D) || std::isinf(Psi2D) ? 0. : TMath::Sin(2 * (Psi2A - Psi2D));
+    float R2EP_BD_Im = std::isnan(Psi2B) || std::isinf(Psi2B) || std::isnan(Psi2D) || std::isinf(Psi2D) ? 0. : TMath::Sin(2 * (Psi2B - Psi2D));
+    float R2EP_CD_Im = std::isnan(Psi2C) || std::isinf(Psi2C) || std::isnan(Psi2D) || std::isinf(Psi2D) ? 0. : TMath::Sin(2 * (Psi2C - Psi2D));
     values[kR2EP_AB] = std::isnan(R2EP_AB) || std::isinf(R2EP_AB) ? 0. : R2EP_AB;
     values[kWR2EP_AB] = std::isnan(R2EP_AB) || std::isinf(R2EP_AB) ? 0. : 1.0;
     values[kR2EP_AC] = std::isnan(R2EP_AC) || std::isinf(R2EP_AC) ? 0. : R2EP_AC;
     values[kWR2EP_AC] = std::isnan(R2EP_AC) || std::isinf(R2EP_AC) ? 0. : 1.0;
     values[kR2EP_BC] = std::isnan(R2EP_BC) || std::isinf(R2EP_BC) ? 0. : R2EP_BC;
     values[kWR2EP_BC] = std::isnan(R2EP_BC) || std::isinf(R2EP_BC) ? 0. : 1.0;
+    values[kR2EP_AD] = std::isnan(R2EP_AD) || std::isinf(R2EP_AD) ? 0. : R2EP_AD;
+    values[kWR2EP_AD] = std::isnan(R2EP_AD) || std::isinf(R2EP_AD) ? 0. : 1.0;
+    values[kR2EP_BD] = std::isnan(R2EP_BD) || std::isinf(R2EP_BD) ? 0. : R2EP_BD;
+    values[kWR2EP_BD] = std::isnan(R2EP_BD) || std::isinf(R2EP_BD) ? 0. : 1.0;
+    values[kR2EP_CD] = std::isnan(R2EP_CD) || std::isinf(R2EP_CD) ? 0. : R2EP_CD;
+    values[kWR2EP_CD] = std::isnan(R2EP_CD) || std::isinf(R2EP_CD) ? 0. : 1.0;
     values[kR2EP_AB_Im] = std::isnan(R2EP_AB_Im) || std::isinf(R2EP_AB_Im) ? 0. : R2EP_AB_Im;
     values[kWR2EP_AB_Im] = std::isnan(R2EP_AB_Im) || std::isinf(R2EP_AB_Im) ? 0. : 1.0;
     values[kR2EP_AC_Im] = std::isnan(R2EP_AC_Im) || std::isinf(R2EP_AC_Im) ? 0. : R2EP_AC_Im;
     values[kWR2EP_AC_Im] = std::isnan(R2EP_AC_Im) || std::isinf(R2EP_AC_Im) ? 0. : 1.0;
     values[kR2EP_BC_Im] = std::isnan(R2EP_BC_Im) || std::isinf(R2EP_BC_Im) ? 0. : R2EP_BC_Im;
     values[kWR2EP_BC_Im] = std::isnan(R2EP_BC_Im) || std::isinf(R2EP_BC_Im) ? 0. : 1.0;
+    values[kR2EP_AD_Im] = std::isnan(R2EP_AD_Im) || std::isinf(R2EP_AD_Im) ? 0. : R2EP_AD_Im;
+    values[kWR2EP_AD_Im] = std::isnan(R2EP_AD_Im) || std::isinf(R2EP_AD_Im) ? 0. : 1.0;
+    values[kR2EP_BD_Im] = std::isnan(R2EP_BD_Im) || std::isinf(R2EP_BD_Im) ? 0. : R2EP_BD_Im;
+    values[kWR2EP_BD_Im] = std::isnan(R2EP_BD_Im) || std::isinf(R2EP_BD_Im) ? 0. : 1.0;
+    values[kR2EP_CD_Im] = std::isnan(R2EP_CD_Im) || std::isinf(R2EP_CD_Im) ? 0. : R2EP_CD_Im;
+    values[kWR2EP_CD_Im] = std::isnan(R2EP_CD_Im) || std::isinf(R2EP_CD_Im) ? 0. : 1.0;
   }
 
   if constexpr ((fillMap & CollisionMC) > 0) {
@@ -4637,6 +4701,9 @@ void VarManager::FillQVectorFromGFW(C const& /*collision*/, A const& compA11, A 
   values[kR2SP_AB] = (values[kQ2X0A] * values[kQ2X0B] + values[kQ2Y0A] * values[kQ2Y0B]);
   values[kR2SP_AC] = (values[kQ2X0A] * values[kQ2X0C] + values[kQ2Y0A] * values[kQ2Y0C]);
   values[kR2SP_BC] = (values[kQ2X0B] * values[kQ2X0C] + values[kQ2Y0B] * values[kQ2Y0C]);
+  values[kR2SP_AD] = (values[kQ2X0A] * values[kQ2X0D] + values[kQ2Y0A] * values[kQ2Y0D]);
+  values[kR2SP_BD] = (values[kQ2X0B] * values[kQ2X0D] + values[kQ2Y0B] * values[kQ2Y0D]);
+  values[kR2SP_CD] = (values[kQ2X0C] * values[kQ2X0D] + values[kQ2Y0C] * values[kQ2Y0D]);
   values[kR3SP] = (values[kQ3X0B] * values[kQ3X0C] + values[kQ3Y0B] * values[kQ3Y0C]);
 
   values[kR2EP_AB] = TMath::Cos(2 * (Psi2A - Psi2B));
@@ -4675,6 +4742,8 @@ void VarManager::FillQVectorFromCentralFW(C const& collision, float* values)
   values[kQ2Y0B] = yQVecFT0a;
   values[kQ2X0C] = xQVecFT0c;
   values[kQ2Y0C] = yQVecFT0c;
+  values[kQ2X0D] = xQVecFV0a;
+  values[kQ2Y0D] = yQVecFV0a;
   values[kMultA] = collision.nTrkTPCpos() + collision.nTrkTPCneg();
   values[kMultAPOS] = collision.nTrkTPCpos();
   values[kMultANEG] = collision.nTrkTPCneg();
@@ -4702,16 +4771,21 @@ void VarManager::FillQVectorFromCentralFW(C const& collision, float* values)
   float Psi2ANEG = epHelper.GetEventPlane(values[kQ2X0ANEG], values[kQ2Y0ANEG], 2);
   float Psi2B = epHelper.GetEventPlane(values[kQ2X0B], values[kQ2Y0B], 2);
   float Psi2C = epHelper.GetEventPlane(values[kQ2X0C], values[kQ2Y0C], 2);
+  float Psi2D = epHelper.GetEventPlane(values[kQ2X0D], values[kQ2Y0D], 2);
 
   values[kPsi2A] = Psi2A;
   values[kPsi2APOS] = Psi2APOS;
   values[kPsi2ANEG] = Psi2ANEG;
   values[kPsi2B] = Psi2B;
   values[kPsi2C] = Psi2C;
+  values[kPsi2D] = Psi2D;
 
   values[kR2SP_AB] = (values[kQ2X0A] * values[kQ2X0B] + values[kQ2Y0A] * values[kQ2Y0B]);
   values[kR2SP_AC] = (values[kQ2X0A] * values[kQ2X0C] + values[kQ2Y0A] * values[kQ2Y0C]);
   values[kR2SP_BC] = (values[kQ2X0B] * values[kQ2X0C] + values[kQ2Y0B] * values[kQ2Y0C]);
+  values[kR2SP_AD] = (values[kQ2X0A] * values[kQ2X0D] + values[kQ2Y0A] * values[kQ2Y0D]);
+  values[kR2SP_BD] = (values[kQ2X0B] * values[kQ2X0D] + values[kQ2Y0B] * values[kQ2Y0D]);
+  values[kR2SP_CD] = (values[kQ2X0C] * values[kQ2X0D] + values[kQ2Y0C] * values[kQ2Y0D]);
   values[kR2SP_FT0CTPCPOS] = (xQVecFT0c * xQVecBPos + yQVecFT0c * yQVecBPos);
   values[kR2SP_FT0CTPCNEG] = (xQVecFT0c * xQVecBNeg + yQVecFT0c * yQVecBNeg);
   values[kR2SP_FT0ATPCPOS] = (xQVecFT0a * xQVecBPos + yQVecFT0a * yQVecBPos);
@@ -4732,6 +4806,9 @@ void VarManager::FillQVectorFromCentralFW(C const& collision, float* values)
   values[kR2EP_AB] = TMath::Cos(2 * getDeltaPsiInRange(epTPCFull, epFT0a, 2));
   values[kR2EP_AC] = TMath::Cos(2 * getDeltaPsiInRange(epTPCFull, epFT0c, 2));
   values[kR2EP_BC] = TMath::Cos(2 * getDeltaPsiInRange(epFT0a, epFT0c, 2));
+  values[kR2EP_AD] = TMath::Cos(2 * getDeltaPsiInRange(epTPCFull, epFV0a, 2));
+  values[kR2EP_BD] = TMath::Cos(2 * getDeltaPsiInRange(epFT0a, epFV0a, 2));
+  values[kR2EP_CD] = TMath::Cos(2 * getDeltaPsiInRange(epFT0c, epFV0a, 2));
   values[kR2EP_FT0CTPCPOS] = TMath::Cos(2 * getDeltaPsiInRange(epFT0c, epBPoss, 2));
   values[kR2EP_FT0CTPCNEG] = TMath::Cos(2 * getDeltaPsiInRange(epFT0c, epBNegs, 2));
   values[kR2EP_FT0ATPCPOS] = TMath::Cos(2 * getDeltaPsiInRange(epFT0a, epBPoss, 2));
@@ -4880,17 +4957,28 @@ void VarManager::FillPairVn(T1 const& t1, T2 const& t2, float* values)
   values[kPt1] = t1.pt();
   values[kPt2] = t2.pt();
 
+  // Remove daughters from the TPC Q vector computation
+  float t1_Qx = TMath::Cos(2*t1.phi()) *t1.pt() / values[kMultA];
+  float t1_Qy = TMath::Sin(2*t1.phi()) *t1.pt() / values[kMultA];
+  float t2_Qx = TMath::Cos(2*t2.phi()) *t2.pt() / values[kMultB];
+  float t2_Qy = TMath::Sin(2*t2.phi()) *t2.pt() / values[kMultB];
+  values[kQ2X0A] = (values[kQ2X0A] - t1_Qx - t2_Qx) * values[kMultA] / (values[kMultA] - 2);
+  values[kQ2Y0A] = (values[kQ2Y0A] - t1_Qy - t2_Qy) * values[kMultA] / (values[kMultA] - 2);
+
   // TODO: provide different computations for vn
   // Compute the scalar product UQ using Q-vector from A, for second and third harmonic
   // Dilepton vn could be accessible after dividing this product with the R factor
   values[kU2Q2] = values[kQ2X0A] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0A] * TMath::Sin(2 * v12.Phi());
   values[kU2Q2_FT0A] = values[kQ2X0B] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0B] * TMath::Sin(2 * v12.Phi());
   values[kU2Q2_FT0C] = values[kQ2X0C] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0C] * TMath::Sin(2 * v12.Phi());
-  values[kU2Q2_FV0A] = values[kQ2X0FV0a] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0FV0a] * TMath::Sin(2 * v12.Phi());
+  values[kU2Q2_FV0A] = values[kQ2X0D] * TMath::Cos(2 * v12.Phi()) + values[kQ2Y0D] * TMath::Sin(2 * v12.Phi());
   values[kU3Q3] = values[kQ3X0A] * TMath::Cos(3 * v12.Phi()) + values[kQ3Y0A] * TMath::Sin(3 * v12.Phi());
   values[kR2SP_AB] = (values[kQ2X0A] * values[kQ2X0B] + values[kQ2Y0A] * values[kQ2Y0B]);
   values[kR2SP_AC] = (values[kQ2X0A] * values[kQ2X0C] + values[kQ2Y0A] * values[kQ2Y0C]);
   values[kR2SP_BC] = (values[kQ2X0B] * values[kQ2X0C] + values[kQ2Y0B] * values[kQ2Y0C]);
+  values[kR2SP_AD] = (values[kQ2X0A] * values[kQ2X0D] + values[kQ2Y0A] * values[kQ2Y0D]);
+  values[kR2SP_BD] = (values[kQ2X0B] * values[kQ2X0D] + values[kQ2Y0B] * values[kQ2Y0D]);
+  values[kR2SP_CD] = (values[kQ2X0C] * values[kQ2X0D] + values[kQ2Y0C] * values[kQ2Y0D]);
   values[kR3SP] = (values[kQ3X0B] * values[kQ3X0C] + values[kQ3Y0B] * values[kQ3Y0C]);
 
   float Psi2A = getEventPlane(2, values[kQ2X0A], values[kQ2Y0A]);
@@ -4899,15 +4987,19 @@ void VarManager::FillPairVn(T1 const& t1, T2 const& t2, float* values)
   float Psi3B = getEventPlane(3, values[kQ3X0B], values[kQ3Y0B]);
   float Psi2C = getEventPlane(2, values[kQ2X0C], values[kQ2Y0C]);
   float Psi3C = getEventPlane(3, values[kQ3X0C], values[kQ3Y0C]);
+  float Psi2D = getEventPlane(2, values[kQ2X0D], values[kQ2Y0D]);
   values[kCos2DeltaPhi] = TMath::Cos(2 * (v12.Phi() - Psi2A));
   values[kCos2DeltaPhi_TPC] = TMath::Cos(2 * (v12.Phi() - Psi2A));
   values[kCos2DeltaPhi_FT0A] = TMath::Cos(2 * (v12.Phi() - Psi2B));
   values[kCos2DeltaPhi_FT0C] = TMath::Cos(2 * (v12.Phi() - Psi2C));
-  values[kCos2DeltaPhi_FV0A] = TMath::Cos(2 * (v12.Phi() - values[kPsiFV0a]));
+  values[kCos2DeltaPhi_FV0A] = TMath::Cos(2 * (v12.Phi() - Psi2D));
   values[kCos3DeltaPhi] = TMath::Cos(3 * (v12.Phi() - Psi3A));
   values[kR2EP_AB] = TMath::Cos(2 * (Psi2A - Psi2B));
   values[kR2EP_AC] = TMath::Cos(2 * (Psi2A - Psi2C));
   values[kR2EP_BC] = TMath::Cos(2 * (Psi2B - Psi2C));
+  values[kR2EP_AD] = TMath::Cos(2 * (Psi2A - Psi2D));
+  values[kR2EP_BD] = TMath::Cos(2 * (Psi2B - Psi2D));
+  values[kR2EP_CD] = TMath::Cos(2 * (Psi2C - Psi2D));
   values[kR3EP] = TMath::Cos(3 * (Psi3B - Psi3C));
 
   float V2SP = values[kU2Q2] / values[kR2SP];
@@ -4934,6 +5026,9 @@ void VarManager::FillPairVn(T1 const& t1, T2 const& t2, float* values)
     values[kR2SP_AB] = -999.;
     values[kR2SP_AC] = -999.;
     values[kR2SP_BC] = -999.;
+    values[kR2SP_AD] = -999.;
+    values[kR2SP_BD] = -999.;
+    values[kR2SP_CD] = -999.;
     values[kU2Q2_FT0C] = -999.;
   }
   if (std::isnan(VarManager::fgValues[VarManager::kU3Q3]) == true) {
