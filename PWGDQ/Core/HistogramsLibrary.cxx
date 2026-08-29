@@ -1262,6 +1262,19 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
     hm->AddHistogram(histClass, "VzMC_VtxZMC", "MC vz vs MC vtxZ", false, 50, -15.0, 15.0, VarManager::kMCVz, 50, -15.0, 15.0, VarManager::kMCVtxZ);
     hm->AddHistogram(histClass, "Weight", "", false, 50, 0.0, 5.0, VarManager::kMCParticleWeight);
     hm->AddHistogram(histClass, "MCImpPar_CentFT0CMC", "MC impact param vs MC Cent. FT0C", false, 20, 0.0, 20.0, VarManager::kMCEventImpParam, 100, 0.0, 100.0, VarManager::kMCEventCentrFT0C);
+    if (subGroupStr.Contains("daughters")) {
+      hm->AddHistogram(histClass, "NDaughters", "Number of direct MC daughters", false, 11, -0.5, 10.5, VarManager::kMCNDaughters);
+      hm->AddHistogram(histClass, "DaughterPairStatus", "Exactly two direct MC daughters", false, 2, -0.5, 1.5, VarManager::kMCDaughterPairStatus);
+      hm->AddHistogram(histClass, "DaughtersMatchParent", "Both daughters reference this parent; -1 means not a two-body decay", false, 3, -1.5, 1.5, VarManager::kMCDaughtersMatchParent);
+      hm->AddHistogram(histClass, "DaughtersInAcceptancePt1Eta08", "Both daughters p_{T}>1 GeV/c and |#eta|<0.8; -1 means not a two-body decay", false, 3, -1.5, 1.5, VarManager::kMCDaughtersInAcceptancePt1Eta08);
+      hm->AddHistogram(histClass, "Daughter1Pt", "MC daughter 1 p_{T}", false, 200, 0.0, 20.0, VarManager::kMCDaughter1Pt);
+      hm->AddHistogram(histClass, "Daughter2Pt", "MC daughter 2 p_{T}", false, 200, 0.0, 20.0, VarManager::kMCDaughter2Pt);
+      hm->AddHistogram(histClass, "Daughter1Eta", "MC daughter 1 #eta", false, 100, -5.0, 5.0, VarManager::kMCDaughter1Eta);
+      hm->AddHistogram(histClass, "Daughter2Eta", "MC daughter 2 #eta", false, 100, -5.0, 5.0, VarManager::kMCDaughter2Eta);
+      hm->AddHistogram(histClass, "Daughter1PdgCode", "MC daughter 1 PDG code", false, 10001, -5000.5, 5000.5, VarManager::kMCDaughter1PdgCode);
+      hm->AddHistogram(histClass, "Daughter2PdgCode", "MC daughter 2 PDG code", false, 10001, -5000.5, 5000.5, VarManager::kMCDaughter2PdgCode);
+      hm->AddHistogram(histClass, "PtMC_YMC_DaughtersInAcceptancePt1Eta08", "MC parent p_{T} vs y vs daughter acceptance", false, 120, 0.0, 30.0, VarManager::kMCPt, 200, -5.0, 5.0, VarManager::kMCY, 3, -1.5, 1.5, VarManager::kMCDaughtersInAcceptancePt1Eta08);
+    }
   }
   if (groupStr.CompareTo("mctruth_mult") == 0) {
     hm->AddHistogram(histClass, "PtMC_MultEta05", "MC pT vs mult |#eta| < 0.5", false, 200, 0.0, 20.0, VarManager::kMCPt, 150, 0.0, 150.0, VarManager::kMultMCNParticlesEta05);
