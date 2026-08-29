@@ -5474,7 +5474,7 @@ void DefineHistograms(HistogramManager* histMan, const TString& histClasses, con
     if (classStr.Contains("MCTruthGenSelBR")) {
       dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth_triple");
     } else if (classStr.Contains("MCTruthGen")) {
-      dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth_track");
+      dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth_track", histName);
     }
 
     // if (classStr.Contains("MCTruthGen")) {
