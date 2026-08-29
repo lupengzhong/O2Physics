@@ -595,6 +595,11 @@ struct AnalysisTrackSelection {
         fTrackCuts.push_back(static_cast<AnalysisCompositeCut*>(t));
       }
     }
+    // Bits 28--31 of the published 32-bit decision are reserved below for
+    // the two legs' in-/out-of-bunch ambiguity flags.
+    if (fTrackCuts.size() > 28) {
+      LOG(fatal) << "At most 28 barrel track cuts are supported because selection bits 28--31 are reserved for ambiguity flags";
+    }
     VarManager::SetUseVars(AnalysisCut::fgUsedVars); // provide the list of required variables so that VarManager knows what to fill
 
     TString configSigNamesStr = fConfigMCSignals.value;
@@ -917,6 +922,11 @@ struct AnalysisMuonSelection {
       for (auto const& t : addCuts) {
         fMuonCuts.push_back(static_cast<AnalysisCompositeCut*>(t));
       }
+    }
+    // Bits 28--31 of the two-muon decision are reserved below for the two
+    // legs' in-/out-of-bunch ambiguity flags.
+    if (fMuonCuts.size() > 28) {
+      LOG(fatal) << "At most 28 muon cuts are supported because selection bits 28--31 are reserved for ambiguity flags";
     }
     VarManager::SetUseVars(AnalysisCut::fgUsedVars); // provide the list of required variables so that VarManager knows what to fill
 
@@ -2275,7 +2285,9 @@ struct AnalysisSameEventPairing {
       dileptonPolarList.reserve(reserveSize);
     }
 
-    fAmbiguousPairs.clear();
+    if (fConfigQA) {
+      fAmbiguousPairs.clear();
+    }
     constexpr bool eventHasQvector = ((TEventFillMap & VarManager::ObjTypes::ReducedEventQvector) > 0);
     constexpr bool trackHasCov = ((TTrackFillMap & VarManager::ObjTypes::ReducedTrackBarrelCov) > 0);
 
@@ -2299,6 +2311,8 @@ struct AnalysisSameEventPairing {
         // pair without MC labels cannot inherit the previous pair's result.
         isCorrectAssoc_leg1 = false;
         isCorrectAssoc_leg2 = false;
+        bool leg1HasMultipleAssociations = false;
+        bool leg2HasMultipleAssociations = false;
 
         if constexpr (TPairType == VarManager::kDecayToEE) {
           twoTrackFilter = a1.isBarrelSelected_raw() & a2.isBarrelSelected_raw() & a1.isBarrelSelectedPrefilter_raw() & a2.isBarrelSelectedPrefilter_raw() & fTrackFilterMask;
@@ -2311,6 +2325,11 @@ struct AnalysisSameEventPairing {
           auto t2 = a2.template reducedtrack_as<TTracks>();
           sign1 = t1.sign();
           sign2 = t2.sign();
+          // A track can have one compatible collision in each ambiguity
+          // category. Such a 1+1 case is still multiply associated although
+          // neither category-specific flag below is set on its own.
+          leg1HasMultipleAssociations = t1.barrelAmbiguityInBunch() + t1.barrelAmbiguityOutOfBunch() > 1;
+          leg2HasMultipleAssociations = t2.barrelAmbiguityInBunch() + t2.barrelAmbiguityOutOfBunch() > 1;
           // store the ambiguity number of the two dilepton legs in the last 4 digits of the two-track filter
           if (t1.barrelAmbiguityInBunch() > 1) {
             twoTrackFilter |= (static_cast<uint32_t>(1) << 28);
@@ -2485,8 +2504,6 @@ struct AnalysisSameEventPairing {
         // Fill histograms
         bool isAmbiInBunch = false;
         bool isAmbiOutOfBunch = false;
-        bool isLeg1Ambi = false;
-        bool isLeg2Ambi = false;
         bool isCorrect_pair = false;
         if (isCorrectAssoc_leg1 && isCorrectAssoc_leg2) {
           isCorrect_pair = true;
@@ -2497,11 +2514,11 @@ struct AnalysisSameEventPairing {
             bool isAmbiExtra = false;
             isAmbiInBunch = (twoTrackFilter & (static_cast<uint32_t>(1) << 28)) || (twoTrackFilter & (static_cast<uint32_t>(1) << 29));
             isAmbiOutOfBunch = (twoTrackFilter & (static_cast<uint32_t>(1) << 30)) || (twoTrackFilter & (static_cast<uint32_t>(1) << 31));
-            isLeg1Ambi = (twoTrackFilter & (static_cast<uint32_t>(1) << 28)) || (twoTrackFilter & (static_cast<uint32_t>(1) << 30));
-            isLeg2Ambi = (twoTrackFilter & (static_cast<uint32_t>(1) << 29)) || (twoTrackFilter & (static_cast<uint32_t>(1) << 31));
             if constexpr (TPairType == VarManager::kDecayToEE) {
-              if (isLeg1Ambi && isLeg2Ambi) {
-                const std::pair<uint32_t, uint32_t> pairId(a1.reducedtrackId(), a2.reducedtrackId());
+              if (fConfigQA && leg1HasMultipleAssociations && leg2HasMultipleAssociations) {
+                const auto trackId1 = static_cast<uint32_t>(a1.reducedtrackId());
+                const auto trackId2 = static_cast<uint32_t>(a2.reducedtrackId());
+                const std::pair<uint32_t, uint32_t> pairId(std::min(trackId1, trackId2), std::max(trackId1, trackId2));
                 const uint32_t cutBit = static_cast<uint32_t>(1) << icut;
                 auto [it, inserted] = fAmbiguousPairs.try_emplace(pairId, cutBit);
                 if (!inserted) {
