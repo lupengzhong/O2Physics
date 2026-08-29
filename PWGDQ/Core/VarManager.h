@@ -3593,37 +3593,57 @@ void VarManager::FillTrackMC(const U& mcStack, T const& track, float* values)
     values[kMCDaughtersInAcceptancePt1Eta08] = -1.0f;
 
     if (track.has_daughters()) {
-      auto daughters = track.template daughters_as<U>();
-      values[kMCNDaughters] = static_cast<float>(daughters.size());
+      // daughtersIds stores the inclusive global first/last indices. ASoA
+      // rawIteratorAt() takes a raw cursor relative to the current Arrow range,
+      // so validate the range and subtract its offset before dereferencing.
+      const auto daughterIds = track.daughtersIds();
+      const int64_t nDaughters = std::max<int64_t>(0, static_cast<int64_t>(daughterIds[1]) - static_cast<int64_t>(daughterIds[0]) + 1);
+      values[kMCNDaughters] = static_cast<float>(nDaughters);
 
       // The QA variables have an unambiguous meaning only for a true two-body
       // decay. For zero, one or more than two daughters, keep the sentinels
       // above instead of selecting an arbitrary pair.
-      if (daughters.size() == 2) {
+      if (nDaughters == 2) {
         values[kMCDaughterPairStatus] = 1.0f;
-        auto daughter1 = daughters.begin();
-        auto daughter2 = daughter1;
-        ++daughter2;
+        if constexpr (requires {
+                        static_cast<int64_t>(mcStack.offset());
+                        static_cast<int64_t>(mcStack.tableSize());
+                      }) {
+          const int64_t firstDaughterId = static_cast<int64_t>(daughterIds[0]);
+          const int64_t lastDaughterId = static_cast<int64_t>(daughterIds[1]);
+          const int64_t stackOffset = static_cast<int64_t>(mcStack.offset());
+          const int64_t stackSize = static_cast<int64_t>(mcStack.tableSize());
+          const bool daughterRangeValid = stackOffset >= 0 && stackSize > 0 &&
+                                          firstDaughterId >= stackOffset && lastDaughterId >= firstDaughterId &&
+                                          lastDaughterId - stackOffset < stackSize;
+          if (daughterRangeValid) {
+            auto daughter1 = mcStack.rawIteratorAt(static_cast<uint64_t>(firstDaughterId - stackOffset));
+            auto daughter2 = mcStack.rawIteratorAt(static_cast<uint64_t>(lastDaughterId - stackOffset));
 
-        values[kMCDaughter1Pt] = daughter1.pt();
-        values[kMCDaughter1Eta] = daughter1.eta();
-        values[kMCDaughter1PdgCode] = daughter1.pdgCode();
-        values[kMCDaughter2Pt] = daughter2.pt();
-        values[kMCDaughter2Eta] = daughter2.eta();
-        values[kMCDaughter2PdgCode] = daughter2.pdgCode();
+            values[kMCDaughter1Pt] = daughter1.pt();
+            values[kMCDaughter1Eta] = daughter1.eta();
+            values[kMCDaughter1PdgCode] = daughter1.pdgCode();
+            values[kMCDaughter2Pt] = daughter2.pt();
+            values[kMCDaughter2Eta] = daughter2.eta();
+            values[kMCDaughter2PdgCode] = daughter2.pdgCode();
 
-        const auto parentId = track.globalIndex();
-        const auto daughter1MotherIds = daughter1.mothersIds();
-        const auto daughter2MotherIds = daughter2.mothersIds();
-        const bool daughter1HasParent = std::find(daughter1MotherIds.begin(), daughter1MotherIds.end(), parentId) != daughter1MotherIds.end();
-        const bool daughter2HasParent = std::find(daughter2MotherIds.begin(), daughter2MotherIds.end(), parentId) != daughter2MotherIds.end();
-        values[kMCDaughtersMatchParent] = daughter1HasParent && daughter2HasParent ? 1.0f : 0.0f;
+            const auto parentId = track.globalIndex();
+            const auto daughter1MotherIds = daughter1.mothersIds();
+            const auto daughter2MotherIds = daughter2.mothersIds();
+            const bool daughter1HasParent = std::find(daughter1MotherIds.begin(), daughter1MotherIds.end(), parentId) != daughter1MotherIds.end();
+            const bool daughter2HasParent = std::find(daughter2MotherIds.begin(), daughter2MotherIds.end(), parentId) != daughter2MotherIds.end();
+            const bool daughtersMatchParent = daughter1HasParent && daughter2HasParent;
+            values[kMCDaughtersMatchParent] = daughtersMatchParent ? 1.0f : 0.0f;
 
-        // Explicit project acceptance used in the original study:
-        // pT > 1 GeV/c and |eta| < 0.8 for both daughters.
-        const bool inAcceptance = daughter1.pt() > 1.0f && daughter2.pt() > 1.0f &&
-                                  std::abs(daughter1.eta()) < 0.8f && std::abs(daughter2.eta()) < 0.8f;
-        values[kMCDaughtersInAcceptancePt1Eta08] = inAcceptance ? 1.0f : 0.0f;
+            if (daughtersMatchParent) {
+              // Explicit project acceptance used in the original study:
+              // pT > 1 GeV/c and |eta| < 0.8 for both daughters.
+              const bool inAcceptance = daughter1.pt() > 1.0f && daughter2.pt() > 1.0f &&
+                                        std::abs(daughter1.eta()) < 0.8f && std::abs(daughter2.eta()) < 0.8f;
+              values[kMCDaughtersInAcceptancePt1Eta08] = inAcceptance ? 1.0f : 0.0f;
+            }
+          }
+        }
       }
     }
   }

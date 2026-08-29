@@ -1265,8 +1265,8 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
     if (subGroupStr.Contains("daughters")) {
       hm->AddHistogram(histClass, "NDaughters", "Number of direct MC daughters", false, 11, -0.5, 10.5, VarManager::kMCNDaughters);
       hm->AddHistogram(histClass, "DaughterPairStatus", "Exactly two direct MC daughters", false, 2, -0.5, 1.5, VarManager::kMCDaughterPairStatus);
-      hm->AddHistogram(histClass, "DaughtersMatchParent", "Both daughters reference this parent; -1 means not a two-body decay", false, 3, -1.5, 1.5, VarManager::kMCDaughtersMatchParent);
-      hm->AddHistogram(histClass, "DaughtersInAcceptancePt1Eta08", "Both daughters p_{T}>1 GeV/c and |#eta|<0.8; -1 means not a two-body decay", false, 3, -1.5, 1.5, VarManager::kMCDaughtersInAcceptancePt1Eta08);
+      hm->AddHistogram(histClass, "DaughtersMatchParent", "Both daughters reference this parent; -1 means not a validated two-body decay", false, 3, -1.5, 1.5, VarManager::kMCDaughtersMatchParent);
+      hm->AddHistogram(histClass, "DaughtersInAcceptancePt1Eta08", "Both validated daughters have p_{T}>1 GeV/c and |#eta|<0.8; -1 means not evaluable", false, 3, -1.5, 1.5, VarManager::kMCDaughtersInAcceptancePt1Eta08);
       hm->AddHistogram(histClass, "Daughter1Pt", "MC daughter 1 p_{T}", false, 200, 0.0, 20.0, VarManager::kMCDaughter1Pt);
       hm->AddHistogram(histClass, "Daughter2Pt", "MC daughter 2 p_{T}", false, 200, 0.0, 20.0, VarManager::kMCDaughter2Pt);
       hm->AddHistogram(histClass, "Daughter1Eta", "MC daughter 1 #eta", false, 100, -5.0, 5.0, VarManager::kMCDaughter1Eta);
