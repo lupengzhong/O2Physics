@@ -5465,6 +5465,7 @@ void DefineHistograms(HistogramManager* histMan, const TString& histClasses, con
       dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "pair", histName);
     }
 
+    const bool isMCTruthGenPair = classStr.Contains("MCTruthGenPair") || classStr.Contains("MCTruthGenPseudoPolPair");
     if (classStr.Contains("MCTruthGenPair")) {
       dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth_pair", histName);
     }
@@ -5473,7 +5474,7 @@ void DefineHistograms(HistogramManager* histMan, const TString& histClasses, con
     }
     if (classStr.Contains("MCTruthGenSelBR")) {
       dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth_triple");
-    } else if (classStr.Contains("MCTruthGen")) {
+    } else if (classStr.Contains("MCTruthGen") && !isMCTruthGenPair) {
       dqhistograms::DefineHistograms(histMan, objArray->At(iclass)->GetName(), "mctruth_track", histName);
     }
 
